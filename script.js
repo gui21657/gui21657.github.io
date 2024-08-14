@@ -5,7 +5,7 @@ document.getElementById('calcularBtn').addEventListener('click', function() {
     const i = parseFloat(document.getElementById('iInput').value);
     const n = parseInt(document.getElementById('nInput').value);
 
-    let resultado = 0;
+    let resultado = 0; 
 
     if (tipo === 'geometrico') {
         resultado = calcularFactorPresenteGeometrico(a, g, i, n);
