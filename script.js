@@ -1,4 +1,4 @@
-console.log('Chart.js version:', Chart.version); // Verifica la carga de Chart.js
+console.log('Chart.js version:', Chart.version);
 
 document.getElementById('calcularBtn').addEventListener('click', function() {
     const tipo = document.getElementById('tipoGradiente').value;
@@ -13,14 +13,14 @@ document.getElementById('calcularBtn').addEventListener('click', function() {
     if (tipo === 'geometrico') {
         resultado = calcularFactorPresenteGeometrico(a, g, i, n);
         document.getElementById('output').textContent = `Valor presente del gradiente geométrico: ${resultado.toFixed(2)}`;
-        cashFlow = calcularFlujoGeometrico(a, g, n);
+        cashFlow = calcularFlujoGeometrico(a, g, i, n);
     } else if (tipo === 'aritmetico') {
         resultado = calcularFactorPresenteAritmetico(a, i, n);
         document.getElementById('output').textContent = `Valor presente del gradiente aritmético: ${resultado.toFixed(2)}`;
         cashFlow = calcularFlujoAritmetico(a, i, n);
     }
 
-    console.log('Flujo de efectivo:', cashFlow); // Depuración
+    console.log('Flujo de efectivo:', cashFlow);
 
     if (cashFlow.length > 0) {
         mostrarGrafico(cashFlow);
@@ -46,7 +46,7 @@ function calcularFactorPresenteAritmetico(a, i, n) {
     return a * ((Math.pow(1 + iDecimal, n) - iDecimal * n - 1) / (Math.pow(iDecimal, 2) * Math.pow(1 + iDecimal, n)));
 }
 
-function calcularFlujoGeometrico(a, g, n) {
+function calcularFlujoGeometrico(a, g, i, n) {
     let cashFlow = [];
     let valor = a;
     for (let i = 0; i < n; i++) {
@@ -56,12 +56,12 @@ function calcularFlujoGeometrico(a, g, n) {
     return cashFlow;
 }
 
-function calcularFlujoAritmetico(a, g, n) {
+function calcularFlujoAritmetico(a, i, n) {
     let cashFlow = [];
     let valor = a;
     for (let i = 0; i < n; i++) {
         cashFlow.push(valor);
-        valor += g;
+        valor += i;
     }
     return cashFlow;
 }
@@ -72,8 +72,8 @@ function mostrarGrafico(cashFlow) {
     if (canvasElement) {
         const ctx = canvasElement.getContext('2d');
         
-        // Destruir el gráfico anterior si existe para evitar superposiciones
-        if (window.cashFlowChart) {
+        // Verificar si ya existe un gráfico, y destruirlo si es necesario
+        if (window.cashFlowChart && typeof window.cashFlowChart.destroy === 'function') {
             window.cashFlowChart.destroy();
         }
 
@@ -98,12 +98,12 @@ function mostrarGrafico(cashFlow) {
                             callback: function(value) {
                                 return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value);
                             },
-                            min: 0, // Forzar a que el mínimo sea 0 para que todas las barras sean visibles
+                            min: 0,
                         }
                     }
                 },
                 responsive: true,
-                maintainAspectRatio: false, // Permite ajustar la altura manualmente
+                maintainAspectRatio: true,
             }
         });
     } else {
