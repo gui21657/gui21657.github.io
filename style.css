@@ -1,7 +1,7 @@
 body {
     font-family: 'Roboto', sans-serif;
     background: linear-gradient(135deg, #6e4a7e 0%, #37254c 100%);
-    color: #ffffff;
+    color: #6e4a7e;
     margin: 0;
     padding: 0;
     display: flex;
@@ -12,12 +12,25 @@ body {
 
 .container {
     background-color: #5a3a66;
-    padding: 20px;
+    padding: 10px 30px;
     border-radius: 15px;
     box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
-    max-width: 400px;
+    max-width: 350px;
     width: 100%;
     text-align: center;
+    margin-top: 20px;
+}
+
+/* Elimina las flechas en los campos de número para navegadores WebKit */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Elimina las flechas en los campos de número para Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
 }
 
 h1 {
@@ -42,6 +55,18 @@ select, input {
     border: none;
     background-color: #4a2e4f;
     color: #ffffff;
+    appearance: none; /* Oculta la flecha predeterminada */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Estilo para cuando el select está en foco */
+select:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(116, 235, 213, 0.5);
+    background-color: #5e3b4e;
 }
 
 input::placeholder {
@@ -71,3 +96,4 @@ button:hover {
     color: #b3ffb3;
     margin-top: 20px;
 }
+
