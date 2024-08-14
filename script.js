@@ -15,9 +15,9 @@ document.getElementById('calcularBtn').addEventListener('click', function() {
         document.getElementById('output').textContent = `Valor presente del gradiente geométrico: ${resultado.toFixed(2)}`;
         cashFlow = calcularFlujoGeometrico(a, g, n);
     } else if (tipo === 'aritmetico') {
-        resultado = calcularFactorPresenteAritmetico(g, i, n);
+        resultado = calcularFactorPresenteAritmetico(a, i, n);
         document.getElementById('output').textContent = `Valor presente del gradiente aritmético: ${resultado.toFixed(2)}`;
-        cashFlow = calcularFlujoAritmetico(a, g, n);
+        cashFlow = calcularFlujoAritmetico(a, i, n);
     }
 
     console.log('Flujo de efectivo:', cashFlow); // Depuración
@@ -40,11 +40,10 @@ function calcularFactorPresenteGeometrico(a, g, i, n) {
     return a * ((1 - Math.pow(1 + gDecimal, n) * Math.pow(1 + iDecimal, -n)) / (iDecimal - gDecimal));
 }
 
-function calcularFactorPresenteAritmetico(g, i, n) {
-    const gDecimal = g / 100;
+function calcularFactorPresenteAritmetico(a, i, n) {
     const iDecimal = i / 100;
     
-    return gDecimal * ((Math.pow(1 + iDecimal, n) - iDecimal * n - 1) / (Math.pow(iDecimal, 2) * Math.pow(1 + iDecimal, n)));
+    return a * ((Math.pow(1 + iDecimal, n) - iDecimal * n - 1) / (Math.pow(iDecimal, 2) * Math.pow(1 + iDecimal, n)));
 }
 
 function calcularFlujoGeometrico(a, g, n) {
