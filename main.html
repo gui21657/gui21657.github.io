@@ -15,18 +15,18 @@
         <h1>Calculadora de Gradientes</h1>
         <label for="tipoGradiente">Tipo de Gradiente:</label>
         <select id="tipoGradiente">
-            <option value="geometrico">Valor Presente de un Gradiente Geométrico</option>
-            <option value="aritmetico">Valor Presente de un Gradiente Aritmético</option>
+            <option value="geometrico">Factor Presente Geométrico</option>
+            <option value="aritmetico">Factor Presente Aritmético</option>
         </select>
 
         <label for="aInput">Valor inicial (a):</label>
         <input type="number" id="aInput" placeholder="Ingrese el valor inicial (a)">
 
         <label for="gInput">Razón (g%):</label>
-        <input type="number" id="gInput" placeholder="Ingrese la razón (g%)" value="1">
+        <input type="number" id="gInput" placeholder="Ingrese la razón (g%)" value="">
 
         <label for="iInput">Tasa de interés (i%):</label>
-        <input type="number" id="iInput" placeholder="Ingrese la tasa de interés (i%)" value="0">
+        <input type="number" id="iInput" placeholder="Ingrese la tasa de interés (i%)" value="">
 
         <label for="nInput">Número de términos (n):</label>
         <input type="number" id="nInput" placeholder="Ingrese el número de términos (n)">
@@ -34,6 +34,8 @@
         <button id="calcularBtn">Calcular</button>
 
         <div id="output"></div>
+        <!-- Añadir un canvas para el gráfico -->
+        <canvas id="cashFlowChart" width="400" height="300"></canvas>
     </div>
 
     <script src="script.js"></script>
