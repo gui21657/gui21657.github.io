@@ -1,7 +1,7 @@
 body {
     font-family: 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-    color: #333;
+    background: linear-gradient(135deg, #6e4a7e 0%, #37254c 100%);
+    color: #ffffff;
     margin: 0;
     padding: 0;
     display: flex;
@@ -11,17 +11,17 @@ body {
 }
 
 .container {
-    background-color: #fff;
+    background-color: #5a3a66;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
     max-width: 400px;
     width: 100%;
+    text-align: center;
 }
 
 h1 {
-    text-align: center;
-    color: #333;
+    color: #e0e0e0;
     margin-bottom: 20px;
     font-size: 24px;
 }
@@ -30,41 +30,44 @@ label {
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #555;
+    color: #ccc;
 }
 
-select, input, button {
+select, input {
     width: 100%;
-    padding: 12px;
-    margin-bottom: 20px;
+    padding: 10px;
+    margin-bottom: 15px;
     font-size: 16px;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: none;
+    background-color: #4a2e4f;
+    color: #ffffff;
 }
 
-select:focus, input:focus, button:focus {
-    border-color: #74ebd5;
-    outline: none;
-    box-shadow: 0px 0px 5px rgba(116, 235, 213, 0.5);
+input::placeholder {
+    color: #bbbbbb;
 }
 
 button {
-    background-color: #74ebd5;
+    background-color: #3c2b45;
     color: white;
     border: none;
+    padding: 10px;
+    margin-top: 10px;
+    font-size: 16px;
+    border-radius: 5px;
     cursor: pointer;
-    font-weight: bold;
     transition: background-color 0.3s ease;
+    width: 100%;
 }
 
 button:hover {
-    background-color: #4bb4bf;
+    background-color: #2c1e33;
 }
 
 #output {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
-    text-align: center;
-    color: #333;
+    color: #b3ffb3;
     margin-top: 20px;
 }
