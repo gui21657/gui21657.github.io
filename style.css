@@ -13,12 +13,13 @@ body {
 .container {
     background-color: #5a3a66;
     padding: 10px 30px;
+    padding-top: 500px;
     border-radius: 15px;
     box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
-    max-width: 350px;
+    max-width: 1000px;
     width: 100%;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 200px;
 }
 
 /* Elimina las flechas en los campos de número para navegadores WebKit */
@@ -70,7 +71,7 @@ select:focus {
 }
 
 input::placeholder {
-    color: #bbbbbb;
+    color: #ffffff;
 }
 
 button {
