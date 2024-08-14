@@ -110,3 +110,4 @@ function mostrarGrafico(cashFlow) {
         console.error('No se pudo encontrar el elemento canvas con el ID cashFlowChart.');
     }
 }
+ 
