@@ -7,34 +7,49 @@
     
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Añadir Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head> 
 <body>
     <div class="container">
-        <h1>Calculadora de Gradientes</h1>
-        <label for="tipoGradiente">Tipo de Gradiente:</label>
+        <h1>Calculadora Económica</h1>
+        <label for="tipoGradiente">Valor a Calcular:</label>
         <select id="tipoGradiente">
             <option value="geometrico">Valor Presente de un Gradiente Geométrico</option>
             <option value="aritmetico">Valor Presente de un Gradiente Aritmético</option>
+            <option value="FuturoCompuesto">Valor Futuro de un Presente con Interes Compuesto</option> 
+            <option value="FuturoSimple">Valor Futuro de un Presente con Interes Simple</option> 
+            <option value="AnualidadAritmetico">Valor Anualidad de un Gradiente Aritmetico</option> 
+            <option value="FuturoGeometrico">Valor Futuro de un Gradiente Geometrico</option> 
+            <option value="FuturoAritmetico">Valor Futuro de un Gradiente Aritmetico</option> 
         </select>
 
-        <label for="aInput">Valor inicial (a):</label>
-        <input type="number" id="aInput" placeholder="Ingrese el valor inicial (a)">
+        <div id="aGroup">
+            <label for="aInput">Valor inicial (a):</label>
+            <input type="number" id="aInput" placeholder="Ingrese el valor inicial (a)">
+        </div>
 
-        <label for="gInput">Razón (g%):</label>
-        <input type="number" id="gInput" placeholder="Ingrese la razón (g%)" value="">
+        <div id="gGroup">
+            <label for="gInput">Razón (g%):</label>
+            <input type="number" id="gInput" placeholder="Ingrese la razón (g%)">
+        </div>
+        <div id="GGroup">
+            <label for="GInput">Gradiente (G):</label>
+            <input type="number" id="GInput" placeholder="Ingrese el valor del gradiente (G)">
+        </div>
 
-        <label for="iInput">Tasa de interés (i%):</label>
-        <input type="number" id="iInput" placeholder="Ingrese la tasa de interés (i%)" value="">
+        <div id="iGroup">
+            <label for="iInput">Tasa de interés (i%):</label>
+            <input type="number" id="iInput" placeholder="Ingrese la tasa de interés (i%)">
+        </div>
 
-        <label for="nInput">Número de términos (n):</label>
-        <input type="number" id="nInput" placeholder="Ingrese el número de términos (n)">
+        <div id="nGroup">
+            <label for="nInput">Número de términos (n):</label>
+            <input type="number" id="nInput" placeholder="Ingrese el número de términos (n)">
+        </div>
 
         <button id="calcularBtn">Calcular</button>
 
         <div id="output"></div>
-        <!-- Añadir un canvas para el gráfico -->
         <canvas id="cashFlowChart" width="720" height="500"></canvas>
     </div>
 
