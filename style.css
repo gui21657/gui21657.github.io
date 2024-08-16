@@ -117,7 +117,7 @@ select, input {
     border: none;
     background-color: #4a2e4f;
     color: #ffffff;
-    appearance: none; /* Oculta la flecha predeterminada */
+    appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
     cursor: pointer;
@@ -157,4 +157,10 @@ button:hover {
     font-weight: bold;
     color: #b3ffb3;
     margin-top: 20px;
+}
+
+/* Asegurar que el canvas tiene un tamaño fijo */
+#cashFlowChart {
+    width: 720px;
+    height: 500px;
 }
