@@ -172,7 +172,7 @@ const formulas = {
 function calcularFlujo(tipo, a, g, i, n, G, resultadoFinal) {
     let cashFlow = [];
     
-    // Registrar el primer valor como el valor inicial (positivo)
+    // Registrar el primer valor como el valor inicial (negativo)
     cashFlow.push(-a , -G);
 
     // Luego, calcular el flujo para los periodos subsecuentes usando la fórmula correspondiente
