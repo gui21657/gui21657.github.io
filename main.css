@@ -1,300 +1,163 @@
-/* Reset básico */
+/* Reset Básico */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
 body {
-  font-family: 'Arial', sans-serif;
-  background-color: #141414;
+  background-color: #111;
   color: #fff;
-  line-height: 1.6;
 }
 
-a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.hidden {
-  display: none;
-}
-
-/* Estilo del navbar */
-.navbar {
+/* Header */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #141414;
-  border-bottom: 2px solid #333;
+  background-color: #000;
 }
 
 .logo {
-  font-size: 24px;
+  color: #E50914;
+  font-size: 28px;
   font-weight: bold;
-  color: #e50914;
 }
 
-.nav-links {
+.menu {
   list-style: none;
   display: flex;
   gap: 20px;
 }
 
-.nav-links li {
-  position: relative;
-}
-
-.nav-links a {
-  font-size: 16px;
+.menu a {
+  color: #fff;
+  text-decoration: none;
   font-weight: bold;
-  transition: color 0.3s;
 }
 
-.nav-links a:hover {
-  color: #e50914;
+.menu a:hover {
+  color: #E50914;
 }
 
-.login-btn {
-  background-color: #e50914;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-
-.login-btn:hover {
-  background-color: #b00710;
-}
-
-/* Hero Section */
-.hero-section {
+/* Banner Principal */
+.banner {
+  height: 70vh;
+  background: url('https://palomaynacho.com/wp-content/uploads/2023/05/Habia-una-vez-en-Hollywood-motivo-a-Michael-J-Fox-a-retirarse-Volver-al-futuro.jpg') no-repeat center center/cover;
   display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  height: 100vh;
-  background-image: url('https://via.placeholder.com/1920x1080');
-  background-size: cover;
-  background-position: center;
+  padding: 20px;
   position: relative;
 }
 
-.hero-section::after {
+.banner::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
 }
 
-.hero-content {
+.banner-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  max-width: 500px;
 }
 
-.hero-content h2 {
+.banner h1 {
   font-size: 48px;
-  margin-bottom: 20px;
-  text-transform: uppercase;
-  font-weight: bold;
-}
-
-.hero-content p {
-  font-size: 20px;
+  color: #fff;
   margin-bottom: 20px;
 }
 
-.hero-content .btn {
-  background-color: #e50914;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-weight: bold;
+.banner p {
   font-size: 18px;
-  transition: background-color 0.3s;
+  margin-bottom: 20px;
 }
 
-.hero-content .btn:hover {
-  background-color: #b00710;
+.buttons .btn {
+  padding: 10px 20px;
+  margin-right: 10px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-/* Galería de Películas */
-.movie-gallery {
-  padding: 50px 20px;
-  background-color: #141414;
-  text-align: center;
+.btn-play {
+  background-color: #fff;
+  color: #000;
+  font-weight: bold;
 }
 
-.movie-gallery h2 {
-  font-size: 32px;
-  margin-bottom: 30px;
-  color: #e50914;
+.btn-info {
+  background-color: #333;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Carrusel de Películas */
+.carousel {
+  padding: 20px;
+}
+
+.carousel h2 {
+  margin-bottom: 20px;
+  color: #E50914;
+}
+
+/* Estilos del Carrusel */
+.carrusel {
+  width: 100%;
+  overflow: hidden; /* Evita que se vea cualquier barra de desplazamiento */
+  cursor: auto; /* Cursor de "mano" al pasar el mouse */
 }
 
 .movies {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
+  gap: 15px;
+  overflow-x: scroll;
+  scroll-behavior: smooth;
+  scrollbar-width: auto; /* Hace visible la barra de desplazamiento en Firefox */
+  scrollbar-color: #888 #111; /* Estilo de la barra de desplazamiento en Firefox */
+  cursor: grab;
 }
 
-.movie-card {
-  width: 200px;
-  background-color: #222;
+.movies::-webkit-scrollbar {
+  width: 5px; /* Ancho de la barra de desplazamiento */
+}
+
+.movies::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color del control deslizante */
   border-radius: 10px;
-  overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.movie-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.5);
+.movies::-webkit-scrollbar-track {
+  background-color: #111; /* Color del fondo de la barra de desplazamiento */
 }
 
-.movie-card img {
-  width: 100%;
-  display: block;
-}
-
-.movie-info {
-  padding: 10px;
-  text-align: center;
-}
-
-.movie-info h3 {
-  font-size: 18px;
-  color: #fff;
-}
-
-/* Modales */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: #222;
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.modal-content h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.modal-content input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #444;
+.movies img {
+  width: 150px;
+  height: auto;
   border-radius: 5px;
-  background-color: #333;
-  color: #fff;
-  font-size: 16px;
+  user-select: none; /* Evita seleccionar accidentalmente las imágenes */
+  transition: transform 0.3s;
 }
 
-.modal-content .btn {
-  width: 100%;
-  background-color: #e50914;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-weight: bold;
-  font-size: 18px;
-  transition: background-color 0.3s;
+.movie img:hover {
+  transform: scale(1.1);
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
 }
 
-.modal-content .btn:hover {
-  background-color: #b00710;
+/* Nuevo estilo para el arrastre del carrusel */
+.carrusel .movies {
+  cursor: grab;
 }
 
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 20px;
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
+.carrusel .movies:active {
+  cursor: grabbing;
 }
 
-/* Sección de Perfil */
-#perfil {
-  padding: 50px 20px;
-  background-color: #141414;
-  text-align: center;
-}
-
-#perfil h2 {
-  font-size: 32px;
-  margin-bottom: 20px;
-}
-
-#perfil p {
-  font-size: 18px;
-}
-
-/* Footer */
-.footer {
-  text-align: center;
-  padding: 20px;
-  background-color: #111;
-  color: #777;
-  font-size: 14px;
-}
-
-.footer p {
-  margin: 0;
-}
-
-/* Estilo del modal de login */
-#login-modal {
-  display: none;
-}
-
-.modal-content {
-  background-color: #222;
-  padding: 20px;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-}
-
-#login-form input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-}
-
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 20px;
-  color: #fff;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-/* Transiciones */
-.modal-content input {
-  transition: all 0.3s ease;
-}
-
-.modal-content .btn {
-  transition: background-color 0.3s ease;
-}
