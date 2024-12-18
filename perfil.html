@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil - POPOROPO</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+  <header class="navbar">
+    <h1 class="logo">POPOROPO</h1>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="main.html">Inicio</a></li>
+        <li><a href="#historial">Historial</a></li>
+        <li><a href="#configuracion">Configuración</a></li>
+        <li><a href="main.html" id="logout-btn">Cerrar Sesión</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="perfil-section" class="profile-content">
+    <h2>Bienvenido a tu Perfil</h2>
+    <div id="historial">
+      <h3>Historial de Películas Vistas</h3>
+      <ul id="movie-history">
+        <!-- Historial generado dinámicamente -->
+      </ul>
+    </div>
+
+    <div id="configuracion">
+      <h3>Configuración de Cuenta</h3>
+      <form id="change-password-form">
+        <label for="old-password">Contraseña Actual:</label>
+        <input type="password" id="old-password" required>
+        
+        <label for="new-password">Nueva Contraseña:</label>
+        <input type="password" id="new-password" required>
+
+        <button type="submit" class="btn">Cambiar Contraseña</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>&copy; 2024 POPOROPO. Tu cine, en todas partes.</p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
