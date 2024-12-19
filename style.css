@@ -16,13 +16,12 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding:30px 50px;
+  padding: 30px 50px;
   background-color: #000;
   position: center;
-  top: 0; /* Hace que el encabezado se quede fijo en la parte superior */
-  z-index: 200; /* Asegura que el encabezado esté por encima de otros elementos */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* Sombra sutil */
-
+  top: 0; /* Fijo en la parte superior */
+  z-index: 200;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .logo {
@@ -56,20 +55,9 @@ body {
   display: flex;
   padding: 50px;
   position: sticky;
-  top: 0px; /* Se mantendrá en la parte superior mientras se hace scroll */
-  z-index: 100; /* Asegura que el banner esté por encima de otros elementos */
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7); /* Sombra sutil en el banner */
-}
-
-.banner::after {
-  content: '';
-  position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
 }
 
 .banner-content {
@@ -119,11 +107,10 @@ body {
   color: #E50914;
 }
 
-/* Estilos del Carrusel */
 .carrusel {
   width: 100%;
-  overflow: hidden; /* Evita que se vea cualquier barra de desplazamiento */
-  cursor: auto; /* Cursor de "mano" al pasar el mouse */
+  overflow: hidden;
+  cursor: auto;
 }
 
 .movies {
@@ -131,96 +118,69 @@ body {
   gap: 15px;
   overflow-x: scroll;
   scroll-behavior: smooth;
-  scrollbar-width: auto; /* Hace visible la barra de desplazamiento en Firefox */
-  scrollbar-color: #888 #111; /* Estilo de la barra de desplazamiento en Firefox */
-  cursor: grab;
+  scrollbar-width: auto;
+  scrollbar-color: #888 #111;
 }
 
 .movies::-webkit-scrollbar {
-  width: 5px; /* Ancho de la barra de desplazamiento */
+  width: 5px;
 }
 
 .movies::-webkit-scrollbar-thumb {
-  background-color: #888; /* Color del control deslizante */
+  background-color: #888;
   border-radius: 10px;
-}
-
-.movies::-webkit-scrollbar-track {
-  background-color: #111; /* Color del fondo de la barra de desplazamiento */
 }
 
 .movies img {
   width: 150px;
   height: auto;
   border-radius: 5px;
-  user-select: none; /* Evita seleccionar accidentalmente las imágenes */
+  user-select: none;
   transition: transform 0.3s;
 }
 
-.movie img:hover {
+.movies img:hover {
   transform: scale(1.1);
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* Nuevo estilo para el arrastre del carrusel */
-.carrusel .movies {
-  cursor: grab;
-}
-
-.carrusel .movies:active {
-  cursor: grabbing;
-}
-/* Estilos del modal */
+/* Modal */
 .modal {
-  display: none; /* Oculto por defecto */
+  display: none;
   position: fixed;
   z-index: 101;
   left: 0;
   top: 0%;
   width: 100%;
   height: 100%;
-  
-  background-position: center top;
-  backdrop-filter: blur(1px); /* Efecto de desenfoque */
+  backdrop-filter: blur(1px);
   justify-content: center;
   align-items: center;
   animation: fadeIn 0.3s ease-in-out;
-  
-  overflow-y: hidden; /* Esconde el scroll en el modal */
 }
 
 .modal-content {
   position: absolute;
-  top: 125px; /* Cambia la posición vertical si es necesario */
-  right: 50px; /* Cambia la posición horizontal si es necesario */
+  top: 125px;
+  right: 50px;
   font-size: 24px;
-  background-color: #dab5b523; /* Fondo oscuro */
-  padding: 1px; /* Aumenta el padding si quieres más espacio interno */
+  background-color: #dab5b523;
+  padding: 1px;
   border-radius: 10px;
-  box-shadow: 0px 4px 30px rgba(255, 255, 255, 0.7); /* Ajusta el sombreado */
-  max-width: 90%; /* Ajusta el ancho máximo en porcentaje */
-  width: 1500px; /* Ajusta el ancho deseado */
-  max-height: 90%; /* Ajusta el alto máximo en porcentaje */
-  height: 410px; /* Ajusta el alto deseado */
+  box-shadow: 0px 4px 30px rgba(255, 255, 255, 0.7);
+  max-width: 90%;
+  width: 1500px;
+  max-height: 90%;
+  height: 410px;
   text-align: center;
   animation: slideIn 0.6s ease-in-out;
-  overflow-y: hidden; /* Permite el scroll vertical si el contenido es grande */
-  overflow-x: hidden; /* Mantiene el scroll horizontal oculto */
+  overflow: hidden;
 }
 
 .modal-content iframe {
-  border-radius: 10px; /* Esquinas redondeadas en el iframe */
-  width: 100%; /* Asegúrate de que ocupe el 100% del modal */
-  height: 100px; /* Ajusta el alto según el nuevo tamaño del modal */
-  overflow-y: hidden; /* Esconde el scroll en el iframe */
-}
-
-
-.modal-content iframe {
-  border-radius: 10px; /* Esquinas redondeadas en el iframe */
+  border-radius: 10px;
   width: 100%;
-  height: 405px; /* Proporción 16:9 */
-  overflow-y: hidden; /* Esconde el scroll en el modal */
+  height: 405px;
 }
 
 .close {
@@ -232,33 +192,67 @@ body {
   color: #fff;
   cursor: pointer;
   transition: transform 0.3s ease;
-  overflow-y: hidden; /* Esconde el scroll en el modal */
 }
 
 .close:hover {
   transform: scale(1.2);
-  color: #ff5555; /* Cambia el color al pasar el mouse */
-  overflow-y: hidden; /* Esconde el scroll en el modal */
+  color: #ff5555;
 }
 
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+/* Media Queries para Responsividad */
+@media (max-width: 768px) {
+  /* Ajustes para pantallas pequeñas (teléfonos y tablets) */
+  
+  .header {
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 30px;
+    padding-top: 20px;
+    padding-bottom: 30px;
   }
-  to {
-    opacity: 1;
-  }
-}
 
-@keyframes slideIn {
-  from {
-    transform: translateY(-50px);
-    opacity: 0;
+  .logo {
+    font-size: 24px;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
 
+  .menu {
+    flex-direction: row;
+    gap: 30px;
+    padding-top: 15px;
+    align-items: flex-start;
+  }
+
+  .banner {
+    height: 30vh;
+    padding: 20px;
+  }
+
+  .banner h1 {
+    font-size: 24px;
+  }
+
+  .banner p {
+    font-size: 16px;
+  }
+
+  .movies img {
+    width: 120px;
+  }
+
+  .modal-content {
+    width: 95%;
+    height: auto;
+    top: 50px;
+    padding: 10px;
+  }
+  .banner h1 {
+    font-size: 25px;
+    color: #fff;
+    margin-bottom: 20px;
+  }
+  .banner p {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+}
