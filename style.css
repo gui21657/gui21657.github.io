@@ -223,7 +223,7 @@ body {
   }
 
   .banner {
-    height: 30vh;
+    height: 40vh;
     padding: 20px;
   }
 
@@ -248,11 +248,43 @@ body {
   .banner h1 {
     font-size: 25px;
     color: #fff;
-    margin-bottom: 20px;
+    margin-bottom: 50px;
   }
   .banner p {
     font-size: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+  }
+  .close {
+    position: relative;
+    top: -10px;
+    right: -150px;
+    font-size: 50px;
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  .modal-content iframe {
+    border-radius: 3px;
+    width: 100%;
+    height: 405px;
+  }
+  .modal-content {
+    position: absolute;
+    top: 125px;
+    right: 10px;
+    font-size: 24px;
+    background-color: #dab5b523;
+    padding: 1px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 30px rgba(255, 255, 255, 0.7);
+    max-width: 100%;
+    width: 370px;
+    max-height: 90%;
+    height: 410px;
+    text-align: center;
+    animation: slideIn 0.6s ease-in-out;
+    overflow: hidden;
   }
 
 }
