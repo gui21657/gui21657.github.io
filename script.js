@@ -29,6 +29,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Actualizamos el link del botón de "Reproducir"
       playButton.setAttribute('data-link', videoLink);
+
+      // Ocultar episodios de otras series
+      const allSeasons = document.querySelectorAll('.season-list');
+      allSeasons.forEach(season => {
+        season.classList.remove('active');
+      });
+
+      // Mostrar episodios de la serie seleccionada
+      const seriesElement = movie.closest('.series');
+      const seasonList = seriesElement.querySelector('.season-list');
+      seasonList.classList.add('active');
     });
   });
 
@@ -47,6 +58,23 @@ document.addEventListener('DOMContentLoaded', function () {
     videoPlayer.src = ""; // Detener el video
   };
 
+  // Función para alternar la visibilidad de las temporadas
+  function toggleSeasons(seriesElement) {
+    const seasonList = seriesElement.querySelector('.season-list');
+    seasonList.classList.toggle('active'); // Muestra u oculta la lista de temporadas
+  }
+
+  // Función para alternar la visibilidad de los episodios
+  function toggleEpisodes(seasonElement) {
+    const episodeList = seasonElement.querySelector('.episode-list');
+    episodeList.classList.toggle('active'); // Muestra u oculta los episodios
+  }
+
+  // Función para abrir el modal del episodio
+  function openModal(url) {
+    window.open(url, '_blank'); // Abre el episodio en una nueva ventana o pestaña
+  }
+
   // Cuando el usuario haga clic fuera del modal, también se cierra
   window.onclick = function (event) {
     if (event.target === modal) {
@@ -55,4 +83,3 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 });
-
