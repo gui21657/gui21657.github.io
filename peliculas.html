@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POPOROPO</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script> 
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="logo">POPOROPO</div>
+      <ul class="menu">
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="indexseries.html">Series</a></li>
+        <li><a href="peliculas.html">Películas</a></li>
+        
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Banner Principal -->
+  <section class="banner">
+    <div class="banner-content">
+      <h1>BACK TO THE FUTURE I</h1>
+      <p>
+        Un adolescente llamado Marty McFly viaja accidentalmente al pasado en una máquina del tiempo creada por el excéntrico Dr. Emmett Brown. Mientras intenta regresar al presente, Marty debe asegurarse de que sus padres se conozcan para evitar alterar su futuro.
+      </p>
+      <div class="buttons">
+        <button class="btn btn-play" data-link="https://dood.work/e/ns89lnhmesrz">▶ Reproducir</button>
+        <button class="btn btn-info">Más información</button>
+        
+      </div>
+    </div>
+  </section>
+<!-- Modal para mostrar el video -->
+<div class="modal" id="videoModal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <iframe id="videoPlayer" width="720" height="405" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</div>
+
+  <!-- Carrusel de Películas -->
+  <section class="carousel">
+    <h2>Ciencia ficción</h2>
+    <div class="movies">
+      <div class="movie" 
+        data-title="Back To The Future I" 
+        data-description="Un adolescente llamado Marty McFly viaja accidentalmente al pasado en una máquina del tiempo creada por el excéntrico Dr. Emmett Brown. Mientras intenta regresar al presente, Marty debe asegurarse de que sus padres se conozcan para evitar alterar su futuro." 
+        data-banner-img="https://palomaynacho.com/wp-content/uploads/2023/05/Habia-una-vez-en-Hollywood-motivo-a-Michael-J-Fox-a-retirarse-Volver-al-futuro.jpg"
+        data-link="https://dood.work/e/ns89lnhmesrz">
+        <img src="https://occ-0-56-55.1.nflxso.net/dnm/api/v6/evlCitJPPCVCry0BZlEFb5-QjKc/AAAABXYpQ7zLFS1nnNa9rHUkghqJp8rrJkiLPNbfSfuNh1k221Gy3C_fBB4vpQq8wHWQUd3_WfRV32KmaZFtCTpt4xxmOEnt.jpg?r=db2" 
+        alt="Back To The Future I">
+      </div>
+
+      <!-- Añadir más películas con sus links de video -->
+      <div class="movie" 
+        data-title="Back To The Future II" 
+        data-description="Marty McFly y el Dr. Emmett Brown viajan al año 2015 para evitar que el hijo de Marty arruine el futuro de la familia McFly. Sin embargo, sus acciones desencadenan una serie de eventos inesperados que los obligan a regresar a 1955 para restaurar la línea temporal original, sin interferir con su primer viaje." 
+        data-banner-img="https://m.media-amazon.com/images/S/pv-target-images/d216a331436d137a83ad7fa16b41eff380eead9e80c338e7fe33273378264da3._SX1080_FMjpg_.jpg"
+        data-link="https://dood.work/e/vywlb7ruzy3i">
+        <img src="https://occ-0-34-32.1.nflxso.net/dnm/api/v6/evlCitJPPCVCry0BZlEFb5-QjKc/AAAABXEkzIEQLmHrDxiiyB547yjrB9yUGeMxwi8aN4zDOH-7NZpXC0Wn3FhTVd7AKKwDML9egbIAn3oHbSwkyDtXguqKd-xO.jpg?r=a09" 
+        alt="Back To The Future II">
+      </div>
+
+      <div class="movie" 
+        data-title="Back To The Future III" 
+        data-description="Marty viaja al Viejo Oeste para salvar al Doc, quien quedó atrapado en 1885. Juntos enfrentan bandidos, un duelo mortal y el reto de reparar la máquina del tiempo antes de quedar atrapados para siempre en el pasado." 
+        data-banner-img="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhgNqaS9pqG8LAWnEeRXuGfuyNwb9viopVlbt3A2DjOZ6aPlX1MqFigz6tZ-DY9rktHVl57SA57Fn6vhf1iGQ5aiwEJWDdtqiifBa3hMh2Do0GVK4IDGZoeF4nIydAuBifL_ZS0MxV5n30F/s1600/Back.to.the.Future.III.1990.1080p.BluRay.x264.anoXmous_.mp4_snapshot_00.51.41_%255B2018.08.05_22.23.23%255D.png"
+        data-link="https://dood.work/e/1dz5pc4tf8zj">
+        <img src="https://occ-0-2794-2218.1.nflxso.net/dnm/api/v6/evlCitJPPCVCry0BZlEFb5-QjKc/AAAABRqAKCGDbueBxDqrB8mGN3b1MtmXwsqYKPQAqEPUw15-oDcjhEoG9Kpi0IBwZuKuKE2bZmSTLAcRNLbxliwZi5jDbIr9.jpg?r=999" 
+        alt="Back To The Future III">
+      </div>
+
+      <!-- Agregar más películas aquí -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 POPOROPO. Todos los derechos reservados.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
