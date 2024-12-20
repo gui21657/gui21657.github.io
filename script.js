@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   // Seleccionamos todos los elementos de película
-  const movies = document.querySelectorAll('.movie');
+  const movies = document.querySelectorAll('.movie'); 
   
   // Seleccionamos el banner donde se actualizará la información
   const bannerTitle = document.querySelector('.banner h1');
