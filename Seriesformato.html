@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalles de la Serie</title>
+  <style>
+
+    /* Estilo para las temporadas y episodios */
+
+    .temporada {
+      margin-bottom: 20px;
+    }
+    .temporada h2 {
+      margin-bottom: 10px;
+    }
+    /* Estilo para las miniaturas de video */
+    .video-preview {
+      width: 100%;
+      max-width: 250px;
+      cursor: pointer;
+      display: block;
+      margin: 10px auto;
+    }
+    .video-container {
+      text-align: center;
+    }
+
+  </style>
+</head>
+<body>
+    
+  <!-- Header -->
+  <header class="header">
+    <nav class="navbar">
+      <div class="logo">POPOROPO</div>
+      <ul class="menu">
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="indexseries.html">Series</a></li>
+        <li><a href="peliculas.html">Películas</a></li>
+      </ul>
+    </nav>
+  </header>
+    <!-- Sección de Banner -->
+  <section class="banner">
+    <div class="banner-content">
+      <h1 id="serieTitulo">Cargando...</h1>
+      <p>
+        <span id="seriedescripcion">Cargando...</span>
+      </p>
+
+    </div>
+  </section>
+<section class="episodios">
+  <div id="episodiosList" class="carousel-container">
+    <!-- Aquí se cargarán los episodios en el carrusel -->
+  </div>
+</section>
+
+  <!-- Modal para reproducir videos -->
+  <div id="videoModal">
+    <span class="close">&times;</span>
+    <div class="modal-content">
+      <iframe id="videoPlayer" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <script>
+    // Obtener el parámetro "serie" de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const serieSeleccionada = urlParams.get('serie');
+
+    // Simulación de datos de las series con temporadas
+    const seriesData = {
+      serie1: {
+        titulo: "Yo Soy Betty La Fea",
+        des: "Betty la Fea: Betty, una joven brillante pero poco atractiva, lucha por encontrar su lugar en el mundo de la moda, enfrentándose a prejuicios y retos en su camino. Una historia de superación, amor y sorpresas. ¡La belleza está en lo que no se ve!",
+        enlacebanner: " https://www.telemundo.com/sites/nbcutelemundo/files/novelas_betty_la_fea_cabezote-1920x1080.jpg",
+        temporadas: [
+          {
+            titulo: "Temporada 1",
+            episodios: [
+              { 
+                titulo: "Capítulo 1", 
+                enlace: "https://dood.work/e/z5pi38aotfcq",
+                preview: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSbfJ8nfDH5vxMFGQOlL_kp3XB55tr9xy9VncbGh4EowpAw7Vrf" // Asegúrate de tener una URL de la miniatura
+              },
+              { 
+                titulo: "Capítulo 2", 
+                enlace: " https://dood.work/e/sasdfxndo01q",
+                preview: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREunEXw5ys7lVldlojCGfFvM8nnurkifAzqrMjQZUrm7GyyvwL  " 
+              },
+              { 
+                titulo: "Capítulo 3", 
+                enlace: " https://dood.work/e/0jxbr5cnm637 ",
+                preview: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb26BldsXr4BLujuq6KIcZgLMG9527mQFy0fuJ70z4fcHXX3FH " 
+              },
+              { 
+                titulo: "Capítulo 4", 
+                enlace: " https://dood.work/e/17q1ck7gh30u ",
+                preview: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS_xAS9g4QlT9zC5y_8Z8QvUlo2ta4-dl0GZpD3xEe9pJgCW_4r  " 
+              },
+              { 
+                titulo: "Capítulo 5", 
+                enlace: " https://dood.work/e/7oosy2his8bb ",
+                preview: " https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRDqyemGPDib6bPF_tyiTmUiTfTqI0hLMoODq_TnXyIOZNIglsn " 
+              },
+              { 
+                titulo: "Capítulo 6", 
+                enlace: " https://dood.work/e/o2am3fcjiui1 ",
+                preview: " https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQB5aqORWKsYgL08lv2mce7vHpSBaq8XAjRvTYek-KYkRfzCI-g " 
+              },
+              { 
+                titulo: "Capítulo 7", 
+                enlace: " https://dood.work/e/tfppil20c3nv ",
+                preview: " https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTxLqVuzjZJgBu1nnxFpXjBBCMfpcRF_cLDCtBK1bNyN8RtpSrA " 
+              },
+              { 
+                titulo: "Capítulo 8", 
+                enlace: " https://dood.work/e/wddoa2f0k6py ",
+                preview: " https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSIj8M6SRyUiKAS1FbuyT4Zci5VuWILVmEzlVDv80BSWC1Oibe4 " 
+              },
+              { 
+                titulo: "Capítulo 9", 
+                enlace: " https://dood.work/e/pizlk4dzpx51 ",
+                preview: " https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQSSuwoklvEHwY4xFvSpI4B2wEIyotlX19G8MafWp_VGnAxmYLe " 
+              },
+              { 
+                titulo: "Capítulo 10", 
+                enlace: "https://dood.work/e/42b45unf6i86  ",
+                preview: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQ_C86W1MwFoVlhxEfQiDz-IL8Xd3RuXkGMg9BHs1L0RmJIRYbf  " 
+              },
+              
+            ]
+          }
+        ]
+      }
+    };
+
+    // Validar y cargar datos
+    const serieTituloElement = document.getElementById('serieTitulo');
+    const seriedesElement = document.getElementById('seriedescripcion');
+    const episodiosList = document.getElementById('episodiosList');
+    const bannerElement = document.querySelector('.banner');
+    const modal = document.getElementById("videoModal");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const closeModal = document.querySelector(".close");
+
+    if (serieSeleccionada && seriesData[serieSeleccionada]) {
+      const serie = seriesData[serieSeleccionada];
+      serieTituloElement.innerText = serie.titulo;
+      seriedesElement.innerText = serie.des;
+      bannerElement.style.backgroundImage = `url('${serie.enlacebanner}')`;
+
+      // Crear lista de temporadas
+      serie.temporadas.forEach((temporada) => {
+        const temporadaDiv = document.createElement('div');
+        temporadaDiv.classList.add('temporada');
+        temporadaDiv.innerHTML = `<h2>${temporada.titulo}</h2>`;
+
+        // Crear lista de episodios para la temporada
+        temporada.episodios.forEach((episodio) => {
+          const episodioDiv = document.createElement('div');
+          episodioDiv.classList.add('episodio');
+          // Añadir la miniatura como vista previa
+          episodioDiv.innerHTML = `
+            <div class="video-container">
+              <img src="${episodio.preview}" class="video-preview" data-link="${episodio.enlace}" alt="Vista previa de ${episodio.titulo}">
+              <a href="#" class="play-video" data-link="${episodio.enlace}">${episodio.titulo}</a>
+            </div>
+          `;
+          temporadaDiv.appendChild(episodioDiv);
+        });
+
+        episodiosList.appendChild(temporadaDiv);
+      });
+    } else {
+      serieTituloElement.innerText = "Serie no encontrada";
+    }
+
+    // Mostrar el modal cuando se haga clic en una miniatura de video o en un episodio
+    document.addEventListener('click', function (event) {
+      if (event.target.classList.contains('play-video') || event.target.classList.contains('video-preview')) {
+        event.preventDefault();
+        const videoLink = event.target.getAttribute('data-link');
+        if (videoLink) {
+          videoPlayer.src = videoLink; // Cargar el video en el iframe
+          modal.style.display = "block"; // Mostrar el modal
+        }
+      }
+    });
+
+    // Cerrar el modal cuando se haga clic en la "X"
+    closeModal.onclick = function () {
+      modal.style.display = "none";
+      videoPlayer.src = ""; // Detener el video
+    };
+
+    // Cerrar el modal cuando se haga clic fuera de este
+    window.onclick = function (event) {
+      if (event.target === modal) {
+        modal.style.display = "none";
+        videoPlayer.src = ""; // Detener el video
+      }
+    };
+  </script>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2024 POPOROPO. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>
