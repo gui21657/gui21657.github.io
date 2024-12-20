@@ -90,6 +90,11 @@ body {
   color: #000;
   font-weight: bold;
 }
+.SerieEpisodiosPlay{
+  background-color: #fff;
+  color: #000;
+  font-weight: bold;
+}
 
 .btn-info {
   background-color: #333;
@@ -199,6 +204,240 @@ body {
   color: #ff5555;
 }
 
+/* Series */
+.series {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.series img {
+  width: 150px;
+  height: auto;
+  border-radius: 5px;
+  user-select: none;
+  transition: transform 0.3s;
+}
+
+.series:hover {
+  transform: scale(1.05);
+}
+
+.series img:hover {
+  transform: scale(1.1); /* Agrega un efecto en la imagen cuando se pase el mouse */
+}
+
+.season-list {
+  display: none; /* Oculta la lista de temporadas por defecto */
+}
+
+.season-list.active {
+  display: block; /* Muestra la lista cuando se le agrega la clase "active" */
+}
+
+.season {
+  display: flex;
+  gap: 15px;
+  padding-bottom: 10px;
+  scroll-behavior: smooth;
+  scrollbar-width: auto;
+  scrollbar-color: #888 #111;
+  cursor: pointer;
+}
+
+.episode-list {
+  display: none; /* Ocultar los episodios por defecto */
+}
+
+.episode-list.active {
+  display: block; /* Muestra los episodios cuando se le agrega la clase "active" */
+}
+
+.episode {
+  display: flex;
+  gap: 15px;
+  overflow-x: scroll;
+  scroll-behavior: smooth;
+  scrollbar-width: auto;
+  scrollbar-color: #888 #111;
+}
+
+.episode:hover {
+  transform: scale(1.05);
+  background-color: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.imagen-episodio {
+  width: 150px;
+  display: block;
+  margin: 0 auto;
+}
+
+.nombre-episodio {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+button {
+  cursor: pointer;
+}
+
+
+footer {
+  background-color: #000000d0;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  margin-top: 20px;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+}
+
+
+/* Sección de episodios */
+.episodios {
+  padding: 80px 60px;
+  margin: auto;
+  max-width: 1200px;
+  background-color: #363636b4;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.episodios img {
+  width: 100px;
+  height: auto;
+  border-radius: 12px;
+  user-select: none;
+  transition: transform 0.3s ease-in-out;
+}
+
+.episodios img:hover {
+  transform: scale(1.1);
+}
+
+.episodios h1 {
+  font-size: 42px;
+  color: #c70000;
+  margin-bottom: 40px;
+  font-family: 'Arial', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+#episodiosList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px; /* Aumenté el espacio entre episodios */
+  justify-content: center;
+}
+
+.episodio {
+  background-color: #ffffff00;
+  border: 1px solid #e1e1e100;
+  border-radius: 16px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  overflow: hidden;
+  padding: 15px 10px;
+  margin-bottom: 30px; /* Más espacio entre episodios */
+}
+
+.episodio:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+}
+
+.episodio a {
+  display: block;
+  padding: 20px 15px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #d20000;
+  text-decoration: none;
+  border-bottom: 1px solid #e1e1e100;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 8px;
+}
+
+.episodio a:hover {
+  background-color: #f8f8f8;
+  color: #c70000;
+}
+
+.episodio:last-child a {
+  border-bottom: none;
+}
+
+.episodio img {
+  margin-bottom: 20px; /* Aumenté el espacio entre la imagen y el título */
+}
+
+
+    /* Footer */
+    footer {
+      background-color: #000000d0;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+      margin-top: 20px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+
+    /* Estilos para el modal */
+    #videoModal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    #videoModal .modal-content {
+      position: relative;
+      margin: auto;
+      padding: 0;
+      width: 80%;
+      max-width: 800px;
+    }
+
+    #videoModal iframe {
+      width: 100%;
+      height: 450px;
+    }
+
+    .close {
+      color: white;
+      position: absolute;
+      top: 10px;
+      right: 25px;
+      font-size: 35px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #999;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .banner-content p {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
 /* Media Queries para Responsividad */
 @media (max-width: 768px) {
   /* Ajustes para pantallas pequeñas (teléfonos y tablets) */
