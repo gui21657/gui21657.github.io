@@ -421,7 +421,28 @@ footer {
 @media screen and (max-width: 900px) {
   /* Header */
 
-
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
+  #episodiosList {
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  
+  footer {
+    margin: 0;
+    padding: 10px;
+    height: auto;
+  }
+  
+  .main-content {
+    min-height: calc(100vh - 100px); /* Ajusta si tienes header/footer */
+  }
 
  
   /* Banner Principal */
