@@ -418,29 +418,15 @@ footer {
 
 
 /* Adaptación para pantallas más pequeñas (dispositivos móviles) */
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 900px) {
   /* Header */
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-    overflow: auto;
-  }
-  .episodio a {
-    white-space: normal; /* Permite que el texto se ajuste automáticamente */
-    overflow: hidden; /* Oculta texto adicional si no cabe */
-    text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
-    word-wrap: break-word; /* Divide las palabras largas automáticamente */
-    text-align: center; /* Centra el texto del título */
-    max-width: 150px; /* Limita el ancho del título (ajusta según tus necesidades) */
-    margin: 0 auto; /* Centra el título dentro del contenedor */
-  }
+
+
  
   /* Banner Principal */
   .banner {
-    height: 30vh; /* Reduce la altura del banner */
+    height: 40vh; /* Reduce la altura del banner */
     padding: 20px; /* Reduce el padding */
   }
 
@@ -457,87 +443,5 @@ footer {
     font-size: 14px;
   }
 
-  /* Carrusel de Películas */
-  .carousel h2 {
-    font-size: 18px; /* Ajusta el tamaño del título */
-  
-  }
 
-  .movies img {
-    width: 150px; /* Reduce el tamaño de las imágenes */
-  }
-
-  /* Sección de episodios */
-  #episodiosList {
-    min-width: 10000px; /* Asegura que el ancho sea 100% del viewport */
-    gap: 20px; /* Reduce el espacio entre temporadas */
-  }
-
-  .temporada {
-    gap: 5px; /* Reduce el espacio entre episodios */
-    padding: 5px 0; /* Reduce el padding */
-  }
-
-  .temporada img {
-    width: 125px; /* Ajusta el tamaño de las imágenes */
-    height: auto;
-  }
-
-  .episodio p {
-    font-size: 12px; /* Reduce el tamaño del texto */
-    white-space: normal; /* Permite que el texto se ajuste automáticamente */
-    word-wrap: break-word; /* Divide las palabras largas */
-    text-align: center; /* Centra el texto */
-    max-width: 100px; /* Limita el ancho del texto */
-    margin: 0 auto;
-  }
-
-  /* Footer */
-  footer {
-    font-size: 12px; /* Reduce el tamaño del texto */
-    padding: 5px 0; /* Ajusta el padding */
-  }
-}
-
-/* Adaptación para pantallas muy pequeñas (teléfonos antiguos o pequeños) */
-@media screen and (max-width: 480px) {
-  .episodio a {
-    white-space: normal; /* Permite que el texto se ajuste automáticamente */
-    overflow: hidden; /* Oculta texto adicional si no cabe */
-    text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
-    word-wrap: break-word; /* Divide las palabras largas automáticamente */
-    text-align: center; /* Centra el texto del título */
-    max-width: 150px; /* Limita el ancho del título (ajusta según tus necesidades) */
-    margin: 0 auto; /* Centra el título dentro del contenedor */
-  }
-  .header {
-    padding: 15px;
-  }
-
-  .menu {
-    gap: 15px; /* Reduce aún más el espacio entre elementos */
-  }
-
-  .menu a {
-    font-size: 15px;
-    margin: 5px;
-  }
-
-  .banner h1 {
-    font-size: 20px;
-  }
-
-  .buttons .btn {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-
-  .movies img {
-    width: 125px; /* Imágenes aún más pequeñas */
-  }
-
-  .episodio p {
-    font-size: 10px;
-    max-width: 80px; /* Limita el ancho del texto */
-  }
-}
+  /* Carrusel de Películas */ }
