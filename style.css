@@ -234,23 +234,42 @@ footer {
 /* Sección de episodios */
 
 
-
-
-.temporada {
+#episodiosList {
   display: flex;
-  background-size: cover;
-  position: fixed;
-  right: 1%;
-  left: 1%;
-  flex-direction: row;
-  gap: 20px;
-  padding: 0px;
-  margin: 10px;
-  scroll-behavior: smooth;
-  text-align:center;
-  overflow-x: scroll; /* Oculta cualquier contenido que se salga horizontalmente */
-  box-sizing: border-box; /* Asegura que padding esté incluido en el ancho */
-  max-width: 100%; /* Restringe el ancho máximo al 100% del contenedor/pantalla */
+  flex-direction: column; /* Organiza temporadas en una columna */
+  gap: 30px; /* Espaciado entre temporadas */
+  min-width: 1000px; /* Asegura que sea más ancho que el viewport */
+  
+}
+
+/* Contenedor de episodios: organiza horizontalmente y muestra el scroll */
+.temporada {
+  display: flex; /* Asegura que los episodios estén en fila */
+  gap: 20px; /* Espaciado entre los episodios */
+  overflow-x: auto; /* Activa el scroll horizontal automático */
+  white-space: nowrap; /* Evita que los elementos salten a otra fila */
+  scroll-behavior: smooth; /* Scroll suave */
+  padding: 10px 0; /* Espaciado interno */
+  min-width: 1000px; /* Asegura que sea más ancho que el viewport */
+  text-align: center;
+}
+
+.temporada img {
+  width: 120px; /* Asegura un ancho uniforme para las imágenes */
+  height: auto;
+}
+
+.temporada::-webkit-scrollbar {
+  height: 10px; /* Altura del scrollbar */
+}
+
+.temporada::-webkit-scrollbar-thumb {
+  background: #fff; /* Color del scrollbar */
+  border-radius: 5px; /* Bordes redondeados */
+}
+
+.temporada::-webkit-scrollbar-track {
+  background: #444; /* Fondo del track */
 }
 
 .episodios {
@@ -296,7 +315,15 @@ footer {
 }
 
 
-
+.episodio a {
+  white-space: normal; /* Permite que el texto se ajuste automáticamente */
+  overflow: hidden; /* Oculta texto adicional si no cabe */
+  text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
+  word-wrap: break-word; /* Divide las palabras largas automáticamente */
+  text-align: center; /* Centra el texto del título */
+  max-width: 150px; /* Limita el ancho del título (ajusta según tus necesidades) */
+  margin: 0 auto; /* Centra el título dentro del contenedor */
+}
 .episodio a {
   display: block;
   font-weight: bold;
@@ -304,7 +331,7 @@ footer {
   font-size: 18px;
   width: 150px;
   color: #d20000;
-  text-align: center;;
+  text-align: center;
   text-decoration: none;
   background-color: #ffffff00;
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -388,3 +415,122 @@ footer {
   /* Ajustes para pantallas pequeñas (teléfonos y tablets) */
   
 
+
+/* Adaptación para pantallas más pequeñas (dispositivos móviles) */
+@media screen and (max-width: 768px) {
+  /* Header */
+
+
+  .episodio a {
+    white-space: normal; /* Permite que el texto se ajuste automáticamente */
+    overflow: hidden; /* Oculta texto adicional si no cabe */
+    text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
+    word-wrap: break-word; /* Divide las palabras largas automáticamente */
+    text-align: center; /* Centra el texto del título */
+    max-width: 150px; /* Limita el ancho del título (ajusta según tus necesidades) */
+    margin: 0 auto; /* Centra el título dentro del contenedor */
+  }
+ 
+  /* Banner Principal */
+  .banner {
+    height: 30vh; /* Reduce la altura del banner */
+    padding: 20px; /* Reduce el padding */
+  }
+
+  .banner h1 {
+    font-size: 24px; /* Ajusta el tamaño del título */
+  }
+
+  .banner p {
+    font-size: 14px; /* Ajusta el tamaño del texto */
+  }
+
+  .buttons .btn {
+    padding: 8px 15px; /* Ajusta el tamaño de los botones */
+    font-size: 14px;
+  }
+
+  /* Carrusel de Películas */
+  .carousel h2 {
+    font-size: 18px; /* Ajusta el tamaño del título */
+  
+  }
+
+  .movies img {
+    width: 150px; /* Reduce el tamaño de las imágenes */
+  }
+
+  /* Sección de episodios */
+  #episodiosList {
+    min-width: 100%; /* Asegura que el ancho sea 100% del viewport */
+    gap: 20px; /* Reduce el espacio entre temporadas */
+  }
+
+  .temporada {
+    gap: 5px; /* Reduce el espacio entre episodios */
+    padding: 5px 0; /* Reduce el padding */
+  }
+
+  .temporada img {
+    width: 125px; /* Ajusta el tamaño de las imágenes */
+    height: auto;
+  }
+
+  .episodio p {
+    font-size: 12px; /* Reduce el tamaño del texto */
+    white-space: normal; /* Permite que el texto se ajuste automáticamente */
+    word-wrap: break-word; /* Divide las palabras largas */
+    text-align: center; /* Centra el texto */
+    max-width: 100px; /* Limita el ancho del texto */
+    margin: 0 auto;
+  }
+
+  /* Footer */
+  footer {
+    font-size: 12px; /* Reduce el tamaño del texto */
+    padding: 5px 0; /* Ajusta el padding */
+  }
+}
+
+/* Adaptación para pantallas muy pequeñas (teléfonos antiguos o pequeños) */
+@media screen and (max-width: 480px) {
+  .episodio a {
+    white-space: normal; /* Permite que el texto se ajuste automáticamente */
+    overflow: hidden; /* Oculta texto adicional si no cabe */
+    text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
+    word-wrap: break-word; /* Divide las palabras largas automáticamente */
+    text-align: center; /* Centra el texto del título */
+    max-width: 150px; /* Limita el ancho del título (ajusta según tus necesidades) */
+    margin: 0 auto; /* Centra el título dentro del contenedor */
+  }
+  .header {
+    padding: 15px;
+  }
+
+  .menu {
+    gap: 15px; /* Reduce aún más el espacio entre elementos */
+  }
+
+  .menu a {
+    font-size: 15px;
+    margin: 5px;
+  }
+
+  .banner h1 {
+    font-size: 20px;
+  }
+
+  .buttons .btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .movies img {
+    width: 125px; /* Imágenes aún más pequeñas */
+  }
+
+  .episodio p {
+    font-size: 10px;
+    max-width: 80px; /* Limita el ancho del texto */
+  }
+}
