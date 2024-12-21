@@ -423,7 +423,9 @@ footer {
   * {
     box-sizing: border-box;
   }
-  
+  .body {
+      overflow-x: scroll;
+    }
   .main-content {
     min-height: calc(100vh - 100px); /* Ajusta según el tamaño del header/footer */}
     html, body {
@@ -438,9 +440,8 @@ footer {
     margin: 0 auto;
     overflow: hidden;
   }
-  body {
-    overflow-x: hidden;
-  }
+
+  
   footer {
     margin: 0;
     padding: 10px;
