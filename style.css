@@ -422,122 +422,31 @@ footer {
   /* Header */
 
   
-
-#episodiosList {
-  display: flex;
-  flex-direction: column; /* Organiza temporadas en una columna */
-  gap: 30px; /* Espaciado entre temporadas */
-  min-width: 10000px; /* Asegura que sea más ancho que el viewport */
+  .main-content {
+    min-height: calc(100vh - 100px); /* Ajusta según el tamaño del header/footer */
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow-x: hidden;
+  }
   
-}
-
-/* Contenedor de episodios: organiza horizontalmente y muestra el scroll */
-.temporada {
-  display: flex; /* Asegura que los episodios estén en fila */
-  gap: 20px; /* Espaciado entre los episodios */
-  overflow-x: auto; /* Activa el scroll horizontal automático */
-  white-space: nowrap; /* Evita que los elementos salten a otra fila */
-  scroll-behavior: smooth; /* Scroll suave */
-  padding: 10px 0; /* Espaciado interno */
-  min-width: 10000px; /* Asegura que sea más ancho que el viewport */
-  text-align: center;
-}
-
-.temporada img {
-  width: 120px; /* Asegura un ancho uniforme para las imágenes */
-  height: auto;
-}
-
-.temporada::-webkit-scrollbar {
-  height: 10px; /* Altura del scrollbar */
-}
-
-.temporada::-webkit-scrollbar-thumb {
-  background: #fff; /* Color del scrollbar */
-  border-radius: 5px; /* Bordes redondeados */
-}
-
-.temporada::-webkit-scrollbar-track {
-  background: #444; /* Fondo del track */
-}
-
-.episodios {
-  display: flex; 
-  gap: 15px;
-
-  scroll-behavior: smooth;
-  scrollbar-width: 1000;
-  scrollbar-color: #fafafa #00000000;
-  padding: 20px;
-}
-
-
-
-
-.temporada img {
-  width: 150px;
-  height: 200px;
-  display: block;
-  user-select: none;
-
-  max-width: 100%; /* Evita que un hijo sea más ancho que el contenedor */
-  transition: transform 0.3s ease-in-out;
-}
-
-.temporada img:hover {
-  transform: scale(1.1);
-}
-
-.episodios h1 {
-  font-size: 42px;
-  color: #c70000;
-  margin-bottom: 10px;
-  font-family: 'Arial', sans-serif;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-#episodiosList {
-  display: flex;
-  gap: 10px; /* Aumenté el espacio entre episodios */
-  justify-content: center;
-}
-
-
-.episodio a {
-  white-space: normal; /* Permite que el texto se ajuste automáticamente */
-  overflow: hidden; /* Oculta texto adicional si no cabe */
-  text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
-  word-wrap: break-word; /* Divide las palabras largas automáticamente */
-  text-align: center; /* Centra el texto del título */
-  max-width: 150px; /* Limita el ancho del título (ajusta según tus necesidades) */
-  margin: 0 auto; /* Centra el título dentro del contenedor */
-}
-.episodio a {
-  display: block;
-  font-weight: bold;
-  padding: 20px 15px;
-  font-size: 18px;
-  width: 150px;
-  color: #d20000;
-  text-align: center;
-  text-decoration: none;
-  background-color: #ffffff00;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  border-radius: 8px;
+  #episodiosList {
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+  }
   
-}
-
-.episodio a:hover {
-  background-color: #a7a7a7;
-  color: #c70000;
-}
-
-.episodio:last-child a {
-  border-bottom: none;
-}
-
-
+  footer {
+    margin: 0;
+    padding: 10px;
+    height: auto;
+  }
+  
+  .main-content {
+    min-height: calc(100vh - 100px); /* Ajusta si tienes header/footer */
+  }
 
   /* Banner Principal */
   .banner {
