@@ -462,7 +462,7 @@ footer {
 
   /* Sección de episodios */
   #episodiosList {
-    min-width: 100%; /* Asegura que el ancho sea 100% del viewport */
+    min-width: 10000px; /* Asegura que el ancho sea 100% del viewport */
     gap: 20px; /* Reduce el espacio entre temporadas */
   }
 
