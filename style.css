@@ -105,18 +105,16 @@ body {
 /* Carrusel de Películas */
 .carousel {
   padding: 20px;
+  
 }
 
 .carousel h2 {
   margin-bottom: 20px;
   color: #E50914;
+  
 }
 
-.carrusel {
-  width: 100%;
-  overflow: hidden;
-  cursor: auto;
-}
+
 
 .movies {
   display: flex;
@@ -124,17 +122,9 @@ body {
   overflow-x: scroll;
   scroll-behavior: smooth;
   scrollbar-width: auto;
-  scrollbar-color: #888 #111;
+  scrollbar-color: #888 #00000000;
 }
 
-.movies::-webkit-scrollbar {
-  width: 5px;
-}
-
-.movies::-webkit-scrollbar-thumb {
-  background-color: #888;
-  border-radius: 10px;
-}
 
 .movies img {
   width: 150px;
@@ -153,7 +143,7 @@ body {
 .modal {
   display: none;
   position: fixed;
-  z-index: 1500;
+  z-index: 101;
   left: 0;
   top: 0%;
   width: 100%;
@@ -171,21 +161,21 @@ body {
   font-size: 24px;
   background-color: #dab5b523;
   padding: 1px;
-  border-radius: 10px;
+  border-radius: 5px;
   box-shadow: 0px 4px 30px rgba(255, 255, 255, 0.7);
-  max-width: 90%;
+  max-width: 100%;
   width: 1500px;
-  max-height: 90%;
-  height: 410px;
+  max-height: 100%;
+  height: 450px;
   text-align: center;
   animation: slideIn 0.6s ease-in-out;
   overflow: hidden;
 }
 
 .modal-content iframe {
-  border-radius: 10px;
+  border-radius: 0px;
   width: 100%;
-  height: 405px;
+  height: 100%;
 }
 
 .close {
@@ -205,10 +195,6 @@ body {
 }
 
 /* Series */
-.series {
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
 
 .series img {
   width: 150px;
@@ -218,66 +204,15 @@ body {
   transition: transform 0.3s;
 }
 
-.series:hover {
-  transform: scale(1.05);
-}
 
 .series img:hover {
   transform: scale(1.1); /* Agrega un efecto en la imagen cuando se pase el mouse */
 }
 
-.season-list {
-  display: none; /* Oculta la lista de temporadas por defecto */
-}
 
-.season-list.active {
-  display: block; /* Muestra la lista cuando se le agrega la clase "active" */
-}
 
-.season {
-  display: flex;
-  gap: 15px;
-  padding-bottom: 10px;
-  scroll-behavior: smooth;
-  scrollbar-width: auto;
-  scrollbar-color: #888 #111;
-  cursor: pointer;
-}
 
-.episode-list {
-  display: none; /* Ocultar los episodios por defecto */
-}
 
-.episode-list.active {
-  display: block; /* Muestra los episodios cuando se le agrega la clase "active" */
-}
-
-.episode {
-  display: flex;
-  gap: 15px;
-  overflow-x: scroll;
-  scroll-behavior: smooth;
-  scrollbar-width: auto;
-  scrollbar-color: #888 #111;
-}
-
-.episode:hover {
-  transform: scale(1.05);
-  background-color: rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-
-.imagen-episodio {
-  width: 150px;
-  display: block;
-  margin: 0 auto;
-}
-
-.nombre-episodio {
-  margin-top: 10px;
-  font-size: 16px;
-  font-weight: bold;
-}
 
 button {
   cursor: pointer;
@@ -297,76 +232,88 @@ footer {
 
 
 /* Sección de episodios */
-.episodios {
-  padding: 80px 60px;
-  margin: auto;
-  max-width: 1200px;
-  background-color: #363636b4;
-  border-radius: 16px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
+
+
+
+
+.temporada {
+  display: flex;
+  background-size: cover;
+  position: fixed;
+  right: 1%;
+  left: 1%;
+  flex-direction: row;
+  gap: 20px;
+  padding: 0px;
+  margin: 10px;
+  scroll-behavior: smooth;
+  text-align:center;
+  overflow-x: scroll; /* Oculta cualquier contenido que se salga horizontalmente */
+  box-sizing: border-box; /* Asegura que padding esté incluido en el ancho */
+  max-width: 100%; /* Restringe el ancho máximo al 100% del contenedor/pantalla */
 }
 
-.episodios img {
-  width: 100px;
-  height: auto;
-  border-radius: 12px;
+.episodios {
+  display: flex; 
+  gap: 15px;
+
+  scroll-behavior: smooth;
+  scrollbar-width: auto;
+  scrollbar-color: #fafafa #00000000;
+  padding: 20px;
+}
+
+
+
+
+.temporada img {
+  width: 150px;
+  height: 200px;
+  display: block;
   user-select: none;
+
+  max-width: 100%; /* Evita que un hijo sea más ancho que el contenedor */
   transition: transform 0.3s ease-in-out;
 }
 
-.episodios img:hover {
+.temporada img:hover {
   transform: scale(1.1);
 }
 
 .episodios h1 {
   font-size: 42px;
   color: #c70000;
-  margin-bottom: 40px;
+  margin-bottom: 10px;
   font-family: 'Arial', sans-serif;
-  font-weight: 700;
+  font-weight: bold;
   letter-spacing: 1px;
 }
 
 #episodiosList {
   display: flex;
-  flex-wrap: wrap;
-  gap: 30px; /* Aumenté el espacio entre episodios */
+  gap: 10px; /* Aumenté el espacio entre episodios */
   justify-content: center;
 }
 
-.episodio {
-  background-color: #ffffff00;
-  border: 1px solid #e1e1e100;
-  border-radius: 16px;
-  width: 280px;
-  text-align: center;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  overflow: hidden;
-  padding: 15px 10px;
-  margin-bottom: 30px; /* Más espacio entre episodios */
-}
 
-.episodio:hover {
-  transform: translateY(-12px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
-}
 
 .episodio a {
   display: block;
+  font-weight: bold;
   padding: 20px 15px;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 18px;
+  width: 150px;
   color: #d20000;
+  text-align: center;;
   text-decoration: none;
-  border-bottom: 1px solid #e1e1e100;
+  background-color: #ffffff00;
   transition: background-color 0.3s ease, color 0.3s ease;
   border-radius: 8px;
+  
 }
 
 .episodio a:hover {
-  background-color: #f8f8f8;
+  background-color: #a7a7a7;
   color: #c70000;
 }
 
@@ -374,9 +321,6 @@ footer {
   border-bottom: none;
 }
 
-.episodio img {
-  margin-bottom: 20px; /* Aumenté el espacio entre la imagen y el título */
-}
 
 
     /* Footer */
@@ -389,6 +333,7 @@ footer {
       position: fixed;
       bottom: 0;
       width: 100%;
+      z-index: 1;
     }
 
     /* Estilos para el modal */
@@ -439,91 +384,7 @@ footer {
       margin-bottom: 20px;
     }
 /* Media Queries para Responsividad */
-@media (max-width: 768px) {
+
   /* Ajustes para pantallas pequeñas (teléfonos y tablets) */
   
-  .header {
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 30px;
-    padding-top: 20px;
-    padding-bottom: 30px;
-  }
 
-  .logo {
-    font-size: 24px;
-  }
-
-  .menu {
-    flex-direction: row;
-    gap: 30px;
-    padding-top: 15px;
-    align-items: flex-start;
-  }
-
-  .banner {
-    height: 40vh;
-    padding: 20px;
-  }
-
-  .banner h1 {
-    font-size: 24px;
-  }
-
-  .banner p {
-    font-size: 16px;
-  }
-
-  .movies img {
-    width: 120px;
-  }
-
-  .modal-content {
-    width: 95%;
-    height: auto;
-    top: 50px;
-    padding: 10px;
-  }
-  .banner h1 {
-    font-size: 25px;
-    color: #fff;
-    margin-bottom: 50px;
-  }
-  .banner p {
-    font-size: 14px;
-    margin-bottom: 10px;
-  }
-  .close {
-    position: relative;
-    top: -10px;
-    right: -150px;
-    font-size: 50px;
-    font-weight: bold;
-    color: #fff;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-  }
-  .modal-content iframe {
-    border-radius: 3px;
-    width: 100%;
-    height: 405px;
-  }
-  .modal-content {
-    position: absolute;
-    top: 125px;
-    right: 10px;
-    font-size: 24px;
-    background-color: #dab5b523;
-    padding: 1px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 30px rgba(255, 255, 255, 0.7);
-    max-width: 100%;
-    width: 370px;
-    max-height: 90%;
-    height: 410px;
-    text-align: center;
-    animation: slideIn 0.6s ease-in-out;
-    overflow: hidden;
-  }
-
-}
