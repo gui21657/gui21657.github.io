@@ -18,7 +18,11 @@
       </ul>
     </nav>
   </header>
-
+   <!-- Buscador -->
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder=" Buscar series ...">
+    <button onclick="buscar()">Buscar</button>
+  </div>
   <!-- Carrusel de Series -->
   <section class="carousel">
     <h2>DRAMA</h2>
@@ -41,6 +45,62 @@
   <footer>
     <p>&copy; 2024 POPOROPO. Todos los derechos reservados.</p>
   </footer>
+  
+
+
+  <script>
+    // Función de búsqueda optimizada con Levenshtein
+    function buscar(input) {
+      const movies = document.querySelectorAll(".movies .movie");
+      const threshold = 3; // Umbral de distancia permitida para coincidencias
+
+      movies.forEach(movie => {
+        const title = movie.querySelector("img").alt.toLowerCase();
+
+        // Lógica: mostrar película si la entrada coincide parcialmente
+        if (title.includes(input) || calcularDistanciaLevenshtein(input, title) <= threshold) {
+          movie.style.display = "block"; // Mostrar si coincide
+        } else {
+          movie.style.display = "none"; // Ocultar si no coincide
+        }
+      });
+    }
+
+    // Algoritmo de distancia de Levenshtein
+    function calcularDistanciaLevenshtein(a, b) {
+      const matriz = [];
+
+      // Inicializar matriz
+      for (let i = 0; i <= a.length; i++) {
+        matriz[i] = [i];
+      }
+      for (let j = 0; j <= b.length; j++) {
+        matriz[0][j] = j;
+      }
+
+      // Llenar matriz
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          if (a[i - 1] === b[j - 1]) {
+            matriz[i][j] = matriz[i - 1][j - 1]; // No hay costo
+          } else {
+            matriz[i][j] = Math.min(
+              matriz[i - 1][j] + 1,    // Eliminación
+              matriz[i][j - 1] + 1,    // Inserción
+              matriz[i - 1][j - 1] + 1 // Sustitución
+            );
+          }
+        }
+      }
+
+      return matriz[a.length][b.length];
+    }
+
+    // Detectar cambios en el campo de búsqueda
+    document.getElementById("searchInput").addEventListener("input", function(event) {
+      const input = event.target.value.toLowerCase();
+      buscar(input); // Llamar a la función de búsqueda
+    });
+  </script>
 </body>
 </html>
- 
