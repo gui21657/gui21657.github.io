@@ -239,7 +239,7 @@ footer {
 #episodiosList {
   display: flex;
   flex-direction: column; /* Organiza temporadas en una columna */
-  gap: 30px; /* Espaciado entre temporadas */
+  gap: 0px; /* Espaciado entre temporadas */
   min-width: 1000px; /* Asegura que sea más ancho que el viewport */
   
 }
@@ -247,7 +247,7 @@ footer {
 /* Contenedor de episodios: organiza horizontalmente y muestra el scroll */
 .temporada {
   display: flex; /* Asegura que los episodios estén en fila */
-  gap: 20px; /* Espaciado entre los episodios */
+  gap: 5px; /* Espaciado entre los episodios */
   overflow-x: auto; /* Activa el scroll horizontal automático */
   white-space: nowrap; /* Evita que los elementos salten a otra fila */
   scroll-behavior: smooth; /* Scroll suave */
@@ -255,9 +255,12 @@ footer {
   min-width: 1000px; /* Asegura que sea más ancho que el viewport */
   text-align: center;
 }
-
+.temporada h2 {
+  margin-bottom: 20px;
+  color: #E50914;
+}
 .temporada img {
-  width: 120px; /* Asegura un ancho uniforme para las imágenes */
+  width: 120px; /* Asegura un anscho uniforme para las imágenes */
   height: auto;
 }
 
@@ -280,7 +283,7 @@ footer {
 
   scroll-behavior: smooth;
   scrollbar-width: auto;
-  scrollbar-color: #fafafa #00000000;
+  scrollbar-color: #fafafa #ffffff00;
   padding: 20px;
 }
 
@@ -288,8 +291,8 @@ footer {
 
 
 .temporada img {
-  width: 150px;
-  height: 200px;
+  width: 80px;
+  height: auto;
   display: block;
   user-select: none;
 
@@ -302,7 +305,7 @@ footer {
 }
 
 .episodios h1 {
-  font-size: 42px;
+  font-size: 40px;
   color: #c70000;
   margin-bottom: 10px;
   font-family: 'Arial', sans-serif;
@@ -313,7 +316,7 @@ footer {
 #episodiosList {
   display: flex;
   gap: 10px; /* Aumenté el espacio entre episodios */
-  justify-content: center;
+  justify-content: center; /* Centra los episodios */
 }
 
 
@@ -323,14 +326,14 @@ footer {
   text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
   word-wrap: break-word; /* Divide las palabras largas automáticamente */
   text-align: center; /* Centra el texto del título */
-  max-width: 150px; /* Limita el ancho del título (ajusta según tus necesidades) */
+  max-width: 75px; /* Limita el ancho del título (ajusta según tus necesidades) */
   margin: 0 auto; /* Centra el título dentro del contenedor */
 }
 .episodio a {
   display: block;
   font-weight: bold;
   padding: 20px 15px;
-  font-size: 18px;
+  font-size: 10px;
   width: 150px;
   color: #d20000;
   text-align: center;
@@ -342,8 +345,9 @@ footer {
 }
 
 .episodio a:hover {
-  background-color: #a7a7a7;
+  background-color: #a7a7a700;
   color: #c70000;
+  transform: scale(1.1);
 }
 
 .episodio:last-child a {
