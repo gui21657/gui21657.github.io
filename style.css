@@ -443,7 +443,13 @@ footer {
   .main-content {
     min-height: calc(100vh - 100px); /* Ajusta si tienes header/footer */
   }
-
+  #episodiosList {
+    margin: 0 auto;
+    padding: 0;
+    width: 100%;
+    max-width: 1200px;
+    overflow: hidden; /* Evita que los elementos se desborden */
+  }
  
   /* Banner Principal */
   .banner {
