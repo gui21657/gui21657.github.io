@@ -416,12 +416,43 @@ footer {
       font-size: 18px;
       margin-bottom: 20px;
     }
-/* Media Queries para Responsividad */
+  /* Estilos básicos para el buscador */
+  .search-container {
+    display: flex;
+    justify-content: right;
+    margin-top: 10px;
+    
+    
+    
+  }
 
-  /* Ajustes para pantallas pequeñas (teléfonos y tablets) */
-  
+  .search-container input[type="text"] {
+    padding-right: 10px;
+    width: 90%;
+    margin-left: 2%;
+    border: 1px solid #cccccc3f;
+    border-radius: 4px;
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+    background-color: #c7000000;
 
+  }
 
+  .search-container button {
+    padding: 10px 15px;
+    margin-right: 2%;
+    margin-left: 5px;
+    background-color: #ff0000b2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .search-container button:hover {
+    background-color: #ff2200;
+  }
 /* Adaptación para pantallas más pequeñas (dispositivos móviles) */
 @media screen and (max-width: 900px) {
  
