@@ -426,7 +426,7 @@ footer {
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
-    overflow: hidden;
+    overflow: auto;
   }
   .episodio a {
     white-space: normal; /* Permite que el texto se ajuste automáticamente */
