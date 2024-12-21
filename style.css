@@ -4,6 +4,7 @@
   padding: 0;
   box-sizing: border-box;
   font-family: Arial, sans-serif;
+  
 }
 
 body {
@@ -420,7 +421,13 @@ footer {
 @media screen and (max-width: 768px) {
   /* Header */
 
-
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    overflow: scroll ;
+  }
   .episodio a {
     white-space: normal; /* Permite que el texto se ajuste automáticamente */
     overflow: hidden; /* Oculta texto adicional si no cabe */
