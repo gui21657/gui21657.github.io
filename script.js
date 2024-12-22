@@ -56,4 +56,8 @@ document.addEventListener('DOMContentLoaded', function () {
       videoPlayer.src = ""; // Detener el video
     }
   };
+
+
+
+  
 });
