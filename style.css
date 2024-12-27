@@ -1,0 +1,555 @@
+/* Reset Básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  
+}
+
+body {
+  background-color: #111;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* Header */
+/* General styles for the header */
+.header {
+  background-color:#000000 ; /* Fondo transparente */
+  padding: 0px 50px; /* Ajuste de padding */
+  position: sticky; /* El header se queda fijo al hacer scroll */
+  top: 0; /* Fija el header en la parte superior */
+  z-index: 10000; /* El header se muestra por encima de otros elementos */
+  transition: background-color 0.3s ease; /* Suaviza el cambio de fondo */
+  height: 80px; /* Ajusta la altura si es necesario */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+
+/* Navbar alignment */
+.navbar {
+  display: flex;
+  align-items: center;
+}
+
+/* Logo styling */
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ff0000;
+  margin-right: 30px;
+}
+
+/* Menu styling */
+.menu {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menu li {
+  margin: 0 10px;
+}
+
+.menu a {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: normal;
+  font-family:  Arial, sans-serif;
+}
+
+.menu a:hover {
+  color: #ff0000c0;
+}
+
+/* Banner Principal */
+.banner {
+  height: 600px; /* Altura del banner */
+  background: 
+    linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%), 
+    url('https://palomaynacho.com/wp-content/uploads/2023/05/Habia-una-vez-en-Hollywood-motivo-a-Michael-J-Fox-a-retirarse-Volver-al-futuro.jpg') no-repeat center center/cover;
+  background-size: cover;
+  background-position: center top;
+  display: flex;
+  padding: 50px;
+  position: relative;
+  z-index: 1; /* El banner está debajo del header */
+}
+
+/* Contenido del banner */
+.banner-content {
+  position: absolute;
+  z-index: 2; /* El contenido está por encima de la imagen */
+  max-width: 500px;
+}
+
+.banner h1 {
+  font-size: 38px;
+  color: #fff;
+  
+  margin-bottom: 0px;
+}
+
+.banner p {
+  font-size: 18px;
+  margin-bottom: 0px;
+}
+
+.buttons .btn {
+  padding: 10px 20px;
+  margin-right: 10px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-play {
+  background-color: #fff;
+  color: #000;
+  font-weight: bold;
+}
+
+.banner-content p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+
+
+/* Carrusel de inicio */
+.carousel-inicio {
+  position: absolute; /* Haz que el carrusel se posicione relativo al banner */
+  top: 500px; /* Ajusta para que se encime sobre el banner */
+  width: 100%; /* Que ocupe todo el ancho */
+  z-index: 3; /* Asegura que el carrusel esté por encima del banner */
+  padding-left: 50px;
+}
+
+.carousel-inicio h2 {
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+/* Carrusel de Películas */
+.carousel {
+  position: relative; /* Haz que el carrusel se posicione relativo al banner */
+  top: 0px; /* Ajusta para que se encime sobre el banner */
+  width: 100%; /* Que ocupe todo el ancho */
+  z-index: 3; /* Asegura que el carrusel esté por encima del banner */
+  padding-left: 50px;
+}
+
+.carousel h2 {
+  margin-bottom: 20px;
+  color: #E50914;
+}
+
+
+.movies {
+  display: flex;
+  gap: 15px;
+  overflow-x: scroll;
+  scroll-behavior: smooth;
+  scrollbar-width: auto;
+  scrollbar-color: #888 #00000000;
+}
+
+
+.movies img {
+  width: 150px;
+  height: auto;
+  border-radius: 5px;
+  user-select: none;
+  transition: transform 0.3s;
+}
+
+.movies img:hover {
+  transform: scale(1.1);
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 101;
+  left: 0;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(1px);
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+  overflow-y: hidden;
+}
+
+.modal-content {
+  position: absolute;
+  top: 100px;
+  right: 50px;
+  font-size: 24px;
+  background-color: #dab5b523;
+  padding: 1px;
+  border-radius: 5px;
+
+  max-width: 100%;
+  width: 1500px;
+  max-height: 100%;
+  height: 450px;
+  text-align: center;
+  animation: slideIn 0.6s ease-in-out;
+  overflow: hidden;
+  overflow-y: hidden;
+}
+
+.modal-content iframe {
+  border-radius: 0px;
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.close {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  font-size: 50px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.close:hover {
+  transform: scale(1.2);
+  color: #ff5555;
+}
+
+/* Series */
+
+.series img {
+  width: 150px;
+  height: auto;
+  border-radius: 5px;
+  user-select: none;
+  transition: transform 0.3s;
+}
+
+
+.series img:hover {
+  transform: scale(1.1); /* Agrega un efecto en la imagen cuando se pase el mouse */
+}
+
+
+
+
+
+
+button {
+  cursor: pointer;
+}
+
+
+
+    /* Footer */
+    footer {
+      background-color: #000000d0;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+      width: 100%;
+    }
+
+/* Sección de episodios */
+
+
+#episodiosList {
+  display: flex;
+  flex-direction: column; /* Organiza temporadas en una columna */
+  gap: 0px; /* Espaciado entre temporadas */
+  min-width: 1000px; /* Asegura que sea más ancho que el viewport */
+  
+}
+
+/* Contenedor de episodios: organiza horizontalmente y muestra el scroll */
+.temporada {
+  display: flex; /* Asegura que los episodios estén en fila */
+  gap: 5px; /* Espaciado entre los episodios */
+  overflow-x: auto; /* Activa el scroll horizontal automático */
+  white-space: nowrap; /* Evita que los elementos salten a otra fila */
+  scroll-behavior: smooth; /* Scroll suave */
+  padding: 10px 0; /* Espaciado interno */
+  min-width: 1000px; /* Asegura que sea más ancho que el viewport */
+  text-align: center;
+}
+.temporada h2 {
+  margin-bottom: 20px;
+  color: #E50914;
+}
+
+.temporada::-webkit-scrollbar {
+  height: 10px; /* Altura del scrollbar */
+}
+
+.temporada::-webkit-scrollbar-thumb {
+  background: #fff; /* Color del scrollbar */
+  border-radius: 5px; /* Bordes redondeados */
+}
+
+.temporada::-webkit-scrollbar-track {
+  background: #444; /* Fondo del track */
+}
+
+.episodios {
+  display: flex; 
+  gap: 15px;
+
+  scroll-behavior: smooth;
+  scrollbar-width: auto;
+  scrollbar-color: #fafafa #ffffff00;
+  padding: 20px;
+}
+
+
+
+
+.temporada img {
+  width: 80px;
+  height: 110px;
+  display: block;
+  user-select: none;
+
+  max-width: 100%; /* Evita que un hijo sea más ancho que el contenedor */
+  transition: transform 0.3s ease-in-out;
+}
+
+.temporada img:hover {
+  transform: scale(1.1);
+}
+
+.episodios h1 {
+  font-size: 40px;
+  color: #c70000;
+  margin-bottom: 10px;
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+#episodiosList {
+  display: flex;
+  gap: 10px; /* Aumenté el espacio entre episodios */
+  justify-content: center; /* Centra los episodios */
+}
+
+
+.episodio a {
+  white-space: normal; /* Permite que el texto se ajuste automáticamente */
+  overflow: hidden; /* Oculta texto adicional si no cabe */
+  text-overflow: ellipsis; /* Muestra "..." si el texto es muy largo */
+  word-wrap: break-word; /* Divide las palabras largas automáticamente */
+  text-align: center; /* Centra el texto del título */
+  max-width: 75px; /* Limita el ancho del título (ajusta según tus necesidades) */
+  margin: 0 auto; /* Centra el título dentro del contenedor */
+}
+.episodio a {
+  display: block;
+  font-weight: bold;
+  padding: 20px 15px;
+  font-size: 10px;
+  width: 150px;
+  color: #d20000;
+  text-align: center;
+  text-decoration: none;
+  background-color: #ffffff00;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 8px;
+  
+}
+
+.episodio a:hover {
+  background-color: #a7a7a700;
+  color: #c70000;
+  transform: scale(1.1);
+}
+
+.episodio:last-child a {
+  border-bottom: none;
+}
+
+.modal{
+  overflow-y: hidden;
+}
+
+    /* Estilos para el modal */
+    #videoModal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.9);
+      overflow-y: hidden;
+    }
+
+    #videoModal .modal-content {
+      position: relative;
+      margin: auto;
+      padding: 0;
+      width: 80%;
+      max-width: 800px;
+      overflow-y: hidden;
+    }
+
+    #videoModal iframe {
+      width: 100%;
+      height: 450px;
+      overflow-y: hidden;
+    }
+
+    .close {
+      color: white;
+      position: absolute;
+      top: 10px;
+      right: 25px;
+      font-size: 35px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: #999;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+
+  /* Estilos básicos para el buscador */
+  .search-container {
+    display: flex;
+    justify-content: center; /* Centra la barra de búsqueda */
+    margin-top: 10px;
+    margin: 20px 0;
+    align-items: center; /* Alinea los elementos dentro de la barra */
+  }
+  
+  .search-container input {
+    width: 100%; /* Asegura que el input ocupe todo el espacio disponible */
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #c7000000;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .search-container input[type="text"] {
+    padding-right: 0;
+    margin-left: 10px;
+    border: 1px solid #cccccc3f;
+    border-radius: 4px;
+    background-color: #c7000000;
+  }
+  
+  .search-container button {
+    padding: 10px 15px;
+    margin-left: 5px;
+    background-color: #ff0000b2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+  }
+  
+  .search-container button:hover {
+    background-color: #ff2200;
+  }
+/* Adaptación para pantallas más pequeñas (dispositivos móviles) */
+@media screen and (max-width: 768px) {
+  .temporada {
+    display: flex ; /* Asegura que los episodios estén en fila */
+    gap: 5px; /* Espaciado entre los episodios */
+    overflow-x: hidden; /* Activa el scroll horizontal automático */
+    white-space: wrap; /* Evita que los elementos salten a otra fila */
+    scroll-behavior: smooth; /* Scroll suave */
+    padding: 10px 0; /* Espaciado interno */
+    min-width: auto; /* Asegura que sea más ancho que el viewport */
+    text-align: center;
+    width: 100%;
+  }
+
+.temporada {
+    display: flex; 
+    gap: 15px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: auto;
+    scrollbar-color: #fafafa #ffffff00;
+    padding: 20px;
+  }
+  .episodio{
+    width: 80px;
+  }
+  #episodiosList {
+    display: flex; 
+    flex-direction: row; /* Organiza temporadas en una columna */
+    gap: 0px; /* Espaciado entre temporadas */
+    min-width: auto; /* Asegura que sea más ancho que el viewport */
+    overflow: hidden;
+    
+  }
+
+  .menu a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: normal;
+    font-family:  Arial, sans-serif;
+    
+  }
+  .menu li {
+    margin: 0 10px;
+  }
+  .logo {
+    font-size: 17px;
+    font-weight: bold;
+    color: #ff0000;
+    margin-right: 0px;
+  }
+  .search-container input {
+    width: 100%; /* Asegura que el input ocupe todo el espacio disponible */
+    padding: 10px;
+    font-size: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #c7000000;
+    color: white;
+    font-weight: bold;
+  }
+  .carousel-inicio {
+
+    padding-left: 10px;
+  }
+  .banner {
+    background-position: 10%;
+    padding: 10px;
+
+  }
+  .header {
+    padding: 0px 10px; /* Ajuste de padding */
+
+  }
+  /* Carrusel de Películas */ }
