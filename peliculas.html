@@ -25,15 +25,32 @@
         <li><a href="peliculas.html">Películas</a></li>
       </ul>
     </nav>
-  </header>
-  
-  <!-- Buscador -->
+      <!-- Buscador -->
   <div class="search-container">
     <input type="text" id="searchBar" placeholder=" Buscar películas ...">
   </div>
+  </header>
+    <!-- Banner Principal -->
+    <section class="banner">
+    
+    
+      <div class="banner-content">
+        
+        <h1>BACK TO THE FUTURE I</h1>
+        <p>
+          Un adolescente llamado Marty McFly viaja accidentalmente al pasado en una máquina del tiempo creada por el excéntrico Dr. Emmett Brown. Mientras intenta regresar al presente, Marty debe asegurarse de que sus padres se conozcan para evitar alterar su futuro.
+        </p>
+        <div class="buttons">
+          <button class="btn btn-play" data-link="https://dood.work/e/ns89lnhmesrz">▶ Reproducir</button>
+          
+        </div>
+      </div>
+  
+    </section>
+
 
   <!-- Carrusel de Películas -->
-  <section class="carousel">
+  <section class="carousel-inicio">
     <h2>Ciencia ficción</h2>
     <div class="movies" id="movieList">
       <div class="movie" data-title="Back To The Future I" data-link="https://dood.work/e/ns89lnhmesrz">
@@ -68,10 +85,7 @@
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>&copy; 2024 POPOROPO. Todos los derechos reservados.</p>
-  </footer>
+
 
   <script>
     const movies = document.querySelectorAll(".movie");
