@@ -6,6 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>POPOROPO</title>
   <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+  <style>
+    .banner {
+      background-image: url('https://www.telemundo.com/sites/nbcutelemundo/files/novelas_betty_la_fea_cabezote-1920x1080.jpg'); /* Aquí colocas la URL de la imagen */
+      background-size: cover;
+    }
+  </style>
 </head>
 <body>
   <!-- Header -->
@@ -18,14 +25,30 @@
         <li><a href="peliculas.html">Películas</a></li>
       </ul>
     </nav>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder=" Buscar series ...">
+  
+    </div>
   </header>
-   <!-- Buscador -->
-  <div class="search-container">
-    <input type="text" id="searchInput" placeholder=" Buscar series ...">
-
-  </div>
+    <!-- Banner Principal -->
+    <section class="banner">
+    
+    
+      <div class="banner-content">
+        
+        <h1>Yo Soy Betty La Fea</h1>
+        <p>
+          Betty la Fea: Betty, una joven brillante pero poco atractiva, lucha por encontrar su lugar en el mundo de la moda, enfrentándose a prejuicios y retos en su camino. Una historia de superación, amor y sorpresas. ¡La belleza está en lo que no se ve!
+        </p>
+        <div class="buttons">
+          <button class="btn btn-play" data-link="Seriesformato.html?serie=serie1">▶ Reproducir</button>
+          
+        </div>
+      </div>
+  
+    </section>
   <!-- Carrusel de Series -->
-  <section class="carousel">
+  <section class="carousel-inicio">
     <h2>AÑADIDO RECIENTEMENTE</h2>
     <div class="movies">
         <div class="movie">
@@ -48,13 +71,23 @@
   </section>
 
   <!-- Footer -->
-  <footer>
-    <p>&copy; 2024 POPOROPO. Todos los derechos reservados.</p>
-  </footer>
-  
+
+
 
 
   <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const playButton = document.querySelector('.btn-play');
+
+  // Redirigir al hacer clic en el botón "Reproducir"
+  playButton.addEventListener('click', function () {
+    const videoLink = playButton.getAttribute('data-link');
+    if (videoLink) {
+      window.location.href = videoLink;  // Redirigir a la URL del enlace
+    }
+  });
+});
+    
     // Función de búsqueda optimizada con Levenshtein
     function buscar(input) {
       const movies = document.querySelectorAll(".movies .movie");
@@ -107,6 +140,9 @@
       const input = event.target.value.toLowerCase();
       buscar(input); // Llamar a la función de búsqueda
     });
+    
+    
   </script>
-</body>
+  </body>
+
 </html>
