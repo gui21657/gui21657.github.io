@@ -504,4 +504,44 @@ button {
     
   }
 
+  .menu a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: normal;
+    font-family:  Arial, sans-serif;
+    
+  }
+  .menu li {
+    margin: 0 10px;
+  }
+  .logo {
+    font-size: 17px;
+    font-weight: bold;
+    color: #ff0000;
+    margin-right: 0px;
+  }
+  .search-container input {
+    width: 100%; /* Asegura que el input ocupe todo el espacio disponible */
+    padding: 10px;
+    font-size: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #c7000000;
+    color: white;
+    font-weight: bold;
+  }
+  .carousel-inicio {
+
+    padding-left: 10px;
+  }
+  .banner {
+
+    padding: 10px;
+
+  }
+  .header {
+    padding: 0px 10px; /* Ajuste de padding */
+
+  }
   /* Carrusel de Películas */ }
