@@ -259,10 +259,6 @@ footer {
   margin-bottom: 20px;
   color: #E50914;
 }
-.temporada img {
-  width: 120px; /* Asegura un anscho uniforme para las imágenes */
-  height: auto;
-}
 
 .temporada::-webkit-scrollbar {
   height: 10px; /* Altura del scrollbar */
@@ -292,7 +288,7 @@ footer {
 
 .temporada img {
   width: 80px;
-  height: auto;
+  height: 110px;
   display: block;
   user-select: none;
 
@@ -460,9 +456,34 @@ footer {
   }
 /* Adaptación para pantallas más pequeñas (dispositivos móviles) */
 @media screen and (max-width: 900px) {
- 
+  .temporada {
+    display: flex ; /* Asegura que los episodios estén en fila */
+    gap: 5px; /* Espaciado entre los episodios */
+    overflow-x: hidden; /* Activa el scroll horizontal automático */
+    white-space: wrap; /* Evita que los elementos salten a otra fila */
+    scroll-behavior: smooth; /* Scroll suave */
+    padding: 10px 0; /* Espaciado interno */
+    min-width: auto; /* Asegura que sea más ancho que el viewport */
+    text-align: center;
+    width: 100%;
+  }
 
-
-  
+.temporada {
+    display: flex; 
+    gap: 15px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: auto;
+    scrollbar-color: #fafafa #ffffff00;
+    padding: 20px;
+  }
+  #episodiosList {
+    display: flex; 
+    flex-direction: row; /* Organiza temporadas en una columna */
+    gap: 0px; /* Espaciado entre temporadas */
+    min-width: auto; /* Asegura que sea más ancho que el viewport */
+    overflow: hidden;
+    
+  }
 
   /* Carrusel de Películas */ }
