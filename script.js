@@ -21,7 +21,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const playButton = document.querySelector('.btn-play');
 
+    // Función para activar el video en pantalla completa
+    function requestFullScreen(elem) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.mozRequestFullScreen) { // Firefox
+        elem.mozRequestFullScreen();
+      } else if (elem.webkitRequestFullscreen) { // Chrome, Safari and Opera
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { // IE/Edge
+        elem.msRequestFullscreen();
+      }
+    }
 
+    // Mostrar el video y ponerlo en pantalla completa
+    movies.forEach(movie => {
+      movie.addEventListener("click", () => {
+        const videoLink = movie.getAttribute("data-link");
+        videoPlayer.src = videoLink; // Asigna el enlace al iframe
+        modal.style.display = "flex"; // Muestra el modal
+
+        // Solicitar pantalla completa
+        requestFullScreen(videoPlayer);
+      });
+    });
 
   // Mostrar el modal cuando se haga clic en el botón "Reproducir"
   playButton.addEventListener('click', function () {
