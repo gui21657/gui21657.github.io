@@ -455,7 +455,7 @@ footer {
     background-color: #ff2200;
   }
 /* Adaptación para pantallas más pequeñas (dispositivos móviles) */
-@media screen and (max-width: 1300px) {
+@media screen and (max-width: 768px) {
   .temporada {
     display: flex ; /* Asegura que los episodios estén en fila */
     gap: 5px; /* Espaciado entre los episodios */
@@ -476,6 +476,9 @@ footer {
     scrollbar-width: auto;
     scrollbar-color: #fafafa #ffffff00;
     padding: 20px;
+  }
+  .episodio{
+    width: 80px;
   }
   #episodiosList {
     display: flex; 
