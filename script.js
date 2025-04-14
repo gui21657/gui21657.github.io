@@ -68,4 +68,8 @@ document.addEventListener('DOMContentLoaded', function () {
       videoPlayer.src = ""; // Detener el video
     }
   };
-}); 
+});
+document.querySelectorAll('.movie img').forEach(img => {
+  const title = img.closest('.movie').dataset.title;
+  img.alt = `cinepoporopo.com Película: ${title}`;
+});
