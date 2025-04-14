@@ -177,7 +177,7 @@ body {
 /* Modal */
 .modal {
   display: none;
-  position: fixed;
+  position: relative;
   z-index: 101;
   left: 0;
   top: 0%;
@@ -191,9 +191,8 @@ body {
 }
 
 .modal-content {
-  position: absolute;
-  top: 100px;
-  right: 50px;
+  position: relative;
+
   font-size: 24px;
   background-color: #dab5b523;
   padding: 1px;
