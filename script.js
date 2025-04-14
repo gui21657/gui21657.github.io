@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const videoLink = playButton.getAttribute('data-link');
     if (videoLink) {
       videoPlayer.src = videoLink;
-      modal.style.display = "flex";
+      modal.style.display = "block";
     }
   });
 
