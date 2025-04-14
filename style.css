@@ -553,4 +553,20 @@ button {
     padding: 0px 10px; /* Ajuste de padding */
 
   }
+
+  .modal-content {
+  position: relative;
+  font-size: 24px;
+  background-color: #dab5b523;
+  padding: 1px;
+  border-radius: 5px;
+
+  max-width: 80%;
+  max-height: 80%;
+
+  text-align: center;
+  animation: slideIn 0.6s ease-in-out;
+  overflow: hidden;
+  overflow-y: hidden;
+}
   /* Carrusel de Películas */ }
