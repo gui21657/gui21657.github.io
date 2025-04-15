@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Página no encontrada</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .error-container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.8);
+            margin: 2rem auto;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-size: 4rem;
+            color: #db0000;
+            margin-bottom: 1rem;
+        }
+
+        .go-home {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #db0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 2rem;
+            transition: transform 0.3s;
+        }
+
+        .go-home:hover {
+            transform: scale(1.05);
+        }
+
+        .movie-collage {
+    position: fixed;
+    top: 0;
+    left: -200px; /* Mueve 100px hacia la izquierda */
+    width: calc(100% + 200px); /* Compensa el desplazamiento */
+    height: 200%;
+    display: flex;
+    justify-content: space-around;
+    opacity: 0.3;
+    transform: rotateX(0deg) rotateZ(15deg);
+}
+
+        .movie-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 300vh; /* Altura mayor que la pantalla */
+            
+            position: relative;
+        }
+
+        .movie-card {
+            width: 150px;
+            height: 400px;
+            margin: 0px 0;
+            background-size: cover;
+            background-position: center;
+            border-radius: 2px;
+            transform: rotateX(0deg) rotateY(0deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            animation-timing-function: infinite;
+            animation-iteration-count: infinite;
+        }
+
+        /* Animaciones mejoradas para bucle infinito */
+        @keyframes float-up {
+            0% { transform: translateY(-50vh); }
+            100% { transform: translateY(-100%); }
+        }
+
+        @keyframes float-down {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(50vh); }
+        }
+
+        /* Columnas y animaciones definidas manualmente */
+        .movie-column:nth-child(1) .movie-card { 
+            animation-name: float-up; 
+            animation-duration: 160s;
+        }
+        .movie-column:nth-child(2) .movie-card { 
+            animation-name: float-down; 
+            animation-duration: 400s;
+        }
+        .movie-column:nth-child(3) .movie-card { 
+            animation-name: float-up; 
+            animation-duration: 160s;
+        }
+        .movie-column:nth-child(4) .movie-card { 
+            animation-name: float-down; 
+            animation-duration: 400s;
+        }
+        .movie-column:nth-child(5) .movie-card { 
+            animation-name: float-up; 
+            animation-duration: 160s;   
+        }
+        .movie-column:nth-child(6) .movie-card { 
+            animation-name: float-down; 
+            animation-duration: 400s;
+        }
+        .movie-column:nth-child(7) .movie-card { 
+            animation-name: float-up; 
+            animation-duration: 160s;  
+        }
+        .movie-column:nth-child(8) .movie-card { 
+            animation-name: float-down; 
+            animation-duration: 400s;
+        }
+        .movie-column:nth-child(9) .movie-card { 
+            animation-name: float-up; 
+            animation-duration: 160s;   
+        }
+
+
+
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>¡Houston, tenemos un problema!</h2>
+        <p>La página que buscas se ha perdido en el espacio-tiempo...</p>
+        <a href="index.html" class="go-home">Volver al Inicio</a>
+    </div>
+
+    <div class="movie-collage">
+        <!-- Columna 1 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/11/sonrie-2-2024.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/05/prey-for-the-devil-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/03/Z-2019.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/02/Sputnik-extrano-pasajero-2020.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/11/kadaver.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/06/la-caceria.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/01/doctor-sleep-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/en-la-hierba-alta.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/11/sonrie-2-2024.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/05/prey-for-the-devil-2022.jpg')"></div>
+            
+        </div>
+        
+        <!-- Columna 2 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/infierno-en-la-tormenta.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/08/brightburn-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/07/la-maldicion-de-la-llorona.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/07/cementerio-maldito-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/06/nosotros-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2018/12/bird-box.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2018/02/the-ritual.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2012/07/votos-de-amor.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/infierno-en-la-tormenta.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/08/brightburn-4k.jpg')"></div>
+        </div>
+        
+        <!-- Columna 3 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2013/09/eternamente-comprometidos.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/03/un-atrevido-don-juan.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/07/mujeres-al-ataque.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/09/bajo-la-misma-estrella.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/12/solo-amigos.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/12/si-decido-quedarme.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2015/08/el-secreto-de-adaline.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2017/02/moana.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2013/09/eternamente-comprometidos.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/03/un-atrevido-don-juan.jpg')"></div>
+        </div>
+        
+        <!-- Columna 4 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2022/11/bullet-train-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/11/sonrie-2-2024.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/05/prey-for-the-devil-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/03/Z-2019.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/02/Sputnik-extrano-pasajero-2020.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/11/kadaver.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/06/la-caceria.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/01/doctor-sleep-4k.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2022/11/bullet-train-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/11/sonrie-2-2024.jpg')"></div>
+        </div>
+        
+        <!-- Columna 5 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/en-la-hierba-alta.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/infierno-en-la-tormenta.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/08/brightburn-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/07/la-maldicion-de-la-llorona.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/07/cementerio-maldito-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/06/nosotros-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2018/12/bird-box.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2018/02/the-ritual.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/en-la-hierba-alta.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/infierno-en-la-tormenta.jpg')"></div>
+        </div>
+        
+        <!-- Columna 6 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2012/07/votos-de-amor.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2013/09/eternamente-comprometidos.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/03/un-atrevido-don-juan.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/07/mujeres-al-ataque.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/09/bajo-la-misma-estrella.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/12/solo-amigos.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/12/si-decido-quedarme.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2015/08/el-secreto-de-adaline.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2012/07/votos-de-amor.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2013/09/eternamente-comprometidos.jpg')"></div>
+        </div>
+        
+        <!-- Columna 7 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2017/02/moana.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2022/11/bullet-train-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/11/sonrie-2-2024.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/05/prey-for-the-devil-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/03/Z-2019.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/02/Sputnik-extrano-pasajero-2020.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/11/kadaver.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/06/la-caceria.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2017/02/moana.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2022/11/bullet-train-2022.jpg')"></div>
+        </div>
+        
+        <!-- Columna 8 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/01/doctor-sleep-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/en-la-hierba-alta.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/infierno-en-la-tormenta.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/08/brightburn-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/07/la-maldicion-de-la-llorona.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/07/cementerio-maldito-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/06/nosotros-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2018/12/bird-box.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/01/doctor-sleep-4k.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2019/10/en-la-hierba-alta.jpg')"></div>
+        </div>
+        
+        <!-- Columna 9 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2018/02/the-ritual.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2012/07/votos-de-amor.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2013/09/eternamente-comprometidos.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/03/un-atrevido-don-juan.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/07/mujeres-al-ataque.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/09/bajo-la-misma-estrella.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/12/solo-amigos.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2014/12/si-decido-quedarme.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2018/02/the-ritual.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2012/07/votos-de-amor.jpg')"></div>
+        </div>
+        
+        <!-- Columna 10 -->
+        <div class="movie-column">
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2015/08/el-secreto-de-adaline.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2017/02/moana.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2022/11/bullet-train-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/11/sonrie-2-2024.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2024/05/prey-for-the-devil-2022.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/03/Z-2019.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2021/02/Sputnik-extrano-pasajero-2020.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2020/11/kadaver.jpg')"></div>
+            <!-- Duplicados para efecto continuo -->
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2015/08/el-secreto-de-adaline.jpg')"></div>
+            <div class="movie-card" style="background-image: url('https://www.cinecalidad.rs/wp-content/uploads/2017/02/moana.jpg')"></div>
+        </div>
+    </div>
+</body>
+</html>
