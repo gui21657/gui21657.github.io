@@ -674,7 +674,10 @@ footer {
   z-index: 5;
   pointer-events: none; /* inactivo por defecto */
 }
-
+a.logo {
+  text-decoration: none;
+  color: var(--red);
+}
 /* =====================
    MEDIA QUERIES
    ===================== */
