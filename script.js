@@ -73,8 +73,3 @@ document.querySelectorAll('.movie img').forEach(img => {
   const title = img.closest('.movie').dataset.title;
   img.alt = `cinepoporopo.com Película: ${title}`;
 });
-//funcion para que el banner este po detras del header
-window.addEventListener('scroll', () => {
-  const header = document.querySelector('.header');
-  header.classList.toggle('scrolled', window.scrollY > 10);
-});
