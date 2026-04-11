@@ -1,462 +1,312 @@
-document.addEventListener('DOMContentLoaded', function () {
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="icon" href="android-chrome-192x192.png" type="image/x-icon"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CinePoporopo.com ▶ Más de 100 películas GRATIS en HD: Ciencia Ficción, Animación, Acción, Terror y Romance ¡Sin Anuncios!">
+  <meta name="keywords" content="películas gratis sin anuncios, cine online gratis, ver ciencia ficción HD">
+  <meta name="author" content="CinePoporopo">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="CinePoporopo 🎬 Películas GRATIS en HD Sin Anuncios.">
+  <meta property="og:description" content="¡Mira +100 películas completas en HD! Ciencia Ficción, Terror, Animación y Romance ¡Sin Registros ni Anuncios!">
+  <meta property="og:image" content="https://okdiario.com/img/2022/03/31/filmin-esta-lleno-de-obras-maestras-del-cine.jpg">
+  <meta property="og:url" content="https://www.cinepoporopo.com">
+  <meta name="theme-color" content="#E50914">
+  <title>POPOROPO</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
-  /* ========================
-     HEADER: transparente → oscuro al scroll
-     ======================== */
-  const header = document.getElementById('mainHeader');
+  <!-- Header -->
+  <header class="header" id="mainHeader">
+    <nav class="navbar">
+      <div class="logo">POPOROPO</div>
+      <ul class="menu">
+        <li><a href="index.html" class="active">Inicio</a></li>
+        <li><a href="peliculas.html">Películas</a></li>
+      </ul>
+    </nav>
+    <div class="header-right">
+      <div class="search-container">
+        <span class="search-icon">&#9906;</span>
+        <input type="text" id="searchBar" placeholder="Buscar películas...">
+      </div>
+    </div>
+  </header>
 
-  const handleScroll = () => {
-    header.classList.toggle('scrolled', window.scrollY > 20);
-  };
-
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  handleScroll(); // estado inicial
-
-
-  /* ========================
-     MODAL DE VIDEO
-     ======================== */
-  const modal       = document.getElementById('videoModal');
-  const videoPlayer = document.getElementById('videoPlayer');
-  const closeBtn    = document.getElementById('closeModal');
-  const backdrop    = modal.querySelector('.modal-backdrop');
-
-  function openModal(src) {
-    videoPlayer.src = src;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeModal() {
-    modal.classList.remove('active');
-    videoPlayer.src = '';
-    document.body.style.overflow = '';
-  }
-
-  closeBtn.addEventListener('click', closeModal);
-  backdrop.addEventListener('click', closeModal);
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-  });
-
-
-  /* ========================
-     CLICK EN CARDS DE PELÍCULAS
-     ======================== */
-  document.querySelectorAll('.movie').forEach(card => {
-    card.addEventListener('click', () => {
-      const link = card.dataset.link;
-      if (link) openModal(link);
-    });
-
-    // Alt text SEO
-    const img = card.querySelector('img');
-    if (img) img.alt = `Película: ${card.dataset.title || ''}`;
-  });
-
-
-  /* ========================
-     BOTÓN REPRODUCIR DEL BANNER
-     ======================== */
-  const bannerPlayBtn = document.querySelector('.btn-play');
-  if (bannerPlayBtn) {
-    bannerPlayBtn.addEventListener('click', () => {
-      const link = bannerPlayBtn.dataset.link;
-      if (link) openModal(link);
-    });
-  }
-  /* ========================
-     CARRUSEL CON FLECHAS + BARRA DE PROGRESO (ESTILO NETFLIX)
-     ======================== */
-  function initCarousels() {
-    document.querySelectorAll('.carousel-wrapper').forEach(wrapper => {
-      const list       = wrapper.querySelector('.movies');
-      const btnLeft    = wrapper.querySelector('.scroll-left');
-      const btnRight   = wrapper.querySelector('.scroll-right');
-      
-      if (!list || !btnLeft || !btnRight) return;
-
-      // Crear barra de progreso si no existe
-      let progressContainer = wrapper.querySelector('.carousel-progress');
-      if (!progressContainer) {
-        progressContainer = document.createElement('div');
-        progressContainer.className = 'carousel-progress';
-        const progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar';
-        progressContainer.appendChild(progressBar);
-        wrapper.appendChild(progressContainer);
-      }
-      const progressBar = progressContainer.querySelector('.progress-bar');
-
-      // Calcular cantidad de desplazamiento (6 tarjetas)
-      const getScrollAmount = () => {
-        const firstCard = list.querySelector('.movie');
-        if (!firstCard) return 600;
-        const cardWidth = firstCard.offsetWidth;
-        const gap = parseInt(getComputedStyle(list).gap) || 8;
-        return (cardWidth + gap) * 6;
-      };
-
-      // Actualizar visibilidad de botones y barra de progreso
-      const updateUI = () => {
-        if (!btnLeft || !btnRight) return;
-        
-        const canScrollLeft = list.scrollLeft > 0;
-        const canScrollRight = list.scrollLeft < list.scrollWidth - list.clientWidth - 1;
-        
-        btnLeft.style.display = canScrollLeft ? '' : 'none';
-        btnRight.style.display = canScrollRight ? '' : 'none';
-        
-        // Actualizar barra de progreso
-        if (progressBar) {
-          const scrollPercent = (list.scrollLeft / (list.scrollWidth - list.clientWidth)) * 100;
-          progressBar.style.width = Math.min(scrollPercent, 100) + '%';
-        }
-      };
-
-      // Eventos de clic
-      btnLeft.addEventListener('click', () => {
-        list.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
-      });
-      btnRight.addEventListener('click', () => {
-        list.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
-      });
-
-      // Observar cambios de tamaño
-      const resizeObserver = new ResizeObserver(() => updateUI());
-      resizeObserver.observe(list);
-      
-      // Actualizar al hacer scroll
-      list.addEventListener('scroll', updateUI, { passive: true });
-      
-      // Actualizar al redimensionar ventana
-      window.addEventListener('resize', updateUI);
-      
-      // Llamada inicial
-      updateUI();
-    });
-  }
-
-  initCarousels();
-  /* ========================
-   BUSCADOR
-   ======================== */
-  const searchBar   = document.getElementById('searchBar');
-  const emptyMsg    = document.getElementById('searchEmpty');
-  const searchTerm  = document.getElementById('searchTerm');
-  const allCards    = document.querySelectorAll('.movie');
-  const allSections = document.querySelectorAll('.carousel-section');
-  const banner      = document.getElementById('mainBanner');
-  const contentArea = document.querySelector('.content-area');
-
-  let searchTimer;
-
-  searchBar.addEventListener('input', function () {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      const query = this.value.trim().toLowerCase();
-
-      if (!query) {
-        allCards.forEach(c => c.classList.remove('hidden'));
-        allSections.forEach(s => s.style.display = '');
-        banner.style.display = '';
-        contentArea.style.paddingTop = '';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        emptyMsg.style.display = 'none';
-        return;
-      }
-
-      banner.style.display = 'none';
-      contentArea.style.paddingTop = 'calc(var(--header-h) + 16px)';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      let totalVisible = 0;
-
-      allSections.forEach(section => {
-        const cards   = section.querySelectorAll('.movie');
-        let sectionHits = 0;
-
-        cards.forEach(card => {
-          const title = (card.dataset.title || '').toLowerCase();
-          const genre = (card.dataset.genre || '').toLowerCase();
-          const match = title.includes(query) || genre.includes(query);
-          card.classList.toggle('hidden', !match);
-          if (match) sectionHits++;
-        });
-
-        section.style.display = sectionHits === 0 ? 'none' : '';
-        totalVisible += sectionHits;
-      });
-
-      if (totalVisible === 0) {
-        searchTerm.textContent = this.value.trim();
-        emptyMsg.style.display = 'block';
-        setTimeout(() => { emptyMsg.style.display = 'none'; }, 3000);
-      } else {
-        emptyMsg.style.display = 'none';
-      }
-    }, 200);
-  });
-
-/* ============================================================
-   POPOROPO AD BLOCKER v2.0 - STRICT MODE
-   Optimizado para DoodStream y plataformas de embed similares
-   ============================================================ */
-
-(function () {
-  'use strict';
-
-  // ── Dominios de video permitidos (solo estos pueden cargar en iframes) ──
-  const ALLOWED_EMBED_DOMAINS = [
-    'mega.nz',
-    'myvidplay.com',
-    'dood.watch',
-    'doodstream.com',
-    'ds2play.com',      // dominios alternativos de DoodStream
-    'dooood.com',
-    'd0000d.com',
-    'dood.la',
-    'dood.to',
-    'dood.pm',
-    'dood.re',
-    'dood.wf'
-  ];
-
-  // ── Dominios de publicidad conocidos ──
-  const AD_DOMAINS = [
-    'doubleclick.net', 'googlesyndication.com', 'adnxs.com',
-    'outbrain.com', 'taboola.com', 'popads.net', 'popcash.net',
-    'trafficjunky.net', 'exoclick.com', 'juicyads.com', 'plugrush.com',
-    'hilltopads.net', 'propellerads.com', 'adsterra.com', 'trafficstars.com',
-    'clickadu.com', 'revcontent.com', 'mgid.com', 'adskeeper.com',
-    'adspyglass.com', 'eroadvertising.com', 'adcash.com', 'bidvertiser.com',
-    'yllix.com', 'pushground.com', 'richpush.co', 'evadav.com',
-    'zeropark.com', 'datpush.com', 'pushpush.net', 'pu.sh',
-    'doodstream.icu', 'ads.dood', 'vidads', 'adbull',
-    'go2ads', 'shorte.st', 'adf.ly', 'linkvertise', 'ouo.io'
-  ];
-
-  // ════════════════════════════════════════════
-  // 1. BLOQUEO TOTAL DE window.open
-  // ════════════════════════════════════════════
-  const _originalOpen = window.open;
-  window.open = function () {
-    console.warn('[AdBlock] window.open bloqueado');
-    return {
-      closed: true,
-      close: () => {},
-      focus: () => {},
-      document: { write: () => {}, close: () => {} }
-    };
-  };
-
-  // ════════════════════════════════════════════
-  // 2. BLOQUEO DE REDIRECCIONES (el más importante para DoodStream)
-  // ════════════════════════════════════════════
-
-  // Congela window.location para que nadie pueda cambiarlo
-  const _location = window.location;
-
-  ['href', 'replace', 'assign'].forEach(method => {
-    try {
-      if (method === 'href') {
-        Object.defineProperty(window.location, 'href', {
-          set: function (url) {
-            // Solo permite cambios de URL si vienen de acción directa del usuario en botones del sitio
-            if (_isUserAction()) {
-              _location.href = url;
-            } else {
-              console.warn('[AdBlock] Redirección href bloqueada:', url);
-            }
-          },
-          get: function () { return _location.href; }
-        });
-      }
-    } catch (e) {}
-  });
-
-  // Bloquear location.replace y location.assign
-  try {
-    window.location.replace = function (url) {
-      console.warn('[AdBlock] location.replace bloqueado:', url);
-    };
-    window.location.assign = function (url) {
-      console.warn('[AdBlock] location.assign bloqueado:', url);
-    };
-  } catch (e) {}
-
-  // Bloquear top/parent frame hijacking (cuando el iframe intenta salir del frame)
-  try {
-    Object.defineProperty(window, 'top', {
-      get: function () { return window; }
-    });
-    Object.defineProperty(window, 'parent', {
-      get: function () { return window; }
-    });
-  } catch (e) {}
-
-  // Bloquear history manipulation desde contextos no autorizados
-  const _pushState = history.pushState.bind(history);
-  const _replaceState = history.replaceState.bind(history);
-  history.pushState = function (...args) {
-    if (!_isTrustedContext()) return;
-    return _pushState(...args);
-  };
-  history.replaceState = function (...args) {
-    if (!_isTrustedContext()) return;
-    return _replaceState(...args);
-  };
-
-  function _isUserAction() {
-    const el = document.activeElement;
-    if (!el) return false;
-    return el.classList.contains('btn-play') ||
-           el.classList.contains('overlay-play') ||
-           el.classList.contains('btn') ||
-           el.closest?.('.modal-content') !== null;
-  }
-
-  function _isTrustedContext() {
-    const el = document.activeElement;
-    return el && el.tagName !== 'IFRAME' && el.tagName !== 'BODY';
-  }
-
-  // ════════════════════════════════════════════
-  // 3. BLOQUEO DE EVENTOS DE CLICK NO DESEADOS
-  // ════════════════════════════════════════════
-  document.addEventListener('click', function (e) {
-    const anchor = e.target.closest('a');
-    if (!anchor) return;
-
-    const href = anchor.getAttribute('href') || '';
-    if (!href || href.startsWith('#') || href.startsWith('javascript:void')) return;
-
-    const isInternal = href.startsWith(window.location.origin) ||
-                       href.startsWith('/') ||
-                       href === '#';
+  <!-- Banner Principal -->
+<section class="banner" id="mainBanner" style="background-image: url('https://imgs.search.brave.com/K6shQj7BWd4-FjRd7b5_Wct1iVxQAhj30mgkc768sYA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/dWhkcGFwZXIuY29t/L3dhbGxwYXBlci9w/cm9qZWN0LWhhaWwt/bWFyeS1yeWFuLWdv/c2xpbmctcG9zdGVy/LTgzQDVAaw'); background-size: cover; background-position: center;">
+  <div class="banner-overlay"></div>
+  <div class="banner-content">
     
-    const isAllowed = ALLOWED_EMBED_DOMAINS.some(d => href.includes(d));
+    <h1><big>PROYECTO SALVACION</big></h1>
+    <p class="banner-desc">
+      Un profesor de ciencias despierta en una nave espacial sin memoria. Debe descubrir su misión: evitar que una sustancia misteriosa extinga el Sol. Solo y confundido, recurre a su ingenio, pero una amistad inesperada cambiará todo.
+    </p>
+    <div class="banner-meta">
+      <span class="badge badge-hd">HD</span>
+      <span class="badge">2026</span>
+      <span class="badge">2h 33m</span>
+      <span class="badge">Sci-Fi</span>
+    </div>
+    <div class="buttons">
+      <button class="btn btn-play" data-link="https://myvidplay.com/e/64h46g2d64i7">
+        <span class="btn-icon">&#9654;</span> Reproducir
+      </button>
+      <button class="btn btn-info">
+        <span class="btn-icon">&#9432;</span> Más info
+      </button>
+    </div>
+  </div>
+  <div class="banner-fade-bottom"></div>
+</section>
+  <!-- Carruseles -->
+  <main class="content-area">
 
-    if (!isInternal && !isAllowed) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      console.warn('[AdBlock] Click externo bloqueado:', href);
-    }
-  }, true);
+    <!-- Ciencia Ficción -->
+    <section class="carousel-section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-accent">|</span> Ciencia Ficción</h2>
+        
+      </div>
+      <div class="carousel-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Anterior">&#8249;</button>
+        <div class="movies" id="sci-fi">
+          <div class="movie" data-title="Proyecto Salvacion" data-link="https://myvidplay.com/e/64h46g2d64i7" data-year="2026" data-genre="Sci-Fi">
+            <img src="https://imgs.search.brave.com/_8Ee27kL4oO00ibZkNEiQLVoiUeUojtUrY6XEXhrnEU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/bXViaXMuZXMvbWVk/aWEvbW92aWVzLzgz/MTAvMzYwNjU4L3By/b3llY3RvLXNhbHZh/Y2lvbi1sX2NvdmVy/LmpwZw" alt="Proyecto Salvacion">
+            <div class="movie-overlay">
+              <div class="overlay-content">
+                <p class="overlay-title">Proyecto Salvacion</p>
+                <div class="overlay-meta"><span>2026</span><span class="badge-sm"></span></div>
+                <button class="overlay-play">&#9654;</button>
+              </div>
+            </div>
+          </div>
+          <div class="movie" data-title="Volver al Futuro I" data-link="https://mega.nz/embed/vFUnVIbT#z4MS7lAF3KDlg6sVMUIGGFpu6VRuVPRXdkMYHsXsDws!1a" data-year="1989" data-genre="Sci-Fi">
+            <img src="https://imgs.search.brave.com/Mw4hbxVw8yJlwkGPJ-OYThgqpsBGO_KgZ4Dv59maPeQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NzFPek0tNTdUSUwu/anBn" alt="Volver al Futuro I - Back To The Future I">
+            <div class="movie-overlay">
+              <div class="overlay-content">
+                <p class="overlay-title">Volver al Futuro I</p>
+                <div class="overlay-meta"><span>1985</span><span class="badge-sm">HD</span></div>
+                <button class="overlay-play">&#9654;</button>
+              </div>
+            </div>
+          </div>
+          <div class="movie" data-title="Volver al Futuro II" data-link="https://mega.nz/embed/KI4w1a7L#EAcZlBFE4tLMoL_yinvjSW84sle_Yrq_6wH-c6w137k!1a" data-year="1989" data-genre="Sci-Fi">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2015/10/back-to-the-future-2.jpg" alt="Volver al Futuro II">
+            <div class="movie-overlay">
+              <div class="overlay-content">
+                <p class="overlay-title">Volver al Futuro II</p>
+                <div class="overlay-meta"><span>1989</span><span class="badge-sm">HD</span></div>
+                <button class="overlay-play">&#9654;</button>
+              </div>
+            </div>
+          </div>
+          <div class="movie" data-title="Volver al Futuro III" data-link="https://myvidplay.com/e/quacjzqxm27i" data-year="1990" data-genre="Sci-Fi">
+            <img src="https://imgs.search.brave.com/trXhgv77mE6J9hMHlEMxjWFBjs3NDoe9OygsVEnG-7Y/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/ZmlsbXBvc3RlcnMu/Y29tL2ltYWdlcy9w/b3N0ZXJzLzIxMjkx/LmpwZw" alt="Volver al Futuro III">
+            <div class="movie-overlay">
+              <div class="overlay-content">
+                <p class="overlay-title">Volver al Futuro III</p>
+                <div class="overlay-meta"><span>1990</span><span class="badge-sm">HD</span></div>
+                <button class="overlay-play">&#9654;</button>
+              </div>
+            </div>
+          </div>
+          <div class="movie" data-title="Chappie" data-link="https://mega.nz/embed/uk0nmCaD#KWLo4GWnLU8FCvCvhK-z9J1j1c6yJnlhqkwL4gP_FHc!1a" data-year="2015" data-genre="Sci-Fi">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2015/05/chappie.jpg" alt="Chappie">
+            <div class="movie-overlay">
+              <div class="overlay-content">
+                <p class="overlay-title">Chappie</p>
+                <div class="overlay-meta"><span>2015</span><span class="badge-sm">HD</span></div>
+                <button class="overlay-play">&#9654;</button>
+              </div>
+            </div>
+          </div>
 
-  // Bloquear clicks que usen setTimeout para esquivar el bloqueador
-  const _setTimeout = window.setTimeout;
-  window.setTimeout = function (fn, delay, ...args) {
-    // Bloquear timeouts muy cortos de redirección (truco común en DoodStream)
-    if (typeof fn === 'string' && fn.includes('location')) {
-      console.warn('[AdBlock] setTimeout con redirección bloqueado');
-      return 0;
-    }
-    return _setTimeout.call(window, fn, delay, ...args);
-  };
+          <div class="movie" data-title="Poder Sin Limites" data-link="https://mega.nz/embed/ErQUhLrY#mdqnf3k5XZfAwRL7QrZ7P_s_VZeY1CpwZ-cXU18Nzro!1a" data-year="2015" data-genre="Sci-Fi">
+            <img src="https://image.tmdb.org/t/p/w342//9GioqrMkkk9A694UhYz8iMo2eJV.jpg" alt="Poder Sin Limites">
+            <div class="movie-overlay">
+              <div class="overlay-content">
+                <p class="overlay-title">Poder Sin Limites</p>
+                <div class="overlay-meta"><span>2012</span><span class="badge-sm">HD</span></div>
+                <button class="overlay-play">&#9654;</button>
+              </div>
+            </div>
+          </div>
 
-  // ════════════════════════════════════════════
-  // 4. BLOQUEO DE INYECCIÓN DE SCRIPTS Y IFRAMES DE ADS
-  // ════════════════════════════════════════════
-  function isAdSource(src) {
-    if (!src) return false;
-    return AD_DOMAINS.some(d => src.includes(d));
-  }
 
-  const _appendChild = Element.prototype.appendChild;
-  Element.prototype.appendChild = function (node) {
-    if (node.nodeType === 1) {
-      const src = node.src || node.href || '';
-      if ((node.tagName === 'SCRIPT' || node.tagName === 'IFRAME' || node.tagName === 'LINK') && isAdSource(src)) {
-        console.warn('[AdBlock] Elemento ad bloqueado (appendChild):', src);
-        return node;
-      }
-    }
-    return _appendChild.call(this, node);
-  };
 
-  const _insertBefore = Element.prototype.insertBefore;
-  Element.prototype.insertBefore = function (node, ref) {
-    if (node.nodeType === 1) {
-      const src = node.src || node.href || '';
-      if ((node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') && isAdSource(src)) {
-        console.warn('[AdBlock] Elemento ad bloqueado (insertBefore):', src);
-        return node;
-      }
-    }
-    return _insertBefore.call(this, node, ref);
-  };
 
-  // ════════════════════════════════════════════
-  // 5. MUTATION OBSERVER - ELIMINA OVERLAYS Y POPUPS INYECTADOS
-  // ════════════════════════════════════════════
-  const PROTECTED_IDS = ['videoModal', 'searchEmpty', 'mainHeader', 'mainBanner'];
-  const PROTECTED_CLASSES = ['modal', 'search-empty', 'header', 'banner', 'movie', 'carousel-section', 'content-area'];
 
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach(({ addedNodes }) => {
-      addedNodes.forEach(node => {
-        if (node.nodeType !== 1) return;
 
-        // Saltar elementos protegidos del sitio
-        if (PROTECTED_IDS.includes(node.id)) return;
-        if (PROTECTED_CLASSES.some(c => node.classList?.contains(c))) return;
 
-        const style = node.style || {};
-        const computed = window.getComputedStyle(node);
 
-        const isFixedOverlay = (
-          style.position === 'fixed' || computed.position === 'fixed' ||
-          style.position === 'absolute' || computed.position === 'absolute'
-        ) && (
-          parseInt(style.zIndex || computed.zIndex) > 1000
-        );
 
-        const looksLikeAd = (
-          (node.src && isAdSource(node.src)) ||
-          node.id?.match(/ad|pop|overlay|banner/i) ||
-          node.className?.match?.(/ad|pop|overlay|sponsor/i) ||
-          (node.tagName === 'IFRAME' && !ALLOWED_EMBED_DOMAINS.some(d => (node.src || '').includes(d)))
-        );
 
-        if (isFixedOverlay || looksLikeAd) {
-          node.remove();
-          console.warn('[AdBlock] Nodo sospechoso eliminado:', node.tagName, node.id || node.className);
-        }
-      });
-    });
-  });
 
-  // Iniciar observer cuando el DOM esté listo
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-  } else {
-    document.addEventListener('DOMContentLoaded', () => {
-      observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-    });
-  }
 
-  // ════════════════════════════════════════════
-  // 6. SANDBOX EN IFRAMES - SOLO AL ABRIRLOS EN EL MODAL
-  //    Agrega restricciones al iframe del modal
-  // ════════════════════════════════════════════
-  document.addEventListener('DOMContentLoaded', () => {
-    const videoPlayer = document.getElementById('videoPlayer');
-    if (videoPlayer) {
-      // allow-scripts: necesario para reproducir el video
-      // allow-same-origin: necesario para DoodStream
-      // NO se incluye allow-popups ni allow-top-navigation
-      videoPlayer.setAttribute('sandbox',
-        'allow-scripts allow-same-origin allow-forms allow-presentation'
-      );
-      videoPlayer.setAttribute('referrerpolicy', 'no-referrer');
-      videoPlayer.setAttribute('loading', 'lazy');
-    }
-  });
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Siguiente">&#8250;</button>
+      </div>
+    </section>
 
-  console.log('[AdBlock] Poporopo AdBlock v2.0 activo ✓');
+    <!-- Animación -->
+    <section class="carousel-section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-accent">|</span> Animación</h2>
+        
+      </div>
+      <div class="carousel-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Anterior">&#8249;</button>
+        <div class="movies" id="animation">
 
-})();
+          <div class="movie" data-title="Your Name" data-link="https://myvidplay.com/e/vw9vqwx1ppce" data-year="2024" data-genre="Animación">
+            <img src="https://image.tmdb.org/t/p/w342//iaiy3tg9QVkDpObm1IGqmbC9A5C.jpg" alt="Your Name">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Your Name</p><div class="overlay-meta"><span>2016</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+                    <div class="movie" data-title="Wallace y Gromit: La venganza se sirve con plumas" data-link="https://mega.nz/embed/UOERFCzB#JmXo0c_a2TVKpzc1qO4U__oLYwnsVnaWB25PbFwbmis!1a" data-year="2024" data-genre="Animación">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2025/01/wallace-y-gromit-la-venganza-se-sirve-con-plumas-2024.jpg" alt="Wallace y Gromit">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Wallace y Gromit</p><div class="overlay-meta"><span>2024</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Spider-Man: A Través Del Spider-Verso" data-link="https://mega.nz/embed/3tlRVCDB#ruo-HItd996zorG8VzOfNUEH6OH2_g2ZKFL9u0HAW8M!1a" data-year="2023" data-genre="Animación">
+            <img src="https://www.sonypictures.com.mx/sites/mexico/files/2023-08/Key-Art_1400x2100_Spiderman-ATSV.jpg" alt="Spider-Man: A Través Del Spider-Verso">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Spider-Verso</p><div class="overlay-meta"><span>2023</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Pinocho de Guillermo del Toro" data-link="https://mega.nz/embed/OJgTGDgD#ktBdarBDZdiE9C-dMoeHh3arsIuzLmfxr62NX8T2KUk!1a" data-year="2022" data-genre="Animación">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2022/12/pinocchio-guillermo-del-toro.jpg" alt="Pinocho">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Pinocho</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Olé: El viaje de Ferdinand" data-link="https://mega.nz/embed/OZAQiDxQ#wjlWcRm1tzYqXRhDQA8ZG4Y8b7HwmABaU9A7kBPsy_M!1a" data-year="2017" data-genre="Animación">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2018/02/ole-el-viaje-de-ferdinand.jpg" alt="Ferdinand">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Ferdinand</p><div class="overlay-meta"><span>2017</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Cars 3" data-link="https://mega.nz/embed/fDo11AaQ#gJ5faMbCoLUFsPQewZ3HJmcvx5LAzH82877hTg8b7x8!1a" data-year="2017" data-genre="Animación">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2017/10/cars-3.jpg" alt="Cars 3">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Cars 3</p><div class="overlay-meta"><span>2017</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
 
-});
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Siguiente">&#8250;</button>
+      </div>
+    </section>
+
+    <!-- Acción -->
+    <section class="carousel-section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-accent">|</span> Acción</h2>
+        
+      </div>
+      <div class="carousel-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Anterior">&#8249;</button>
+        <div class="movies" id="action">
+          <div class="movie" data-title="Ford v Ferrari" data-link="https://mega.nz/embed/eSBA0DCb#C9oDfKu0MSz9_5yCcqEJ4RQgGWuettjCplftHcqSxpU!1a" data-year="2013" data-genre="Acción">
+            <img src="https://imgs.search.brave.com/T-BsG0g5K7UcR_zCedIuMnrk6lNqjCfVN4OFI4WKTZ0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzE5LzQ5/L2YzLzE5NDlmM2Yw/MGFkMmE3ODQ0Y2U4/MWY5MGJjMWNhNzNk/LmpwZw" alt="Ford vs Ferrari">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Ford v Ferrari</p><div class="overlay-meta"><span>2019</span><span class="badge-sm">Full HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+
+
+          <div class="movie" data-title="Equipaje de mano" data-link="https://mega.nz/embed/mVsWDBTD#qLuw8oRvNFp6W4nxGNhNa3oEWrT6WkJfLEzjjLaB0i4!1a" data-year="2024" data-genre="Acción">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/12/carry-on-2024.jpg" alt="Carry On">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Equipaje de mano</p><div class="overlay-meta"><span>2024</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Misión: Imposible - Sentencia Mortal Parte 1" data-link="https://mega.nz/embed/bpYiDATI#XvrUqbA919K8FZvXe8xNZg2pokpDagrRY-iJEspBLB4!1a" data-year="2023" data-genre="Acción">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/01/mision-imposible-sentencia-mortal-parte-1-2023-4k.jpg" alt="Misión Imposible">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Misión: Imposible</p><div class="overlay-meta"><span>2023</span><span class="badge-sm">4K</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Tren bala" data-link="https://mega.nz/embed/m6BwHTaZ#y17iecHw-bRNhsAprynSzvDTZnvYphz8zZG3_MFG5_Q!1a" data-year="2022" data-genre="Acción">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2022/11/bullet-train-2022.jpg" alt="Tren bala">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Tren Bala</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Top Gun: Maverick" data-link="https://mega.nz/embed/2IJx0YiZ#Tx1EOAWMaKHg0Rfuo1ufoA9dffPUITnTjfpHysIFm1U!1a" data-year="2022" data-genre="Acción">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2022/08/top-gun-maverick-2022-4k.jpg" alt="Top Gun: Maverick">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Top Gun: Maverick</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">4K</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Napoleón" data-link="https://mega.nz/embed/pEZ3xRzb#opPDueIwAWUUK6ZbofnO3ZeDtjZyt4YbvBZfsZ5iPwE!1a" data-year="2023" data-genre="Acción">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/08/napoleon-2023-4k.jpg" alt="Napoleón">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Napoleón</p><div class="overlay-meta"><span>2023</span><span class="badge-sm">4K</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Siguiente">&#8250;</button>
+      </div>
+    </section>
+
+    
+
+
+    <!-- Terror -->
+    <section class="carousel-section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-accent">|</span> Terror</h2>
+       
+      </div>
+      <div class="carousel-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Anterior">&#8249;</button>
+        <div class="movies" id="terror">
+          <div class="movie" data-title="La Luz Del Diablo" data-link="https://mega.nz/embed/8qhQzRxA#fmiISfHiB5hfoCerkqOzqXfYW_W2UiS_gl7J7wsyRdU!1a" data-year="2022" data-genre="Terror">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/05/prey-for-the-devil-2022.jpg" alt="La Luz Del Diablo">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">La Luz Del Diablo</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Siguiente">&#8250;</button>
+      </div>
+    </section>
+
+    <!-- Romance -->
+    <section class="carousel-section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-accent">|</span> Romance</h2>
+        
+      </div>
+      <div class="carousel-wrapper">
+        <button class="scroll-btn scroll-left" aria-label="Anterior">&#8249;</button>
+        <div class="movies" id="romance">
+          <div class="movie" data-title="Votos de amor" data-link="https://mega.nz/embed/9QUFHThK#dJZX8jk0Op3GtSYwKnLVebsd9WwJSTRI_0UFZj-8e2s!1a" data-year="2012" data-genre="Romance">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2012/07/votos-de-amor.jpg" alt="Votos de amor">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Votos de Amor</p><div class="overlay-meta"><span>2012</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+          <div class="movie" data-title="Bajo la misma estrella" data-link="https://mega.nz/embed/7nhSxAjL#2CyeLS8WJfocD9iXaNFI7w7nohBhWQhRVoh0slFxsSw!1a" data-year="2014" data-genre="Romance">
+            <img src="https://www.cinecalidad.rs/wp-content/uploads/2014/09/bajo-la-misma-estrella.jpg" alt="Bajo la misma estrella">
+            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Bajo la Misma Estrella</p><div class="overlay-meta"><span>2014</span><span class="badge-sm">HD</span></div><button class="overlay-play">&#9654;</button></div></div>
+          </div>
+        </div>
+        <button class="scroll-btn scroll-right" aria-label="Siguiente">&#8250;</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p class="footer-logo">POPOROPO</p>
+    <p class="footer-copy">&copy; 2025 CinePoporopo · Películas gratis en HD</p>
+  </footer>
+
+<!-- Modal de Video -->
+<div id="videoModal" class="modal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <button class="close" id="closeModal" aria-label="Cerrar">&times;</button>
+    <div class="player-wrapper">
+      <iframe 
+        id="videoPlayer" 
+        src="" 
+        allowfullscreen
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+        referrerpolicy="no-referrer"
+        loading="lazy">
+      </iframe>
+      <div id="adClickBlocker"></div>
+    </div>
+  </div>
+</div>
+  <!-- Notificación de búsqueda vacía -->
+  <div id="searchEmpty" class="search-empty" style="display:none;">
+    <p>No se encontraron resultados para "<span id="searchTerm"></span>"</p>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
