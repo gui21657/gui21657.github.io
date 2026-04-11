@@ -1,75 +1,194 @@
 document.addEventListener('DOMContentLoaded', function () {
-  // **Cambio de color del header al hacer scroll**
-  const header = document.querySelector('.header');
 
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) { // Si el scroll supera 50px
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
+  /* ========================
+     HEADER: transparente → oscuro al scroll
+     ======================== */
+  const header = document.getElementById('mainHeader');
+
+  const handleScroll = () => {
+    header.classList.toggle('scrolled', window.scrollY > 20);
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll(); // estado inicial
+
+
+  /* ========================
+     MODAL DE VIDEO
+     ======================== */
+  const modal       = document.getElementById('videoModal');
+  const videoPlayer = document.getElementById('videoPlayer');
+  const closeBtn    = document.getElementById('closeModal');
+  const backdrop    = modal.querySelector('.modal-backdrop');
+
+  function openModal(src) {
+    videoPlayer.src = src;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    videoPlayer.src = '';
+    document.body.style.overflow = '';
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
   });
 
-  // **Funcionalidad de películas y modal**
-  const movies = document.querySelectorAll('.movie');
-  const bannerTitle = document.querySelector('.banner h1');
-  const bannerDescription = document.querySelector('.banner p');
-  const bannerImage = document.querySelector('.banner');
-  const modal = document.getElementById("videoModal");
-  const videoPlayer = document.getElementById("videoPlayer");
-  const closeModal = document.querySelector(".close");
 
-  const playButton = document.querySelector('.btn-play');
-
-    // Función para activar el video en pantalla completa
-    function requestFullScreen(elem) {
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.mozRequestFullScreen) { // Firefox
-        elem.mozRequestFullScreen();
-      } else if (elem.webkitRequestFullscreen) { // Chrome, Safari and Opera
-        elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) { // IE/Edge
-        elem.msRequestFullscreen();
-      }
-    }
-
-    // Mostrar el video y ponerlo en pantalla completa
-    movies.forEach(movie => {
-      movie.addEventListener("click", () => {
-        const videoLink = movie.getAttribute("data-link");
-        videoPlayer.src = videoLink; // Asigna el enlace al iframe
-        modal.style.display = "flex"; // Muestra el modal
-
-        // Solicitar pantalla completa
-        requestFullScreen(videoPlayer);
-      });
+  /* ========================
+     CLICK EN CARDS DE PELÍCULAS
+     ======================== */
+  document.querySelectorAll('.movie').forEach(card => {
+    card.addEventListener('click', () => {
+      const link = card.dataset.link;
+      if (link) openModal(link);
     });
 
-  // Mostrar el modal cuando se haga clic en el botón "Reproducir"
-  playButton.addEventListener('click', function () {
-    const videoLink = playButton.getAttribute('data-link');
-    if (videoLink) {
-      videoPlayer.src = videoLink;
-      modal.style.display = "block";
-    }
+    // Alt text SEO
+    const img = card.querySelector('img');
+    if (img) img.alt = `Película: ${card.dataset.title || ''}`;
   });
 
-  // Cuando el usuario hace clic en el botón de cerrar, se cierra el modal
-  closeModal.onclick = function () {
-    modal.style.display = "none";
-    videoPlayer.src = ""; // Detener el video
-  };
 
-  // Cuando el usuario haga clic fuera del modal, también se cierra
-  window.onclick = function (event) {
-    if (event.target === modal) {
-      modal.style.display = "none";
-      videoPlayer.src = ""; // Detener el video
-    }
-  };
-});
-document.querySelectorAll('.movie img').forEach(img => {
-  const title = img.closest('.movie').dataset.title;
-  img.alt = `cinepoporopo.com Película: ${title}`;
+  /* ========================
+     BOTÓN REPRODUCIR DEL BANNER
+     ======================== */
+  const bannerPlayBtn = document.querySelector('.btn-play');
+  if (bannerPlayBtn) {
+    bannerPlayBtn.addEventListener('click', () => {
+      const link = bannerPlayBtn.dataset.link;
+      if (link) openModal(link);
+    });
+  }
+  /* ========================
+     CARRUSEL CON FLECHAS + BARRA DE PROGRESO (ESTILO NETFLIX)
+     ======================== */
+  function initCarousels() {
+    document.querySelectorAll('.carousel-wrapper').forEach(wrapper => {
+      const list       = wrapper.querySelector('.movies');
+      const btnLeft    = wrapper.querySelector('.scroll-left');
+      const btnRight   = wrapper.querySelector('.scroll-right');
+      
+      if (!list || !btnLeft || !btnRight) return;
+
+      // Crear barra de progreso si no existe
+      let progressContainer = wrapper.querySelector('.carousel-progress');
+      if (!progressContainer) {
+        progressContainer = document.createElement('div');
+        progressContainer.className = 'carousel-progress';
+        const progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar';
+        progressContainer.appendChild(progressBar);
+        wrapper.appendChild(progressContainer);
+      }
+      const progressBar = progressContainer.querySelector('.progress-bar');
+
+      // Calcular cantidad de desplazamiento (6 tarjetas)
+      const getScrollAmount = () => {
+        const firstCard = list.querySelector('.movie');
+        if (!firstCard) return 600;
+        const cardWidth = firstCard.offsetWidth;
+        const gap = parseInt(getComputedStyle(list).gap) || 8;
+        return (cardWidth + gap) * 6;
+      };
+
+      // Actualizar visibilidad de botones y barra de progreso
+      const updateUI = () => {
+        if (!btnLeft || !btnRight) return;
+        
+        const canScrollLeft = list.scrollLeft > 0;
+        const canScrollRight = list.scrollLeft < list.scrollWidth - list.clientWidth - 1;
+        
+        btnLeft.style.display = canScrollLeft ? '' : 'none';
+        btnRight.style.display = canScrollRight ? '' : 'none';
+        
+        // Actualizar barra de progreso
+        if (progressBar) {
+          const scrollPercent = (list.scrollLeft / (list.scrollWidth - list.clientWidth)) * 100;
+          progressBar.style.width = Math.min(scrollPercent, 100) + '%';
+        }
+      };
+
+      // Eventos de clic
+      btnLeft.addEventListener('click', () => {
+        list.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+      });
+      btnRight.addEventListener('click', () => {
+        list.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+      });
+
+      // Observar cambios de tamaño
+      const resizeObserver = new ResizeObserver(() => updateUI());
+      resizeObserver.observe(list);
+      
+      // Actualizar al hacer scroll
+      list.addEventListener('scroll', updateUI, { passive: true });
+      
+      // Actualizar al redimensionar ventana
+      window.addEventListener('resize', updateUI);
+      
+      // Llamada inicial
+      updateUI();
+    });
+  }
+
+  initCarousels();
+
+  /* ========================
+     BUSCADOR
+     ======================== */
+  const searchBar   = document.getElementById('searchBar');
+  const emptyMsg    = document.getElementById('searchEmpty');
+  const searchTerm  = document.getElementById('searchTerm');
+  const allCards    = document.querySelectorAll('.movie');
+  const allSections = document.querySelectorAll('.carousel-section');
+
+  let searchTimer;
+
+  searchBar.addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const query = this.value.trim().toLowerCase();
+
+      if (!query) {
+        allCards.forEach(c => c.classList.remove('hidden'));
+        allSections.forEach(s => s.style.display = '');
+        emptyMsg.style.display = 'none';
+        return;
+      }
+
+      let totalVisible = 0;
+
+      allSections.forEach(section => {
+        const cards   = section.querySelectorAll('.movie');
+        let sectionHits = 0;
+
+        cards.forEach(card => {
+          const title = (card.dataset.title || '').toLowerCase();
+          const genre = (card.dataset.genre || '').toLowerCase();
+          const match = title.includes(query) || genre.includes(query);
+          card.classList.toggle('hidden', !match);
+          if (match) sectionHits++;
+        });
+
+        section.style.display = sectionHits === 0 ? 'none' : '';
+        totalVisible += sectionHits;
+      });
+
+      if (totalVisible === 0) {
+        searchTerm.textContent = this.value.trim();
+        emptyMsg.style.display = 'block';
+        setTimeout(() => { emptyMsg.style.display = 'none'; }, 3000);
+      } else {
+        emptyMsg.style.display = 'none';
+      }
+    }, 200);
+  });
+
 });
