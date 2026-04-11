@@ -199,4 +199,172 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 200);
   });
 
+/* ========================
+   AD BLOCKER / POPUP BLOCKER
+   ======================== */
+
+// 1. Bloquear window.open (popups y tabs nuevos no solicitados)
+(function () {
+  const _open = window.open;
+  window.open = function (url, target, features) {
+    // Solo permite window.open si fue iniciado por el usuario directo (botones del sitio)
+    if (document.activeElement && (
+      document.activeElement.classList.contains('btn-play') ||
+      document.activeElement.classList.contains('overlay-play') ||
+      document.activeElement.classList.contains('btn-info')
+    )) {
+      return _open.call(window, url, target, features);
+    }
+    console.warn('[AdBlock] Popup bloqueado:', url);
+    return null;
+  };
+})();
+
+// 2. Bloquear redirecciones no autorizadas (top-frame hijacking)
+(function () {
+  Object.defineProperty(document, 'location', {
+    set: function (val) {
+      console.warn('[AdBlock] Redirección bloqueada:', val);
+    }
+  });
+
+  // Prevenir que iframes redirijan la página principal
+  const _historyPush = history.pushState;
+  const _historyReplace = history.replaceState;
+
+  history.pushState = function (...args) {
+    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+      console.warn('[AdBlock] pushState desde iframe bloqueado');
+      return;
+    }
+    return _historyPush.apply(history, args);
+  };
+
+  history.replaceState = function (...args) {
+    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+      console.warn('[AdBlock] replaceState desde iframe bloqueado');
+      return;
+    }
+    return _historyReplace.apply(history, args);
+  };
+})();
+
+// 3. Bloquear clicks que intentan redirigir fuera del sitio (click hijacking)
+(function () {
+  document.addEventListener('click', function (e) {
+    const target = e.target;
+    // Si el click viene de dentro de un iframe, ignorar
+    if (target.tagName === 'IFRAME') return;
+
+    // Verificar si hay un <a> con href externo no deseado siendo inyectado
+    const anchor = target.closest('a');
+    if (anchor) {
+      const href = anchor.href || '';
+      const isInternal = href.startsWith(window.location.origin) ||
+                         href.startsWith('#') ||
+                         href === '' ||
+                         href.startsWith('javascript');
+      
+      // Lista de dominios permitidos (agrega los tuyos)
+      const allowedDomains = [
+        'cinepoporopo.com',
+        'mega.nz',
+        'myvidplay.com'
+      ];
+
+      const isAllowed = allowedDomains.some(d => href.includes(d));
+
+      if (!isInternal && !isAllowed) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.warn('[AdBlock] Link externo bloqueado:', href);
+      }
+    }
+  }, true); // capture phase para interceptar antes que otros handlers
+})();
+
+// 4. Bloquear creación dinámica de iframes o scripts de ads conocidos
+(function () {
+  const adDomains = [
+    'doubleclick.net',
+    'googlesyndication.com',
+    'adnxs.com',
+    'outbrain.com',
+    'taboola.com',
+    'popads.net',
+    'popcash.net',
+    'trafficjunky.net',
+    'exoclick.com',
+    'juicyads.com',
+    'plugrush.com',
+    'ero-advertising.com',
+    'hilltopads.net',
+    'propellerads.com',
+    'adsterra.com',
+    'trafficstars.com',
+    'clickadu.com',
+    'revcontent.com',
+    'mgid.com'
+  ];
+
+  // Interceptar appendChild y insertBefore para bloquear scripts/iframes de ads
+  const _appendChild = Element.prototype.appendChild;
+  Element.prototype.appendChild = function (node) {
+    if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
+      const src = node.src || node.dataset?.src || '';
+      if (adDomains.some(d => src.includes(d))) {
+        console.warn('[AdBlock] Elemento de ad bloqueado:', src);
+        return node;
+      }
+    }
+    return _appendChild.call(this, node);
+  };
+
+  const _insertBefore = Element.prototype.insertBefore;
+  Element.prototype.insertBefore = function (node, ref) {
+    if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
+      const src = node.src || '';
+      if (adDomains.some(d => src.includes(d))) {
+        console.warn('[AdBlock] Elemento de ad bloqueado (insertBefore):', src);
+        return node;
+      }
+    }
+    return _insertBefore.call(this, node, ref);
+  };
+})();
+
+// 5. Bloquear overlays y elementos de ad que se inyectan sobre la página
+(function () {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(({ addedNodes }) => {
+      addedNodes.forEach(node => {
+        if (node.nodeType !== 1) return;
+
+        const style = window.getComputedStyle?.(node) || {};
+        const isOverlay =
+          (style.position === 'fixed' || style.position === 'absolute') &&
+          parseInt(style.zIndex) > 9000 &&
+          !node.id?.includes('videoModal') &&
+          !node.id?.includes('searchEmpty') &&
+          !node.classList?.contains('modal') &&
+          !node.classList?.contains('search-empty');
+
+        if (isOverlay) {
+          // Verificar si tiene src de ad conocido
+          const src = node.src || node.innerHTML || '';
+          const looksLikeAd = src.includes('ad') || src.includes('pop') || src.includes('click');
+          if (looksLikeAd) {
+            node.remove();
+            console.warn('[AdBlock] Overlay de ad eliminado');
+          }
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+})();
+
+
+
 });
