@@ -284,15 +284,24 @@
     <p class="footer-copy">&copy; 2025 CinePoporopo · Películas gratis en HD</p>
   </footer>
 
-  <!-- Modal de Video -->
-  <div id="videoModal" class="modal">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <button class="close" id="closeModal" aria-label="Cerrar">&times;</button>
-      <iframe id="videoPlayer" src="" allowfullscreen></iframe>
+<!-- Modal de Video -->
+<div id="videoModal" class="modal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <button class="close" id="closeModal" aria-label="Cerrar">&times;</button>
+    <div class="player-wrapper">
+      <iframe 
+        id="videoPlayer" 
+        src="" 
+        allowfullscreen
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
+        referrerpolicy="no-referrer"
+        loading="lazy">
+      </iframe>
+      <div id="adClickBlocker"></div>
     </div>
   </div>
-
+</div>
   <!-- Notificación de búsqueda vacía -->
   <div id="searchEmpty" class="search-empty" style="display:none;">
     <p>No se encontraron resultados para "<span id="searchTerm"></span>"</p>
