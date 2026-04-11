@@ -169,6 +169,10 @@ ul { list-style: none; }
   pointer-events: none;
 }
 
+.banner-hidden-offset {
+  padding-top: calc(var(--header-h) + 160px);
+}
+
 .banner-content {
   position: relative;
   z-index: 2;
