@@ -199,121 +199,177 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 200);
   });
 
-/* ========================
-   AD BLOCKER / POPUP BLOCKER
-   ======================== */
+/* ============================================================
+   POPOROPO AD BLOCKER v2.0 - STRICT MODE
+   Optimizado para DoodStream y plataformas de embed similares
+   ============================================================ */
 
-// 1. Bloquear window.open (popups y tabs nuevos no solicitados)
 (function () {
-  const _open = window.open;
-  window.open = function (url, target, features) {
-    // Solo permite window.open si fue iniciado por el usuario directo (botones del sitio)
-    if (document.activeElement && (
-      document.activeElement.classList.contains('btn-play') ||
-      document.activeElement.classList.contains('overlay-play') ||
-      document.activeElement.classList.contains('btn-info')
-    )) {
-      return _open.call(window, url, target, features);
-    }
-    console.warn('[AdBlock] Popup bloqueado:', url);
-    return null;
-  };
-})();
+  'use strict';
 
-// 2. Bloquear redirecciones no autorizadas (top-frame hijacking)
-(function () {
-  Object.defineProperty(document, 'location', {
-    set: function (val) {
-      console.warn('[AdBlock] Redirección bloqueada:', val);
-    }
-  });
-
-  // Prevenir que iframes redirijan la página principal
-  const _historyPush = history.pushState;
-  const _historyReplace = history.replaceState;
-
-  history.pushState = function (...args) {
-    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-      console.warn('[AdBlock] pushState desde iframe bloqueado');
-      return;
-    }
-    return _historyPush.apply(history, args);
-  };
-
-  history.replaceState = function (...args) {
-    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-      console.warn('[AdBlock] replaceState desde iframe bloqueado');
-      return;
-    }
-    return _historyReplace.apply(history, args);
-  };
-})();
-
-// 3. Bloquear clicks que intentan redirigir fuera del sitio (click hijacking)
-(function () {
-  document.addEventListener('click', function (e) {
-    const target = e.target;
-    // Si el click viene de dentro de un iframe, ignorar
-    if (target.tagName === 'IFRAME') return;
-
-    // Verificar si hay un <a> con href externo no deseado siendo inyectado
-    const anchor = target.closest('a');
-    if (anchor) {
-      const href = anchor.href || '';
-      const isInternal = href.startsWith(window.location.origin) ||
-                         href.startsWith('#') ||
-                         href === '' ||
-                         href.startsWith('javascript');
-      
-      // Lista de dominios permitidos (agrega los tuyos)
-      const allowedDomains = [
-        'cinepoporopo.com',
-        'mega.nz',
-        'myvidplay.com'
-      ];
-
-      const isAllowed = allowedDomains.some(d => href.includes(d));
-
-      if (!isInternal && !isAllowed) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.warn('[AdBlock] Link externo bloqueado:', href);
-      }
-    }
-  }, true); // capture phase para interceptar antes que otros handlers
-})();
-
-// 4. Bloquear creación dinámica de iframes o scripts de ads conocidos
-(function () {
-  const adDomains = [
-    'doubleclick.net',
-    'googlesyndication.com',
-    'adnxs.com',
-    'outbrain.com',
-    'taboola.com',
-    'popads.net',
-    'popcash.net',
-    'trafficjunky.net',
-    'exoclick.com',
-    'juicyads.com',
-    'plugrush.com',
-    'ero-advertising.com',
-    'hilltopads.net',
-    'propellerads.com',
-    'adsterra.com',
-    'trafficstars.com',
-    'clickadu.com',
-    'revcontent.com',
-    'mgid.com'
+  // ── Dominios de video permitidos (solo estos pueden cargar en iframes) ──
+  const ALLOWED_EMBED_DOMAINS = [
+    'mega.nz',
+    'myvidplay.com',
+    'dood.watch',
+    'doodstream.com',
+    'ds2play.com',      // dominios alternativos de DoodStream
+    'dooood.com',
+    'd0000d.com',
+    'dood.la',
+    'dood.to',
+    'dood.pm',
+    'dood.re',
+    'dood.wf'
   ];
 
-  // Interceptar appendChild y insertBefore para bloquear scripts/iframes de ads
+  // ── Dominios de publicidad conocidos ──
+  const AD_DOMAINS = [
+    'doubleclick.net', 'googlesyndication.com', 'adnxs.com',
+    'outbrain.com', 'taboola.com', 'popads.net', 'popcash.net',
+    'trafficjunky.net', 'exoclick.com', 'juicyads.com', 'plugrush.com',
+    'hilltopads.net', 'propellerads.com', 'adsterra.com', 'trafficstars.com',
+    'clickadu.com', 'revcontent.com', 'mgid.com', 'adskeeper.com',
+    'adspyglass.com', 'eroadvertising.com', 'adcash.com', 'bidvertiser.com',
+    'yllix.com', 'pushground.com', 'richpush.co', 'evadav.com',
+    'zeropark.com', 'datpush.com', 'pushpush.net', 'pu.sh',
+    'doodstream.icu', 'ads.dood', 'vidads', 'adbull',
+    'go2ads', 'shorte.st', 'adf.ly', 'linkvertise', 'ouo.io'
+  ];
+
+  // ════════════════════════════════════════════
+  // 1. BLOQUEO TOTAL DE window.open
+  // ════════════════════════════════════════════
+  const _originalOpen = window.open;
+  window.open = function () {
+    console.warn('[AdBlock] window.open bloqueado');
+    return {
+      closed: true,
+      close: () => {},
+      focus: () => {},
+      document: { write: () => {}, close: () => {} }
+    };
+  };
+
+  // ════════════════════════════════════════════
+  // 2. BLOQUEO DE REDIRECCIONES (el más importante para DoodStream)
+  // ════════════════════════════════════════════
+
+  // Congela window.location para que nadie pueda cambiarlo
+  const _location = window.location;
+
+  ['href', 'replace', 'assign'].forEach(method => {
+    try {
+      if (method === 'href') {
+        Object.defineProperty(window.location, 'href', {
+          set: function (url) {
+            // Solo permite cambios de URL si vienen de acción directa del usuario en botones del sitio
+            if (_isUserAction()) {
+              _location.href = url;
+            } else {
+              console.warn('[AdBlock] Redirección href bloqueada:', url);
+            }
+          },
+          get: function () { return _location.href; }
+        });
+      }
+    } catch (e) {}
+  });
+
+  // Bloquear location.replace y location.assign
+  try {
+    window.location.replace = function (url) {
+      console.warn('[AdBlock] location.replace bloqueado:', url);
+    };
+    window.location.assign = function (url) {
+      console.warn('[AdBlock] location.assign bloqueado:', url);
+    };
+  } catch (e) {}
+
+  // Bloquear top/parent frame hijacking (cuando el iframe intenta salir del frame)
+  try {
+    Object.defineProperty(window, 'top', {
+      get: function () { return window; }
+    });
+    Object.defineProperty(window, 'parent', {
+      get: function () { return window; }
+    });
+  } catch (e) {}
+
+  // Bloquear history manipulation desde contextos no autorizados
+  const _pushState = history.pushState.bind(history);
+  const _replaceState = history.replaceState.bind(history);
+  history.pushState = function (...args) {
+    if (!_isTrustedContext()) return;
+    return _pushState(...args);
+  };
+  history.replaceState = function (...args) {
+    if (!_isTrustedContext()) return;
+    return _replaceState(...args);
+  };
+
+  function _isUserAction() {
+    const el = document.activeElement;
+    if (!el) return false;
+    return el.classList.contains('btn-play') ||
+           el.classList.contains('overlay-play') ||
+           el.classList.contains('btn') ||
+           el.closest?.('.modal-content') !== null;
+  }
+
+  function _isTrustedContext() {
+    const el = document.activeElement;
+    return el && el.tagName !== 'IFRAME' && el.tagName !== 'BODY';
+  }
+
+  // ════════════════════════════════════════════
+  // 3. BLOQUEO DE EVENTOS DE CLICK NO DESEADOS
+  // ════════════════════════════════════════════
+  document.addEventListener('click', function (e) {
+    const anchor = e.target.closest('a');
+    if (!anchor) return;
+
+    const href = anchor.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('javascript:void')) return;
+
+    const isInternal = href.startsWith(window.location.origin) ||
+                       href.startsWith('/') ||
+                       href === '#';
+    
+    const isAllowed = ALLOWED_EMBED_DOMAINS.some(d => href.includes(d));
+
+    if (!isInternal && !isAllowed) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      console.warn('[AdBlock] Click externo bloqueado:', href);
+    }
+  }, true);
+
+  // Bloquear clicks que usen setTimeout para esquivar el bloqueador
+  const _setTimeout = window.setTimeout;
+  window.setTimeout = function (fn, delay, ...args) {
+    // Bloquear timeouts muy cortos de redirección (truco común en DoodStream)
+    if (typeof fn === 'string' && fn.includes('location')) {
+      console.warn('[AdBlock] setTimeout con redirección bloqueado');
+      return 0;
+    }
+    return _setTimeout.call(window, fn, delay, ...args);
+  };
+
+  // ════════════════════════════════════════════
+  // 4. BLOQUEO DE INYECCIÓN DE SCRIPTS Y IFRAMES DE ADS
+  // ════════════════════════════════════════════
+  function isAdSource(src) {
+    if (!src) return false;
+    return AD_DOMAINS.some(d => src.includes(d));
+  }
+
   const _appendChild = Element.prototype.appendChild;
   Element.prototype.appendChild = function (node) {
-    if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
-      const src = node.src || node.dataset?.src || '';
-      if (adDomains.some(d => src.includes(d))) {
-        console.warn('[AdBlock] Elemento de ad bloqueado:', src);
+    if (node.nodeType === 1) {
+      const src = node.src || node.href || '';
+      if ((node.tagName === 'SCRIPT' || node.tagName === 'IFRAME' || node.tagName === 'LINK') && isAdSource(src)) {
+        console.warn('[AdBlock] Elemento ad bloqueado (appendChild):', src);
         return node;
       }
     }
@@ -322,49 +378,85 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const _insertBefore = Element.prototype.insertBefore;
   Element.prototype.insertBefore = function (node, ref) {
-    if (node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') {
-      const src = node.src || '';
-      if (adDomains.some(d => src.includes(d))) {
-        console.warn('[AdBlock] Elemento de ad bloqueado (insertBefore):', src);
+    if (node.nodeType === 1) {
+      const src = node.src || node.href || '';
+      if ((node.tagName === 'SCRIPT' || node.tagName === 'IFRAME') && isAdSource(src)) {
+        console.warn('[AdBlock] Elemento ad bloqueado (insertBefore):', src);
         return node;
       }
     }
     return _insertBefore.call(this, node, ref);
   };
-})();
 
-// 5. Bloquear overlays y elementos de ad que se inyectan sobre la página
-(function () {
+  // ════════════════════════════════════════════
+  // 5. MUTATION OBSERVER - ELIMINA OVERLAYS Y POPUPS INYECTADOS
+  // ════════════════════════════════════════════
+  const PROTECTED_IDS = ['videoModal', 'searchEmpty', 'mainHeader', 'mainBanner'];
+  const PROTECTED_CLASSES = ['modal', 'search-empty', 'header', 'banner', 'movie', 'carousel-section', 'content-area'];
+
   const observer = new MutationObserver((mutations) => {
     mutations.forEach(({ addedNodes }) => {
       addedNodes.forEach(node => {
         if (node.nodeType !== 1) return;
 
-        const style = window.getComputedStyle?.(node) || {};
-        const isOverlay =
-          (style.position === 'fixed' || style.position === 'absolute') &&
-          parseInt(style.zIndex) > 9000 &&
-          !node.id?.includes('videoModal') &&
-          !node.id?.includes('searchEmpty') &&
-          !node.classList?.contains('modal') &&
-          !node.classList?.contains('search-empty');
+        // Saltar elementos protegidos del sitio
+        if (PROTECTED_IDS.includes(node.id)) return;
+        if (PROTECTED_CLASSES.some(c => node.classList?.contains(c))) return;
 
-        if (isOverlay) {
-          // Verificar si tiene src de ad conocido
-          const src = node.src || node.innerHTML || '';
-          const looksLikeAd = src.includes('ad') || src.includes('pop') || src.includes('click');
-          if (looksLikeAd) {
-            node.remove();
-            console.warn('[AdBlock] Overlay de ad eliminado');
-          }
+        const style = node.style || {};
+        const computed = window.getComputedStyle(node);
+
+        const isFixedOverlay = (
+          style.position === 'fixed' || computed.position === 'fixed' ||
+          style.position === 'absolute' || computed.position === 'absolute'
+        ) && (
+          parseInt(style.zIndex || computed.zIndex) > 1000
+        );
+
+        const looksLikeAd = (
+          (node.src && isAdSource(node.src)) ||
+          node.id?.match(/ad|pop|overlay|banner/i) ||
+          node.className?.match?.(/ad|pop|overlay|sponsor/i) ||
+          (node.tagName === 'IFRAME' && !ALLOWED_EMBED_DOMAINS.some(d => (node.src || '').includes(d)))
+        );
+
+        if (isFixedOverlay || looksLikeAd) {
+          node.remove();
+          console.warn('[AdBlock] Nodo sospechoso eliminado:', node.tagName, node.id || node.className);
         }
       });
     });
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  // Iniciar observer cuando el DOM esté listo
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+  } else {
+    document.addEventListener('DOMContentLoaded', () => {
+      observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    });
+  }
+
+  // ════════════════════════════════════════════
+  // 6. SANDBOX EN IFRAMES - SOLO AL ABRIRLOS EN EL MODAL
+  //    Agrega restricciones al iframe del modal
+  // ════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    const videoPlayer = document.getElementById('videoPlayer');
+    if (videoPlayer) {
+      // allow-scripts: necesario para reproducir el video
+      // allow-same-origin: necesario para DoodStream
+      // NO se incluye allow-popups ni allow-top-navigation
+      videoPlayer.setAttribute('sandbox',
+        'allow-scripts allow-same-origin allow-forms allow-presentation'
+      );
+      videoPlayer.setAttribute('referrerpolicy', 'no-referrer');
+      videoPlayer.setAttribute('loading', 'lazy');
+    }
+  });
+
+  console.log('[AdBlock] Poporopo AdBlock v2.0 activo ✓');
+
 })();
-
-
 
 });
