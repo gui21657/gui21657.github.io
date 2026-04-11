@@ -139,15 +139,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   initCarousels();
-
   /* ========================
-     BUSCADOR
-     ======================== */
+   BUSCADOR
+   ======================== */
   const searchBar   = document.getElementById('searchBar');
   const emptyMsg    = document.getElementById('searchEmpty');
   const searchTerm  = document.getElementById('searchTerm');
   const allCards    = document.querySelectorAll('.movie');
   const allSections = document.querySelectorAll('.carousel-section');
+  const banner      = document.getElementById('mainBanner');
+  const contentArea = document.querySelector('.content-area');
 
   let searchTimer;
 
@@ -159,9 +160,16 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!query) {
         allCards.forEach(c => c.classList.remove('hidden'));
         allSections.forEach(s => s.style.display = '');
+        banner.style.display = '';
+        contentArea.style.paddingTop = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         emptyMsg.style.display = 'none';
         return;
       }
+
+      banner.style.display = 'none';
+      contentArea.style.paddingTop = 'calc(var(--header-h) + 16px)';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
 
       let totalVisible = 0;
 
