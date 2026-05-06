@@ -3,8 +3,8 @@
    Sections:
      A. AdBlocker (IIFE)
      B. TMDB client
-     C. Embed servers (vidsrc / 2embed / superembed)
-     D. UI: header, toast, modales, banner, carruseles, búsqueda
+     C. Embed server (vidsrc) + availability cache
+     D. Lógica principal
    ============================================================ */
 
 
@@ -19,9 +19,8 @@
     'themoviedb.org',
     'image.tmdb.org',
     'vidsrc.xyz', 'vidsrc.to', 'vidsrc.me', 'vidsrc.in', 'vidsrc.pm',
-    '2embed.cc', 'www.2embed.cc',
-    'multiembed.mov', 'autoembed.cc',
-    // legacy (por si quieres mezclar entradas manuales):
+    'cloudnestra.com',
+    // legacy:
     'mega.nz', 'drive.google.com', 'docs.google.com',
   ];
 
@@ -102,18 +101,18 @@
   const SAFE_IDS = new Set([
     'videoModal','infoModal','searchEmpty','mainHeader','mainBanner',
     'adClickBlocker','playerSpinner','toast','searchClear','catalog',
-    'searchResults','searchGrid','playerServers','infoBackdrop','bannerContent'
+    'searchResults','searchGrid','infoBackdrop','bannerContent'
   ]);
   const SAFE_CLASSES = new Set([
     'modal','search-empty','header','banner','movie',
     'carousel-section','content-area','player-wrapper',
     'info-modal','toast','blocker-strip','carousel-loader',
-    'movie-skeleton','search-results-area','search-grid','player-servers',
-    'server-btn','info-body','info-backdrop','banner-content',
+    'movie-skeleton','search-results-area','search-grid',
+    'info-body','info-backdrop','banner-content',
     'banner-overlay','banner-fade-bottom','carousel-wrapper',
     'movies','scroll-btn','section-header','section-title',
     'overlay-content','movie-overlay','overlay-title','overlay-meta',
-    'overlay-play','badge','badge-hd','badge-sm'
+    'overlay-play','badge','badge-hd','badge-sm','movie-info-btn'
   ]);
 
   const observer = new MutationObserver(mutations => {
@@ -150,7 +149,7 @@
     startObserver();
   }
 
-  console.log('[AdBlock] Poporopo AdBlock v4.0 ACTIVO ✓');
+  console.log('[AdBlock] Poporopo AdBlock v4.1 ACTIVO ✓');
 })();
 
 
@@ -161,7 +160,7 @@ const TMDB_KEY  = '5f41e16316f1452122fe4d2c1234b068';
 const TMDB_API  = 'https://api.themoviedb.org/3';
 const TMDB_IMG  = 'https://image.tmdb.org/t/p';
 const LANG      = 'es-ES';
-const REGION    = 'GT'; // Guatemala (afecta release dates)
+const REGION    = 'GT'; // Guatemala
 
 // 15 géneros
 const GENRES = [
@@ -194,7 +193,7 @@ async function tmdb(path, params = {}) {
   return res.json();
 }
 
-const posterUrl   = (p, size = 'w342')   => p ? `${TMDB_IMG}/${size}${p}` : '';
+const posterUrl   = (p, size = 'w342')     => p ? `${TMDB_IMG}/${size}${p}` : '';
 const backdropUrl = (p, size = 'original') => p ? `${TMDB_IMG}/${size}${p}` : '';
 
 const PLACEHOLDER_POSTER =
@@ -208,14 +207,48 @@ const PLACEHOLDER_POSTER =
 
 
 /* ============================================================
-   C. EMBED SERVERS  (subtítulos en español por defecto)
+   C. EMBED SERVER  (solo vidsrc — subtítulos en español + autoplay)
    ============================================================ */
-const SERVERS = {
-  vidsrc:     (id) => `https://vidsrc.xyz/embed/movie?tmdb=${id}&ds_lang=es`,
-  '2embed':   (id) => `https://www.2embed.cc/embed/${id}`,
-  superembed: (id) => `https://multiembed.mov/?video_id=${id}&tmdb=1`,
-};
-const DEFAULT_SERVER = 'vidsrc';
+const VIDSRC_URL = (id) =>
+  `https://vidsrc.xyz/embed/movie?tmdb=${id}&ds_lang=es&autoplay=1`;
+
+// Tiempo que esperamos a recibir señal del reproductor antes de marcar
+// la película como no disponible.
+const AVAILABILITY_TIMEOUT = 15000; // 15 segundos
+
+/* ── Cache de películas no disponibles (localStorage, TTL 7 días) ── */
+const BAD_CACHE_KEY = 'poporopo_unavailable_movies';
+const BAD_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+
+function loadBadCache() {
+  try {
+    const raw = localStorage.getItem(BAD_CACHE_KEY);
+    if (!raw) return new Set();
+    const obj = JSON.parse(raw);
+    const now = Date.now();
+    const valid = new Set();
+    const cleaned = {};
+    for (const [id, ts] of Object.entries(obj)) {
+      if (now - ts < BAD_CACHE_TTL) {
+        valid.add(Number(id));
+        cleaned[id] = ts;
+      }
+    }
+    localStorage.setItem(BAD_CACHE_KEY, JSON.stringify(cleaned));
+    return valid;
+  } catch (e) { return new Set(); }
+}
+
+function markBadId(id) {
+  try {
+    const raw = localStorage.getItem(BAD_CACHE_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    obj[id] = Date.now();
+    localStorage.setItem(BAD_CACHE_KEY, JSON.stringify(obj));
+  } catch (e) {}
+}
+
+const badMovies = loadBadCache();
 
 
 /* ============================================================
@@ -223,7 +256,7 @@ const DEFAULT_SERVER = 'vidsrc';
    ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
 
-  const $ = (sel, root = document) => root.querySelector(sel);
+  const $  = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
   function escapeHtml(s) {
@@ -261,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const videoBack    = videoModal.querySelector('.modal-backdrop');
   const playerSpin   = $('#playerSpinner');
   const adBlocker    = $('#adClickBlocker');
-  const serverBtns   = $$('.server-btn');
 
   const infoModal       = $('#infoModal');
   const closeInfoBtn    = $('#closeInfoModal');
@@ -276,7 +308,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const infoPlayBtn     = $('#infoPlayBtn');
 
   let currentMovieId = null;
-  let currentServer = DEFAULT_SERVER;
   const modalStack = [];
 
   function getFocusable(container) {
@@ -316,23 +347,75 @@ document.addEventListener('DOMContentLoaded', function () {
     if (opener && typeof opener.focus === 'function') { try { opener.focus(); } catch (e) {} }
   }
 
+  // ── Detección de disponibilidad vía postMessage ──
+  let availabilityTimer = null;
+  let availabilityListener = null;
+  let availabilitySignal = false;
+
+  function startAvailabilityCheck(tmdbId) {
+    stopAvailabilityCheck();
+    availabilitySignal = false;
+
+    availabilityListener = (e) => {
+      const data = e.data;
+      if (data == null) return;
+      const origin = e.origin || '';
+      const fromPlayer = /vidsrc|cloudnestra|filemoon|streamwish|vidcloud|hlswish/i.test(origin);
+      const looksLikePlayer = fromPlayer ||
+        (typeof data === 'string' && /play|pause|time|ready|init|loaded|duration/i.test(data)) ||
+        (typeof data === 'object' && (data.event || data.type || data.player || data.method));
+      if (looksLikePlayer) {
+        availabilitySignal = true;
+        stopAvailabilityCheck();
+      }
+    };
+    window.addEventListener('message', availabilityListener);
+
+    availabilityTimer = setTimeout(() => {
+      if (!availabilitySignal && currentMovieId === tmdbId) {
+        handleUnavailable(tmdbId);
+      }
+    }, AVAILABILITY_TIMEOUT);
+  }
+
+  function stopAvailabilityCheck() {
+    if (availabilityTimer) { clearTimeout(availabilityTimer); availabilityTimer = null; }
+    if (availabilityListener) {
+      window.removeEventListener('message', availabilityListener);
+      availabilityListener = null;
+    }
+  }
+
+  function handleUnavailable(tmdbId) {
+    badMovies.add(tmdbId);
+    markBadId(tmdbId);
+    // Quitar todas las cards de esta película del DOM (puede estar en varios géneros)
+    document.querySelectorAll(`.movie[data-tmdb-id="${tmdbId}"]`).forEach(c => c.remove());
+    closeVideoModal();
+    showToast('Esta película no está disponible y será ocultada.', 3500);
+  }
+
   // ── Video modal ──
   function openVideoModal(tmdbId, opener) {
+    if (badMovies.has(tmdbId)) {
+      showToast('Esta película no está disponible.');
+      return;
+    }
     currentMovieId = tmdbId;
-    currentServer = DEFAULT_SERVER;
-    serverBtns.forEach(b => b.classList.toggle('is-active', b.dataset.server === currentServer));
 
     if (playerSpin) playerSpin.classList.remove('is-hidden');
     videoPlayer.src = '';
     requestAnimationFrame(() => {
-      videoPlayer.src = SERVERS[currentServer](tmdbId);
+      videoPlayer.src = VIDSRC_URL(tmdbId);
     });
 
     if (adBlocker) adBlocker.classList.add('is-active');
     openModal(videoModal, opener);
+    startAvailabilityCheck(tmdbId);
   }
 
   function closeVideoModal() {
+    stopAvailabilityCheck();
     videoPlayer.src = '';
     if (adBlocker) adBlocker.classList.remove('is-active');
     if (playerSpin) playerSpin.classList.remove('is-hidden');
@@ -347,24 +430,8 @@ document.addEventListener('DOMContentLoaded', function () {
   closeVideo.addEventListener('click', closeVideoModal);
   videoBack.addEventListener('click', closeVideoModal);
 
-  // Switcher de servidores
-  serverBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const server = btn.dataset.server;
-      if (!SERVERS[server] || !currentMovieId) return;
-      currentServer = server;
-      serverBtns.forEach(b => b.classList.toggle('is-active', b === btn));
-      if (playerSpin) playerSpin.classList.remove('is-hidden');
-      videoPlayer.src = '';
-      requestAnimationFrame(() => {
-        videoPlayer.src = SERVERS[server](currentMovieId);
-      });
-    });
-  });
-
   // ── Info modal ──
   async function openInfoModal(tmdbId, opener) {
-    // Datos rápidos primero (placeholder), luego llenado completo
     infoTitleEl.textContent = 'Cargando…';
     infoYearEl.textContent = '';
     infoDurationEl.textContent = '';
@@ -450,6 +517,22 @@ document.addEventListener('DOMContentLoaded', function () {
     img.onerror = () => { img.src = PLACEHOLDER_POSTER; };
     card.appendChild(img);
 
+    // Botón de información (esquina superior derecha)
+    const infoBtn = document.createElement('button');
+    infoBtn.type = 'button';
+    infoBtn.className = 'movie-info-btn';
+    infoBtn.setAttribute('aria-label', `Más información sobre ${title}`);
+    infoBtn.title = 'Más información';
+    infoBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.4"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="11" x2="12" y2="17"/>
+        <line x1="12" y1="7" x2="12.01" y2="7"/>
+      </svg>`;
+    card.appendChild(infoBtn);
+
     const overlay = document.createElement('div');
     overlay.className = 'movie-overlay';
     overlay.innerHTML = `
@@ -464,15 +547,26 @@ document.addEventListener('DOMContentLoaded', function () {
     card.appendChild(overlay);
 
     const activate = () => openVideoModal(movie.id, card);
+    const showInfo = (opener) => openInfoModal(movie.id, opener || card);
+
     card.addEventListener('click', activate);
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
-      if (e.key === 'i' || e.key === 'I') { e.preventDefault(); openInfoModal(movie.id, card); }
+      if (e.key === 'i' || e.key === 'I') { e.preventDefault(); showInfo(card); }
     });
-    // Click derecho → más info
     card.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      openInfoModal(movie.id, card);
+      showInfo(card);
+    });
+
+    // Click en el botón de info → abrir modal sin disparar reproducción
+    infoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      showInfo(infoBtn);
+    });
+    infoBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
     });
 
     return card;
@@ -534,7 +628,6 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     loadMoreCarousel(state, true).then(() => {
-      // Quitar skeletons
       list.querySelectorAll('.movie-skeleton').forEach(n => n.remove());
       list.appendChild(loader);
       loader.hidden = true;
@@ -558,10 +651,12 @@ document.addEventListener('DOMContentLoaded', function () {
         include_adult: 'false',
         include_video: 'false',
         region: REGION,
-        'vote_count.gte': 30, // filtra basura sin votos
+        'vote_count.gte': 30,
       });
 
-      const results = (data.results || []).filter(m => m.poster_path);
+      const results = (data.results || []).filter(m =>
+        m.poster_path && !badMovies.has(m.id)
+      );
 
       results.forEach(m => {
         if (!state.seen.has(m.id)) {
@@ -582,7 +677,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     } catch (err) {
       console.error('TMDB carousel error:', err);
-      // No marcamos exhausted: permite reintentar al volver a hacer scroll
     } finally {
       state.loading = false;
       if (!isFirst && state.loader && !state.exhausted) state.loader.hidden = true;
@@ -669,7 +763,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       const data = await tmdb('/trending/movie/week');
-      const movie = (data.results || []).find(m => m.backdrop_path && m.overview && m.poster_path);
+      const movie = (data.results || []).find(m =>
+        m.backdrop_path && m.overview && m.poster_path && !badMovies.has(m.id)
+      );
       if (!movie) return;
 
       banner.style.backgroundImage = `url('${backdropUrl(movie.backdrop_path)}')`;
@@ -693,7 +789,6 @@ document.addEventListener('DOMContentLoaded', function () {
       content.hidden = false;
     } catch (err) {
       console.error('Banner error:', err);
-      // Fallback: muestra el banner content vacío con un mensaje
       content.hidden = false;
       titleEl.textContent = 'POPOROPO';
       descEl.textContent = 'Películas gratis en HD.';
@@ -751,7 +846,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const res = await fetch(url.toString(), { signal: searchAbort.signal });
       const data = await res.json();
-      const results = (data.results || []).filter(m => m.poster_path);
+      const results = (data.results || []).filter(m =>
+        m.poster_path && !badMovies.has(m.id)
+      );
 
       searchGrid.innerHTML = '';
       if (results.length === 0) {
