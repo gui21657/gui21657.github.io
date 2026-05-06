@@ -1,27 +1,25 @@
 <!DOCTYPE html>
-<html lang="es"> 
-<head> 
+<html lang="es">
+<head>
   <link rel="icon" href="android-chrome-192x192.png" type="image/x-icon"/>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CinePoporopo.com ▶ Más de 100 películas GRATIS en HD: Ciencia Ficción, Animación, Acción, Terror y Romance ¡Sin Anuncios!">
-  <meta name="keywords" content="películas gratis sin anuncios, cine online gratis, ver ciencia ficción HD">
+  <meta name="description" content="CinePoporopo.com ▶ Cientos de películas GRATIS en HD: Acción, Drama, Terror, Sci-Fi y más.">
+  <meta name="keywords" content="películas gratis, cine online gratis, ver películas HD, subtítulos español">
   <meta name="author" content="CinePoporopo">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="CinePoporopo 🎬 Películas GRATIS en HD Sin Anuncios.">
-  <meta property="og:description" content="¡Mira +100 películas completas en HD! Ciencia Ficción, Terror, Animación y Romance ¡Sin Registros ni Anuncios!">
-  <meta property="og:image" content="https://okdiario.com/img/2022/03/31/filmin-esta-lleno-de-obras-maestras-del-cine.jpg">
+  <meta property="og:title" content="CinePoporopo 🎬 Películas GRATIS en HD.">
+  <meta property="og:description" content="¡Mira películas completas en HD con subtítulos en español!">
   <meta property="og:url" content="https://www.cinepoporopo.com">
   <meta name="theme-color" content="#E50914">
   <title>POPOROPO</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://api.themoviedb.org">
+  <link rel="preconnect" href="https://image.tmdb.org">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Preload del banner para evitar flash de fondo -->
-  <link rel="preload" as="image" href="https://imgs.search.brave.com/5ffEYF6-pRq7Vfg5u62DzzCg8WNmpoMJDh2PoTWDCsc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9oaXBz/LmhlYXJzdGFwcHMu/Y29tL2htZy1wcm9k/L2ltYWdlcy9jaWxs/aWFuLW11cnBoeS1q/LXJvYmVydC1vcHBl/bmhlaW1lci02NGFk/NmVjOTMwYTM3Lmpw/Zz9jcm9wPTEuMDB4/dzowLjg0NnhoOzAs/MC4wNzQ4eGg">
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -49,58 +47,15 @@
     </div>
   </header>
 
-  <!-- Banner Principal -->
-  <section class="banner" id="mainBanner" style="background-image: url('https://imgs.search.brave.com/5ffEYF6-pRq7Vfg5u62DzzCg8WNmpoMJDh2PoTWDCsc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9oaXBz/LmhlYXJzdGFwcHMu/Y29tL2htZy1wcm9k/L2ltYWdlcy9jaWxs/aWFuLW11cnBoeS1q/LXJvYmVydC1vcHBl/bmhlaW1lci02NGFk/NmVjOTMwYTM3Lmpw/Zz9jcm9wPTEuMDB4/dzowLjg0NnhoOzAs/MC4wNzQ4eGg');">
-    <!--
-      ▶ Trailer de fondo estilo Netflix
-      Aparece a los 3 segundos sobre la imagen.
-
-      Opción A (recomendada) — MP4/WebM directo:
-        Sustituye el atributo data-src del <video> por la URL de tu MP4.
-        Debe cumplir CORS o estar servido desde el mismo dominio.
-
-      Opción B (fallback) — Trailer de YouTube:
-        Pon el ID del video en data-yt-id (ej: "uYPbbksJxIg" para Oppenheimer).
-        El sitio cargará la API de YouTube y reproducirá silencioso en bucle.
-        Si no quieres trailer, deja ambos vacíos y solo se ve la imagen.
-    -->
-    <div class="banner-video" id="bannerVideo"
-         data-yt-id=""
-         data-yt-start="10"
-         data-yt-end="40"
-         data-delay="3000">
-      <video class="banner-video-el"
-             id="bannerVideoEl"
-             muted
-             loop
-             playsinline
-             preload="none"
-             aria-hidden="true"
-             data-src="https://rr4---sn-upbvbu-b05e7.googlevideo.com/videoplayback?expire=1778039004&ei=fGT6aYD7KvX11sQPvufN0Ag&ip=108.165.197.61&id=o-AOifsBP9Xc_5Z1X66Bfsi3lsvzUc5RTuUxwlecZt3Vq-&itag=18&source=youtube&requiressl=yes&xpc=EgVo2aDSNQ%3D%3D&rms=au%2Cau&bui=AbKmrwoK0uvEBxSwMJgk3nRmU9MXLsD2phhPqrzPgYUO6AVvV4P2yxriLDE_9mxjAk33VDsSBlJIjPe1&spc=96Xrv4GMhurVltgYqORwMYjK_gcNLey-LX74EUqMMhPazm1E22EfblZ90Efx5N-3oVk&vprv=1&svpuc=1&mime=video%2Fmp4&rqh=1&cnr=14&ratebypass=yes&dur=207.354&lmt=1696866803801823&fexp=51565116,51565682&c=ANDROID&txp=5408434&sparams=expire%2Cei%2Cip%2Cid%2Citag%2Csource%2Crequiressl%2Cxpc%2Cbui%2Cspc%2Cvprv%2Csvpuc%2Cmime%2Crqh%2Ccnr%2Cratebypass%2Cdur%2Clmt&sig=AHEqNM4wRAIgIGCpeccSRQmMfGT0OR24xIrp4Qn1reVLnha6oDZv43cCIGy8dqrIgIUUxNtJY_7OVe2doLSj9SwNS87FOBrrHYS6&redirect_counter=1&rm=sn-bg0el77e&rrc=104&req_id=be8603683ed0a3ee&cms_redirect=yes&cmsv=e&cps=0&ipbypass=yes&met=1778017414,&mh=FH&mip=2803:d100:9928:34fa:a4c1:707b:e6f7:416&mm=31&mn=sn-upbvbu-b05e7&ms=au&mt=1778016834&mv=u&mvi=4&pl=44&lsparams=cps,ipbypass,met,mh,mip,mm,mn,ms,mv,mvi,pl,rms&lsig=APaTxxMwRgIhAJIi65oJVpfKlHHVKjb1tRwUpWZP8jNOdr0u1VovrrIQAiEAtGn1fB5OWexAIlYY6ACTSG43Y9kyhm-qYKVY3U_uGgU%3D">
-      </video>
-      <div class="banner-yt-mount" id="bannerYtMount" aria-hidden="true"></div>
-    </div>
-
+  <!-- Banner Principal (poblado por JS) -->
+  <section class="banner" id="mainBanner">
     <div class="banner-overlay"></div>
-    <div class="banner-content">
-      <h1>OPPENHEIMER</h1>
-      <p class="banner-desc">
-        En tiempos de guerra, el brillante físico estadounidense Julius Robert Oppenheimer, al frente del 'Proyecto Manhattan', lidera los ensayos nucleares para construir la bomba atómica para su país. Impactado por su poder destructivo, Oppenheimer se cuestiona las consecuencias morales de su creación. Desde entonces y el resto de su vida, se opondría firmemente al uso de armas nucleares.
-      </p>
-      <div class="banner-meta">
-        <span class="badge badge-hd">HD</span>
-        <span class="badge">2024</span>
-        <span class="badge">3h 01m</span>
-        <span class="badge">Drama</span>
-      </div>
+    <div class="banner-content" id="bannerContent" hidden>
+      <h1 id="bannerTitle"></h1>
+      <p class="banner-desc" id="bannerDesc"></p>
+      <div class="banner-meta" id="bannerMeta"></div>
       <div class="buttons">
-        <button class="btn btn-play" type="button"
-          data-link="https://drive.google.com/file/d/1TT_T6re6__ZHfvJbQrdVS8RZsxtnTrZk/preview"
-          data-title="Oppenheimer"
-          data-year="2023"
-          data-duration="3h 01m"
-          data-genre="Drama"
-          data-desc="En tiempos de guerra, el brillante físico estadounidense Julius Robert Oppenheimer, al frente del 'Proyecto Manhattan', lidera los ensayos nucleares para construir la bomba atómica para su país. Impactado por su poder destructivo, Oppenheimer se cuestiona las consecuencias morales de su creación.">
+        <button class="btn btn-play" type="button" id="bannerPlayBtn">
           <span class="btn-icon" aria-hidden="true">▶</span> Reproducir
         </button>
         <button class="btn btn-info" type="button" id="bannerInfoBtn">
@@ -111,215 +66,21 @@
     <div class="banner-fade-bottom"></div>
   </section>
 
-  <!-- Carruseles -->
-  <main class="content-area">
+  <!-- Catálogo (poblado dinámicamente por JS) -->
+  <main class="content-area" id="catalog" aria-live="polite"></main>
 
-    <!-- Ciencia Ficción -->
-    <section class="carousel-section">
-      <div class="section-header">
-        <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Ciencia Ficción</h2>
-      </div>
-      <div class="carousel-wrapper">
-        <button type="button" class="scroll-btn scroll-left" aria-label="Anterior"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="movies" id="sci-fi">
-
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Volver al Futuro I" data-title="Volver al Futuro I" data-link="https://streamimdb.ru/embed/movie/tt0088763" data-year="1985" data-genre="Sci-Fi">
-            <img src="https://imgs.search.brave.com/Mw4hbxVw8yJlwkGPJ-OYThgqpsBGO_KgZ4Dv59maPeQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NzFPek0tNTdUSUwu/anBn" alt="Póster de Volver al Futuro I" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay">
-              <div class="overlay-content">
-                <p class="overlay-title">Volver al Futuro I</p>
-                <div class="overlay-meta"><span>1985</span><span class="badge-sm">HD</span></div>
-                <span class="overlay-play" aria-hidden="true">▶</span>
-              </div>
-            </div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Volver al Futuro II" data-title="Volver al Futuro II" data-link="https://mega.nz/embed/KI4w1a7L#EAcZlBFE4tLMoL_yinvjSW84sle_Yrq_6wH-c6w137k!1a" data-year="1989" data-genre="Sci-Fi">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2015/10/back-to-the-future-2.jpg" alt="Póster de Volver al Futuro II" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay">
-              <div class="overlay-content">
-                <p class="overlay-title">Volver al Futuro II</p>
-                <div class="overlay-meta"><span>1989</span><span class="badge-sm">HD</span></div>
-                <span class="overlay-play" aria-hidden="true">▶</span>
-              </div>
-            </div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Volver al Futuro III" data-title="Volver al Futuro III" data-link="https://drive.google.com/file/d/1eecftinb02v5hLLt57ia_aRwVQrxL7St/preview" data-year="1990" data-genre="Sci-Fi">
-            <img src="https://imgs.search.brave.com/trXhgv77mE6J9hMHlEMxjWFBjs3NDoe9OygsVEnG-7Y/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/ZmlsbXBvc3RlcnMu/Y29tL2ltYWdlcy9w/b3N0ZXJzLzIxMjkx/LmpwZw" alt="Póster de Volver al Futuro III" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay">
-              <div class="overlay-content">
-                <p class="overlay-title">Volver al Futuro III</p>
-                <div class="overlay-meta"><span>1990</span><span class="badge-sm">HD</span></div>
-                <span class="overlay-play" aria-hidden="true">▶</span>
-              </div>
-            </div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Chappie" data-title="Chappie" data-link="https://mega.nz/embed/uk0nmCaD#KWLo4GWnLU8FCvCvhK-z9J1j1c6yJnlhqkwL4gP_FHc!1a" data-year="2015" data-genre="Sci-Fi">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2015/05/chappie.jpg" alt="Póster de Chappie" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay">
-              <div class="overlay-content">
-                <p class="overlay-title">Chappie</p>
-                <div class="overlay-meta"><span>2015</span><span class="badge-sm">HD</span></div>
-                <span class="overlay-play" aria-hidden="true">▶</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Poder Sin Limites" data-title="Poder Sin Limites" data-link="https://mega.nz/embed/ErQUhLrY#mdqnf3k5XZfAwRL7QrZ7P_s_VZeY1CpwZ-cXU18Nzro!1a" data-year="2012" data-genre="Sci-Fi">
-            <img src="https://image.tmdb.org/t/p/w342//9GioqrMkkk9A694UhYz8iMo2eJV.jpg" alt="Póster de Poder Sin Limites" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay">
-              <div class="overlay-content">
-                <p class="overlay-title">Poder Sin Limites</p>
-                <div class="overlay-meta"><span>2012</span><span class="badge-sm">HD</span></div>
-                <span class="overlay-play" aria-hidden="true">▶</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <button type="button" class="scroll-btn scroll-right" aria-label="Siguiente"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-    </section>
-
-    <!-- Animación -->
-    <section class="carousel-section">
-      <div class="section-header">
-        <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Animación</h2>
-      </div>
-      <div class="carousel-wrapper">
-        <button type="button" class="scroll-btn scroll-left" aria-label="Anterior"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="movies" id="animation">
-
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Wallace y Gromit: La venganza se sirve con plumas" data-title="Wallace y Gromit: La venganza se sirve con plumas" data-link="https://mega.nz/embed/UOERFCzB#JmXo0c_a2TVKpzc1qO4U__oLYwnsVnaWB25PbFwbmis!1a" data-year="2024" data-genre="Animación">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2025/01/wallace-y-gromit-la-venganza-se-sirve-con-plumas-2024.jpg" alt="Póster de Wallace y Gromit" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Wallace y Gromit</p><div class="overlay-meta"><span>2024</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Spider-Man: A Través Del Spider-Verso" data-title="Spider-Man: A Través Del Spider-Verso" data-link="https://mega.nz/embed/3tlRVCDB#ruo-HItd996zorG8VzOfNUEH6OH2_g2ZKFL9u0HAW8M!1a" data-year="2023" data-genre="Animación">
-            <img src="https://www.sonypictures.com.mx/sites/mexico/files/2023-08/Key-Art_1400x2100_Spiderman-ATSV.jpg" alt="Póster de Spider-Man: A Través Del Spider-Verso" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Spider-Verso</p><div class="overlay-meta"><span>2023</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Pinocho de Guillermo del Toro" data-title="Pinocho de Guillermo del Toro" data-link="https://mega.nz/embed/OJgTGDgD#ktBdarBDZdiE9C-dMoeHh3arsIuzLmfxr62NX8T2KUk!1a" data-year="2022" data-genre="Animación">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2022/12/pinocchio-guillermo-del-toro.jpg" alt="Póster de Pinocho" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Pinocho</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Olé: El viaje de Ferdinand" data-title="Olé: El viaje de Ferdinand" data-link="https://mega.nz/embed/OZAQiDxQ#wjlWcRm1tzYqXRhDQA8ZG4Y8b7HwmABaU9A7kBPsy_M!1a" data-year="2017" data-genre="Animación">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2018/02/ole-el-viaje-de-ferdinand.jpg" alt="Póster de Ferdinand" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Ferdinand</p><div class="overlay-meta"><span>2017</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Cars 3" data-title="Cars 3" data-link="https://mega.nz/embed/fDo11AaQ#gJ5faMbCoLUFsPQewZ3HJmcvx5LAzH82877hTg8b7x8!1a" data-year="2017" data-genre="Animación">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2017/10/cars-3.jpg" alt="Póster de Cars 3" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Cars 3</p><div class="overlay-meta"><span>2017</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-
-        </div>
-        <button type="button" class="scroll-btn scroll-right" aria-label="Siguiente"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-    </section>
-
-    <!-- Acción -->
-    <section class="carousel-section">
-      <div class="section-header">
-        <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Acción</h2>
-      </div>
-      <div class="carousel-wrapper">
-        <button type="button" class="scroll-btn scroll-left" aria-label="Anterior"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="movies" id="action">
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Ford v Ferrari" data-title="Ford v Ferrari" data-link="https://mega.nz/embed/eSBA0DCb#C9oDfKu0MSz9_5yCcqEJ4RQgGWuettjCplftHcqSxpU!1a" data-year="2019" data-genre="Acción">
-            <img src="https://imgs.search.brave.com/T-BsG0g5K7UcR_zCedIuMnrk6lNqjCfVN4OFI4WKTZ0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzE5LzQ5/L2YzLzE5NDlmM2Yw/MGFkMmE3ODQ0Y2U4/MWY5MGJjMWNhNzNk/LmpwZw" alt="Póster de Ford v Ferrari" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Ford v Ferrari</p><div class="overlay-meta"><span>2019</span><span class="badge-sm">Full HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Equipaje de mano" data-title="Equipaje de mano" data-link="https://mega.nz/embed/mVsWDBTD#qLuw8oRvNFp6W4nxGNhNa3oEWrT6WkJfLEzjjLaB0i4!1a" data-year="2024" data-genre="Acción">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/12/carry-on-2024.jpg" alt="Póster de Equipaje de mano" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Equipaje de mano</p><div class="overlay-meta"><span>2024</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Misión: Imposible - Sentencia Mortal Parte 1" data-title="Misión: Imposible - Sentencia Mortal Parte 1" data-link="https://mega.nz/embed/bpYiDATI#XvrUqbA919K8FZvXe8xNZg2pokpDagrRY-iJEspBLB4!1a" data-year="2023" data-genre="Acción">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/01/mision-imposible-sentencia-mortal-parte-1-2023-4k.jpg" alt="Póster de Misión Imposible" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Misión: Imposible</p><div class="overlay-meta"><span>2023</span><span class="badge-sm">4K</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Tren bala" data-title="Tren bala" data-link="https://mega.nz/embed/m6BwHTaZ#y17iecHw-bRNhsAprynSzvDTZnvYphz8zZG3_MFG5_Q!1a" data-year="2022" data-genre="Acción">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2022/11/bullet-train-2022.jpg" alt="Póster de Tren bala" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Tren Bala</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Top Gun: Maverick" data-title="Top Gun: Maverick" data-link="https://mega.nz/embed/2IJx0YiZ#Tx1EOAWMaKHg0Rfuo1ufoA9dffPUITnTjfpHysIFm1U!1a" data-year="2022" data-genre="Acción">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2022/08/top-gun-maverick-2022-4k.jpg" alt="Póster de Top Gun: Maverick" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Top Gun: Maverick</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">4K</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Napoleón" data-title="Napoleón" data-link="https://mega.nz/embed/pEZ3xRzb#opPDueIwAWUUK6ZbofnO3ZeDtjZyt4YbvBZfsZ5iPwE!1a" data-year="2023" data-genre="Acción">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/08/napoleon-2023-4k.jpg" alt="Póster de Napoleón" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Napoleón</p><div class="overlay-meta"><span>2023</span><span class="badge-sm">4K</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-        </div>
-        <button type="button" class="scroll-btn scroll-right" aria-label="Siguiente"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-    </section>
-
-    <!-- Terror -->
-    <section class="carousel-section">
-      <div class="section-header">
-        <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Terror</h2>
-      </div>
-      <div class="carousel-wrapper">
-        <button type="button" class="scroll-btn scroll-left" aria-label="Anterior"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="movies" id="terror">
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir La Luz Del Diablo" data-title="La Luz Del Diablo" data-link="https://mega.nz/embed/8qhQzRxA#fmiISfHiB5hfoCerkqOzqXfYW_W2UiS_gl7J7wsyRdU!1a" data-year="2022" data-genre="Terror">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2024/05/prey-for-the-devil-2022.jpg" alt="Póster de La Luz Del Diablo" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">La Luz Del Diablo</p><div class="overlay-meta"><span>2022</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-        </div>
-        <button type="button" class="scroll-btn scroll-right" aria-label="Siguiente"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-    </section>
-
-    <!-- Drama -->
-    <section class="carousel-section">
-      <div class="section-header">
-        <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Drama</h2>
-      </div>
-      <div class="carousel-wrapper">
-        <button type="button" class="scroll-btn scroll-left" aria-label="Anterior"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="movies" id="Drama">
-
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Oppenheimer" data-title="Oppenheimer" data-link="https://drive.google.com/file/d/1TT_T6re6__ZHfvJbQrdVS8RZsxtnTrZk/preview" data-year="2023" data-genre="Drama">
-            <img src="https://imgs.search.brave.com/IjTIgjEY_3Cpi2u9YnpgZDuDa6zGejs9S-NNRCeUong/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvZW4vdGh1bWIv/NC80YS9PcHBlbmhl/aW1lcl8oZmlsbSku/anBnLzI1MHB4LU9w/cGVuaGVpbWVyXyhm/aWxtKS5qcGc" alt="Póster de Oppenheimer" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay">
-              <div class="overlay-content">
-                <p class="overlay-title">Oppenheimer</p>
-                <div class="overlay-meta"><span>2023</span><span class="badge-sm">HD</span></div>
-                <span class="overlay-play" aria-hidden="true">▶</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button type="button" class="scroll-btn scroll-right" aria-label="Siguiente"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-    </section>
-
-    <!-- Romance -->
-    <section class="carousel-section">
-      <div class="section-header">
-        <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Romance</h2>
-      </div>
-      <div class="carousel-wrapper">
-        <button type="button" class="scroll-btn scroll-left" aria-label="Anterior"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <div class="movies" id="romance">
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Votos de amor" data-title="Votos de amor" data-link="https://mega.nz/embed/9QUFHThK#dJZX8jk0Op3GtSYwKnLVebsd9WwJSTRI_0UFZj-8e2s!1a" data-year="2012" data-genre="Romance">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2012/07/votos-de-amor.jpg" alt="Póster de Votos de amor" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Votos de Amor</p><div class="overlay-meta"><span>2012</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-          <div class="movie" role="button" tabindex="0" aria-label="Reproducir Bajo la misma estrella" data-title="Bajo la misma estrella" data-link="https://mega.nz/embed/7nhSxAjL#2CyeLS8WJfocD9iXaNFI7w7nohBhWQhRVoh0slFxsSw!1a" data-year="2014" data-genre="Romance">
-            <img src="https://www.cinecalidad.rs/wp-content/uploads/2014/09/bajo-la-misma-estrella.jpg" alt="Póster de Bajo la misma estrella" loading="lazy" decoding="async" width="160" height="240">
-            <div class="movie-overlay"><div class="overlay-content"><p class="overlay-title">Bajo la Misma Estrella</p><div class="overlay-meta"><span>2014</span><span class="badge-sm">HD</span></div><span class="overlay-play" aria-hidden="true">▶</span></div></div>
-          </div>
-        </div>
-        <button type="button" class="scroll-btn scroll-right" aria-label="Siguiente"><svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-    </section>
-
+  <!-- Resultados de búsqueda -->
+  <main class="search-results-area" id="searchResults" hidden>
+    <div class="section-header">
+      <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Resultados de búsqueda</h2>
+    </div>
+    <div class="search-grid" id="searchGrid"></div>
   </main>
 
   <!-- Footer -->
   <footer>
     <p class="footer-logo">POPOROPO</p>
-    <p class="footer-copy">&copy; 2025 CinePoporopo · Películas gratis en HD</p>
+    <p class="footer-copy">&copy; 2025 CinePoporopo · Películas gratis en HD · Datos provistos por TMDB</p>
   </footer>
 
   <!-- Modal de Video -->
@@ -341,21 +102,26 @@
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
           loading="lazy">
         </iframe>
-        <!-- Bloqueador de clicks en bordes (zonas típicas de banners de los embeds).
-             Se construyen dinámicamente dos divs (top + bottom) con pointer-events:auto. -->
         <div id="adClickBlocker" aria-hidden="true">
           <div class="blocker-strip blocker-top"></div>
           <div class="blocker-strip blocker-bottom"></div>
         </div>
       </div>
+      <div class="player-servers" id="playerServers" role="toolbar" aria-label="Servidores de video">
+        <span class="player-servers-label">¿No carga? Prueba otro servidor:</span>
+        <button type="button" class="server-btn is-active" data-server="vidsrc">Servidor 1</button>
+        <button type="button" class="server-btn" data-server="2embed">Servidor 2</button>
+        <button type="button" class="server-btn" data-server="superembed">Servidor 3</button>
+      </div>
     </div>
   </div>
 
-  <!-- Modal informativo (Más info) -->
+  <!-- Modal Informativo (Más info) -->
   <div id="infoModal" class="modal info-modal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content info-modal-content" role="document">
       <button type="button" class="close" id="closeInfoModal" aria-label="Cerrar información">×</button>
+      <div class="info-backdrop" id="infoBackdrop"></div>
       <div class="info-body">
         <h2 id="infoModalTitle" class="info-title"></h2>
         <div class="info-meta">
@@ -363,6 +129,7 @@
           <span class="info-year"></span>
           <span class="info-duration"></span>
           <span class="info-genre"></span>
+          <span class="info-rating"></span>
         </div>
         <p class="info-desc"></p>
         <div class="info-actions">
@@ -379,7 +146,7 @@
     <p>No se encontraron resultados para "<span id="searchTerm"></span>"</p>
   </div>
 
-  <!-- Toast (notificaciones tipo "Próximamente") -->
+  <!-- Toast -->
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="script.js" defer></script>
