@@ -1,7 +1,25 @@
 /* ============================================================
-   POPOROPO — STYLE.CSS (TMDB edition)
+   POPOROPO — STYLE.CSS  (TMDB edition · vidsrc only · auto-detect)
+   Sections:
+     1.  Variables & Reset
+     2.  Utilities
+     3.  Header & Search
+     4.  Banner
+     5.  Carousels
+     6.  Movie Cards (con botón de info)
+     7.  Search Results Grid
+     8.  Modal de Video
+     9.  Info Modal
+     10. Toast & Search Empty
+     11. Footer
+     12. Reduced motion
+     13. Media queries
    ============================================================ */
 
+
+/* =====================
+   1. VARIABLES & RESET
+   ===================== */
 :root {
   --red: #E50914;
   --red-dark: #b20710;
@@ -36,12 +54,17 @@ ul { list-style: none; }
 :focus { outline: none; }
 :focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
 
+
+/* =====================
+   2. UTILIDADES
+   ===================== */
 .sr-only {
   position: absolute; width: 1px; height: 1px;
   padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0);
   white-space: nowrap; border: 0;
 }
+
 
 /* =====================
    3. HEADER
@@ -106,6 +129,7 @@ ul { list-style: none; }
 }
 .search-clear:hover { background: var(--red); transform: translateY(-50%) scale(1.05); }
 .search-clear[hidden] { display: none; }
+
 
 /* =====================
    4. BANNER
@@ -193,6 +217,7 @@ ul { list-style: none; }
   backdrop-filter: blur(4px);
 }
 .btn-info:hover { background: rgba(109,109,110,0.5); }
+
 
 /* =====================
    5. CONTENT AREA & CARRUSELES
@@ -308,6 +333,7 @@ ul { list-style: none; }
   100% { background-position: -100% 0; }
 }
 
+
 /* =====================
    6. MOVIE CARDS
    ===================== */
@@ -367,6 +393,58 @@ ul { list-style: none; }
 .movie:hover .overlay-play { transform: scale(1.1); background: rgba(255,255,255,0.9); }
 .movie.hidden { display: none; }
 
+/* Botón de info en card (esquina superior derecha) */
+.movie-info-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 4;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.9);
+  transition: opacity 0.25s ease, transform 0.25s ease,
+              background 0.2s ease, border-color 0.2s ease;
+  pointer-events: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.movie:hover .movie-info-btn,
+.movie:focus-within .movie-info-btn,
+.movie-info-btn:focus-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.movie-info-btn:hover {
+  background: var(--red);
+  border-color: var(--red);
+  transform: translateY(0) scale(1.08);
+}
+
+.movie-info-btn:active { transform: translateY(0) scale(0.95); }
+
+/* En táctil siempre visible (no hay hover) */
+@media (hover: none) {
+  .movie-info-btn {
+    opacity: 0.85;
+    transform: none;
+    pointer-events: auto;
+  }
+}
+
+
 /* =====================
    7. SEARCH RESULTS GRID
    ===================== */
@@ -387,6 +465,7 @@ ul { list-style: none; }
   display: flex; justify-content: center;
   padding: 60px 0;
 }
+
 
 /* =====================
    8. MODAL DE VIDEO
@@ -422,7 +501,7 @@ ul { list-style: none; }
 
 #videoModal .modal-content {
   max-width: 1400px;
-  width: min(95vw, calc((100vh - 140px) * 16 / 9));
+  width: min(95vw, calc((100vh - 60px) * 16 / 9));
 }
 
 @keyframes scaleIn {
@@ -488,31 +567,6 @@ ul { list-style: none; }
 .blocker-strip.blocker-bottom { bottom: 0; }
 #adClickBlocker.is-active .blocker-strip { pointer-events: auto; }
 
-/* Selector de servidores */
-.player-servers {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 8px; padding: 14px 18px;
-  background: #0d0d0d;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-.player-servers-label {
-  font-size: 12px; color: var(--text-muted);
-  margin-right: 6px;
-}
-.server-btn {
-  font-size: 12px; font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #fff;
-  transition: background var(--transition), border-color var(--transition), transform var(--transition);
-}
-.server-btn:hover { background: rgba(255,255,255,0.14); transform: translateY(-1px); }
-.server-btn.is-active {
-  background: var(--red);
-  border-color: var(--red);
-}
 
 /* =====================
    9. INFO MODAL
@@ -551,6 +605,7 @@ ul { list-style: none; }
 }
 .info-actions { display: flex; gap: 10px; }
 
+
 /* =====================
    10. TOAST + SEARCH EMPTY
    ===================== */
@@ -577,11 +632,14 @@ ul { list-style: none; }
   transition: opacity 0.25s ease, transform 0.25s ease;
   pointer-events: none;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  max-width: 90vw;
+  text-align: center;
 }
 .toast[hidden] { display: none; }
 .toast.is-visible {
   opacity: 1; transform: translateX(-50%) translateY(0);
 }
+
 
 /* =====================
    11. FOOTER
@@ -597,6 +655,7 @@ footer {
 }
 .footer-copy { font-size: 12px; color: var(--text-muted); }
 a.logo { text-decoration: none; color: var(--red); }
+
 
 /* =====================
    12. PREFERS-REDUCED-MOTION
@@ -615,6 +674,7 @@ a.logo { text-decoration: none; color: var(--red); }
     border-top-color: rgba(255,255,255,0.4);
   }
 }
+
 
 /* =====================
    13. MEDIA QUERIES
@@ -642,6 +702,9 @@ a.logo { text-decoration: none; color: var(--red); }
   .movie img { height: 180px; }
   .movie-skeleton, .carousel-loader { width: 120px; height: 180px; }
 
+  .movie-info-btn { width: 26px; height: 26px; top: 6px; right: 6px; }
+  .movie-info-btn svg { width: 12px; height: 12px; }
+
   .section-title { font-size: 16px; }
 
   .scroll-btn { width: 40px; height: 40px; }
@@ -654,8 +717,6 @@ a.logo { text-decoration: none; color: var(--red); }
   .info-title { font-size: 30px; }
 
   .search-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px 8px; }
-  .player-servers { padding: 10px 12px; }
-  .player-servers-label { display: none; }
 }
 
 @media (max-width: 480px) {
