@@ -1,10 +1,11 @@
 /* ============================================================
-   POPOROPO — SCRIPT.JS  (TMDB + vidsrc edition)
+   POPOROPO — SCRIPT.JS  (TMDB + multi-servidor + TV/Móvil)
    Sections:
      A. AdBlocker (IIFE)
      B. TMDB client
-     C. Embed server (vidsrc) + availability cache
+     C. Embed servers (3 con fallback automático) + cache
      D. Lógica principal
+     E. Navegación con flechas (TV / teclado)
    ============================================================ */
 
 
@@ -18,8 +19,9 @@
     'cinepoporopo.com',
     'themoviedb.org',
     'image.tmdb.org',
-    'vidsrc.xyz', 'vidsrc.to', 'vidsrc.me', 'vidsrc.in', 'vidsrc.pm',
-    'cloudnestra.com',
+    'vidsrc.xyz', 'vidsrc.to', 'vidsrc.me', 'vidsrc.in', 'vidsrc.pm', 'vidsrc.cc',
+    'embed.su', '2embed.cc', '2embed.skin', 'multiembed.mov',
+    'cloudnestra.com', 'filemoon.sx', 'streamwish.to',
     // legacy:
     'mega.nz', 'drive.google.com', 'docs.google.com',
   ];
@@ -38,7 +40,6 @@
     return src && AD_DOMAINS.some(d => src.includes(d));
   }
 
-  // window.open bloqueado
   window.open = function () {
     console.warn('[AdBlock] window.open bloqueado');
     return { closed: true, close() {}, focus() {}, document: { write() {}, close() {} } };
@@ -101,7 +102,7 @@
   const SAFE_IDS = new Set([
     'videoModal','infoModal','searchEmpty','mainHeader','mainBanner',
     'adClickBlocker','playerSpinner','toast','searchClear','catalog',
-    'searchResults','searchGrid','infoBackdrop','bannerContent'
+    'searchResults','searchGrid','infoBackdrop','bannerContent','serverBar'
   ]);
   const SAFE_CLASSES = new Set([
     'modal','search-empty','header','banner','movie',
@@ -112,7 +113,8 @@
     'banner-overlay','banner-fade-bottom','carousel-wrapper',
     'movies','scroll-btn','section-header','section-title',
     'overlay-content','movie-overlay','overlay-title','overlay-meta',
-    'overlay-play','badge','badge-hd','badge-sm','movie-info-btn'
+    'overlay-play','badge','badge-hd','badge-sm','movie-info-btn',
+    'server-bar','server-btn','server-buttons','server-bar-label','server-hint'
   ]);
 
   const observer = new MutationObserver(mutations => {
@@ -149,7 +151,7 @@
     startObserver();
   }
 
-  console.log('[AdBlock] Poporopo AdBlock v4.1 ACTIVO ✓');
+  console.log('[AdBlock] Poporopo AdBlock v4.2 ACTIVO ✓');
 })();
 
 
@@ -160,9 +162,8 @@ const TMDB_KEY  = '5f41e16316f1452122fe4d2c1234b068';
 const TMDB_API  = 'https://api.themoviedb.org/3';
 const TMDB_IMG  = 'https://image.tmdb.org/t/p';
 const LANG      = 'es-ES';
-const REGION    = 'GT'; // Guatemala
+const REGION    = 'GT';
 
-// 15 géneros
 const GENRES = [
   { id: 28,    name: 'Acción' },
   { id: 12,    name: 'Aventura' },
@@ -207,16 +208,28 @@ const PLACEHOLDER_POSTER =
 
 
 /* ============================================================
-   C. EMBED SERVER  (solo vidsrc — subtítulos en español + autoplay)
+   C. EMBED SERVERS (3 con fallback automático)
    ============================================================ */
-const VIDSRC_URL = (id) =>
-  `https://vidsrc.xyz/embed/movie?tmdb=${id}&ds_lang=es&autoplay=1`;
+const EMBED_SERVERS = [
+  {
+    name: 'Servidor 1',
+    short: '1',
+    url: (id) => `https://vidsrc.xyz/embed/movie?tmdb=${id}&ds_lang=es&autoplay=1`,
+  },
+  {
+    name: 'Servidor 2',
+    short: '2',
+    url: (id) => `https://vidsrc.to/embed/movie/${id}`,
+  },
+  {
+    name: 'Servidor 3',
+    short: '3',
+    url: (id) => `https://embed.su/embed/movie/${id}`,
+  },
+];
 
-// Tiempo que esperamos a recibir señal del reproductor antes de marcar
-// la película como no disponible.
-const AVAILABILITY_TIMEOUT = 15000; // 15 segundos
+const AVAILABILITY_TIMEOUT = 15000; // ms por intento de servidor
 
-/* ── Cache de películas no disponibles (localStorage, TTL 7 días) ── */
 const BAD_CACHE_KEY = 'poporopo_unavailable_movies';
 const BAD_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 
@@ -273,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ── Toast ── */
   const toastEl = $('#toast');
   let toastTimer;
-  function showToast(msg, ms = 2200) {
+  function showToast(msg, ms = 2400) {
     if (!toastEl) return;
     toastEl.textContent = msg;
     toastEl.hidden = false;
@@ -286,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     MODALES (video + info) — focus trap + ARIA
+     MODALES
      ──────────────────────────────────────────────── */
   const videoModal   = $('#videoModal');
   const videoPlayer  = $('#videoPlayer');
@@ -294,6 +307,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const videoBack    = videoModal.querySelector('.modal-backdrop');
   const playerSpin   = $('#playerSpinner');
   const adBlocker    = $('#adClickBlocker');
+  const serverBar    = $('#serverBar');
+  const serverButtons = $$('.server-btn', videoModal);
 
   const infoModal       = $('#infoModal');
   const closeInfoBtn    = $('#closeInfoModal');
@@ -308,6 +323,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const infoPlayBtn     = $('#infoPlayBtn');
 
   let currentMovieId = null;
+  let currentServerIndex = 0;
+  let serverFailures = new Set();
   const modalStack = [];
 
   function getFocusable(container) {
@@ -347,34 +364,31 @@ document.addEventListener('DOMContentLoaded', function () {
     if (opener && typeof opener.focus === 'function') { try { opener.focus(); } catch (e) {} }
   }
 
-  // ── Detección de disponibilidad vía postMessage ──
+  /* ── Detección de disponibilidad ── */
   let availabilityTimer = null;
   let availabilityListener = null;
-  let availabilitySignal = false;
 
-  function startAvailabilityCheck(tmdbId) {
+  function startAvailabilityCheck(tmdbId, serverIndex) {
     stopAvailabilityCheck();
-    availabilitySignal = false;
 
     availabilityListener = (e) => {
       const data = e.data;
       if (data == null) return;
       const origin = e.origin || '';
-      const fromPlayer = /vidsrc|cloudnestra|filemoon|streamwish|vidcloud|hlswish/i.test(origin);
+      const fromPlayer = /vidsrc|cloudnestra|filemoon|streamwish|vidcloud|hlswish|embed\.su|2embed/i.test(origin);
       const looksLikePlayer = fromPlayer ||
         (typeof data === 'string' && /play|pause|time|ready|init|loaded|duration/i.test(data)) ||
         (typeof data === 'object' && (data.event || data.type || data.player || data.method));
       if (looksLikePlayer) {
-        availabilitySignal = true;
+        // Servidor responde: cancelamos el timer
         stopAvailabilityCheck();
       }
     };
     window.addEventListener('message', availabilityListener);
 
     availabilityTimer = setTimeout(() => {
-      if (!availabilitySignal && currentMovieId === tmdbId) {
-        handleUnavailable(tmdbId);
-      }
+      if (currentMovieId !== tmdbId || currentServerIndex !== serverIndex) return;
+      handleServerTimeout(tmdbId, serverIndex);
     }, AVAILABILITY_TIMEOUT);
   }
 
@@ -386,32 +400,85 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  /* ── Carga de un servidor concreto ── */
+  function loadServer(serverIndex) {
+    if (!currentMovieId || serverIndex < 0 || serverIndex >= EMBED_SERVERS.length) return;
+    currentServerIndex = serverIndex;
+    updateServerSelectorUI();
+
+    if (playerSpin) playerSpin.classList.remove('is-hidden');
+    videoPlayer.src = '';
+    requestAnimationFrame(() => {
+      videoPlayer.src = EMBED_SERVERS[serverIndex].url(currentMovieId);
+    });
+
+    startAvailabilityCheck(currentMovieId, serverIndex);
+  }
+
+  /* ── Fallback automático cuando un servidor no responde ── */
+  function handleServerTimeout(tmdbId, serverIndex) {
+    serverFailures.add(serverIndex);
+
+    let nextIndex = -1;
+    for (let i = 0; i < EMBED_SERVERS.length; i++) {
+      if (!serverFailures.has(i)) { nextIndex = i; break; }
+    }
+
+    if (nextIndex === -1) {
+      // Los 3 servidores fallaron
+      handleUnavailable(tmdbId);
+    } else {
+      showToast(`${EMBED_SERVERS[serverIndex].name} no responde. Probando ${EMBED_SERVERS[nextIndex].name}…`, 2800);
+      loadServer(nextIndex);
+    }
+  }
+
   function handleUnavailable(tmdbId) {
     badMovies.add(tmdbId);
     markBadId(tmdbId);
-    // Quitar todas las cards de esta película del DOM (puede estar en varios géneros)
     document.querySelectorAll(`.movie[data-tmdb-id="${tmdbId}"]`).forEach(c => c.remove());
     closeVideoModal();
-    showToast('Esta película no está disponible y será ocultada.', 3500);
+    showToast('Esta película no está disponible en ningún servidor.', 3500);
   }
 
-  // ── Video modal ──
+  /* ── UI del selector manual de servidor ── */
+  function updateServerSelectorUI() {
+    serverButtons.forEach(btn => {
+      const idx = Number(btn.dataset.server);
+      const isActive = idx === currentServerIndex;
+      const failed = serverFailures.has(idx);
+      btn.classList.toggle('is-active', isActive);
+      btn.classList.toggle('is-failed', failed && !isActive);
+      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      btn.setAttribute('aria-current', isActive ? 'true' : 'false');
+      btn.title = failed ? `${EMBED_SERVERS[idx].name} (no respondió)` : EMBED_SERVERS[idx].name;
+    });
+  }
+
+  serverButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = Number(btn.dataset.server);
+      if (idx === currentServerIndex || !currentMovieId) return;
+      // El usuario pidió manual: si estaba marcado como fallido, lo reintentamos
+      serverFailures.delete(idx);
+      showToast(`Cambiando a ${EMBED_SERVERS[idx].name}…`, 1800);
+      loadServer(idx);
+    });
+  });
+
+  /* ── Video modal ── */
   function openVideoModal(tmdbId, opener) {
     if (badMovies.has(tmdbId)) {
       showToast('Esta película no está disponible.');
       return;
     }
     currentMovieId = tmdbId;
-
-    if (playerSpin) playerSpin.classList.remove('is-hidden');
-    videoPlayer.src = '';
-    requestAnimationFrame(() => {
-      videoPlayer.src = VIDSRC_URL(tmdbId);
-    });
+    serverFailures = new Set();
+    currentServerIndex = 0;
 
     if (adBlocker) adBlocker.classList.add('is-active');
     openModal(videoModal, opener);
-    startAvailabilityCheck(tmdbId);
+    loadServer(0);
   }
 
   function closeVideoModal() {
@@ -420,6 +487,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (adBlocker) adBlocker.classList.remove('is-active');
     if (playerSpin) playerSpin.classList.remove('is-hidden');
     currentMovieId = null;
+    serverFailures = new Set();
     closeModalEl(videoModal);
   }
 
@@ -430,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
   closeVideo.addEventListener('click', closeVideoModal);
   videoBack.addEventListener('click', closeVideoModal);
 
-  // ── Info modal ──
+  /* ── Info modal ── */
   async function openInfoModal(tmdbId, opener) {
     infoTitleEl.textContent = 'Cargando…';
     infoYearEl.textContent = '';
@@ -476,23 +544,6 @@ document.addEventListener('DOMContentLoaded', function () {
     openVideoModal(id, opener);
   });
 
-  // Keydown global
-  document.addEventListener('keydown', (e) => {
-    if (modalStack.length && e.key === 'Tab') {
-      trapTab(modalStack[modalStack.length - 1].el, e);
-      return;
-    }
-    if (e.key === 'Escape') {
-      if (modalStack.length) {
-        const top = modalStack[modalStack.length - 1].el;
-        if (top === videoModal) closeVideoModal();
-        else closeModalEl(top);
-      } else if (searchBar && searchBar.value) {
-        clearSearch();
-      }
-    }
-  });
-
   /* ────────────────────────────────────────────────
      CARDS
      ──────────────────────────────────────────────── */
@@ -517,7 +568,6 @@ document.addEventListener('DOMContentLoaded', function () {
     img.onerror = () => { img.src = PLACEHOLDER_POSTER; };
     card.appendChild(img);
 
-    // Botón de información (esquina superior derecha)
     const infoBtn = document.createElement('button');
     infoBtn.type = 'button';
     infoBtn.className = 'movie-info-btn';
@@ -559,7 +609,6 @@ document.addEventListener('DOMContentLoaded', function () {
       showInfo(card);
     });
 
-    // Click en el botón de info → abrir modal sin disparar reproducción
     infoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
@@ -604,12 +653,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnLeft = section.querySelector('.scroll-left');
     const btnRight = section.querySelector('.scroll-right');
 
-    // Loader inline (al final del carrusel, scroll infinito)
     const loader = document.createElement('div');
     loader.className = 'carousel-loader';
     loader.innerHTML = '<div class="carousel-loader-ring"></div>';
 
-    // Skeletons mientras llega la primera carga
     for (let i = 0; i < 8; i++) {
       const sk = document.createElement('div');
       sk.className = 'movie-skeleton';
@@ -690,7 +737,9 @@ document.addEventListener('DOMContentLoaded', function () {
       const card = list.querySelector('.movie');
       if (!card) return 600;
       const gap = parseInt(getComputedStyle(list).gap) || 8;
-      return (card.offsetWidth + gap) * 6;
+      // 4 cards en pantallas chicas, 6 en grandes
+      const visibleCount = window.innerWidth < 768 ? 3 : 6;
+      return (card.offsetWidth + gap) * visibleCount;
     };
 
     const setDisabled = (btn, disabled) => {
@@ -713,7 +762,6 @@ document.addEventListener('DOMContentLoaded', function () {
       else if (canLeft)        overflow = 'left';
       wrapper.setAttribute('data-overflow', overflow);
 
-      // Trigger lazy load
       const remaining = list.scrollWidth - list.scrollLeft - list.clientWidth;
       if (remaining < 800 && !state.loading && !state.exhausted) {
         loadMoreCarousel(state).then(updateUI);
@@ -796,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     BÚSQUEDA (TMDB /search/movie)
+     BÚSQUEDA
      ──────────────────────────────────────────────── */
   const searchBar      = $('#searchBar');
   const searchClearBtn = $('#searchClear');
@@ -875,6 +923,88 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   searchClearBtn.addEventListener('click', clearSearch);
+
+  /* ────────────────────────────────────────────────
+     E. NAVEGACIÓN CON FLECHAS (TV / teclado)
+     ──────────────────────────────────────────────── */
+  document.addEventListener('keydown', (e) => {
+    // Tab dentro de modales
+    if (modalStack.length && e.key === 'Tab') {
+      trapTab(modalStack[modalStack.length - 1].el, e);
+      return;
+    }
+
+    // Escape
+    if (e.key === 'Escape') {
+      if (modalStack.length) {
+        const top = modalStack[modalStack.length - 1].el;
+        if (top === videoModal) closeVideoModal();
+        else closeModalEl(top);
+      } else if (searchBar && searchBar.value) {
+        clearSearch();
+      }
+      return;
+    }
+
+    // No interferir con inputs / cuando hay modales abiertos
+    if (modalStack.length > 0) return;
+    const active = document.activeElement;
+    if (!active) return;
+    if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') return;
+
+    // Solo si el foco está en una card
+    if (!active.classList || !active.classList.contains('movie')) return;
+
+    let target = null;
+    let shouldPreventDefault = true;
+
+    if (e.key === 'ArrowRight') {
+      target = active.nextElementSibling;
+      while (target && !target.classList.contains('movie')) target = target.nextElementSibling;
+    } else if (e.key === 'ArrowLeft') {
+      target = active.previousElementSibling;
+      while (target && !target.classList.contains('movie')) target = target.previousElementSibling;
+    } else if (e.key === 'ArrowDown') {
+      const inGrid = active.closest('.search-grid');
+      if (inGrid) {
+        // Estimación por columnas
+        const rect = active.getBoundingClientRect();
+        const candidates = [...inGrid.querySelectorAll('.movie')];
+        target = candidates.find(c => {
+          const r = c.getBoundingClientRect();
+          return r.top > rect.bottom - 5 &&
+                 Math.abs(r.left - rect.left) < rect.width / 2;
+        });
+      } else {
+        const section = active.closest('.carousel-section');
+        const next = section?.nextElementSibling;
+        target = next?.querySelector('.movie');
+      }
+    } else if (e.key === 'ArrowUp') {
+      const inGrid = active.closest('.search-grid');
+      if (inGrid) {
+        const rect = active.getBoundingClientRect();
+        const candidates = [...inGrid.querySelectorAll('.movie')].reverse();
+        target = candidates.find(c => {
+          const r = c.getBoundingClientRect();
+          return r.bottom < rect.top + 5 &&
+                 Math.abs(r.left - rect.left) < rect.width / 2;
+        });
+      } else {
+        const section = active.closest('.carousel-section');
+        const prev = section?.previousElementSibling;
+        target = prev?.querySelector('.movie');
+      }
+    } else {
+      shouldPreventDefault = false;
+    }
+
+    if (shouldPreventDefault && target) {
+      e.preventDefault();
+      target.focus();
+      target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  });
 
   /* ────────────────────────────────────────────────
      ARRANQUE
