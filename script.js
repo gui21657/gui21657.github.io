@@ -205,30 +205,55 @@ const PLACEHOLDER_POSTER =
     </svg>`
   );
 
-
 /* ============================================================
-   C. EMBED SERVERS (3 manuales, sin auto-fallback ni auto-mark)
+   C. EMBED SERVERS  (a través de Cloudflare Worker proxy)
+   ───────────────────────────────────────────────────────────
+   ⚠️ Cambia PROXY_BASE por la URL de TU worker de Cloudflare.
+   Si dejaste el nombre `poporopo-proxy`, será algo como:
+   'https://poporopo-proxy.TU-USUARIO.workers.dev/e/'
    ============================================================ */
+
+const PROXY_BASE = 'https://poporopo-proxy.wilfredoguillensalazar.workers.dev/';
+
+// Helper: envuelve una URL para que pase por el proxy
+function via(originalUrl) {
+  return PROXY_BASE + encodeURIComponent(originalUrl);
+}
+
+const VIDSRC_MIRRORS = [
+  'vidsrc.in',
+  'vidsrc.pm',
+  'vidsrc.net',
+  'vidsrc.xyz',
+];
+
 const EMBED_SERVERS = [
   {
     name: 'Servidor 1',
     short: '1',
-    url: (id) => `https://vidsrc.xyz/embed/movie/${id}`,
+    isMirrored: true,
+    mirrors: VIDSRC_MIRRORS,
+    url: (id, mirrorIndex = 0) => {
+      const host = VIDSRC_MIRRORS[mirrorIndex % VIDSRC_MIRRORS.length];
+      return via(`https://${host}/embed/movie/${id}`);
+    },
   },
   {
     name: 'Servidor 2',
     short: '2',
-    url: (id) => `https://vidsrc.cc/v2/embed/movie/${id}?autoPlay=true`,
+    isMirrored: false,
+    // vidsrc.cc carga directo en GT (no necesita proxy para el HTML),
+    // pero su player interno puede estar bloqueado; envolvemos por seguridad.
+    url: (id) => via(`https://vidsrc.cc/v2/embed/movie/${id}?autoPlay=true`),
   },
   {
     name: 'Servidor 3',
     short: '3',
-    url: (id) => `https://embed.su/embed/movie/${id}`,
+    isMirrored: false,
+    url: (id) => via(`https://embed.su/embed/movie/${id}`),
   },
 ];
 
-// 🔧 LIMPIEZA: borrar el localStorage contaminado de versiones anteriores
-// que marcaba películas como "no disponibles" por falsos positivos.
 try {
   localStorage.removeItem('poporopo_unavailable_movies');
 } catch (e) {}
