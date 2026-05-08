@@ -225,8 +225,7 @@
      C. EMBED SERVERS (DIRECTOS, sin proxy)
      ============================================================ */
   const EMBED_SERVERS = [
-    { name: 'Vidsrc.pm',   short: '1', url: (id) => `https://vidsrc.pm/embed/movie/${id}` },
-    { name: 'Vidsrc.me',   short: '2', url: (id) => `https://vidsrc.me/embed/movie/${id}` }
+    { name: 'Vidsrc.pm',   short: '1', url: (id) => `https://vidsrc.pm/embed/movie/${id}` }
   ];
   
   
