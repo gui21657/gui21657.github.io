@@ -113,15 +113,8 @@
           <div class="blocker-strip blocker-bottom"></div>
         </div>
       </div>
-      <!-- Selector manual de servidor -->
-      <div id="serverBar" class="server-bar" role="tablist" aria-label="Selección de servidor">
-        <span class="server-bar-label">Servidor:</span>
-        <div class="server-buttons">
-          <button type="button" class="server-btn is-active" data-server="0" role="tab" aria-selected="true" aria-label="Servidor 1">1</button>
-          <button type="button" class="server-btn" data-server="1" role="tab" aria-selected="false" aria-label="Servidor 2">2</button>
-          <button type="button" class="server-btn" data-server="2" role="tab" aria-selected="false" aria-label="Servidor 3">3</button>
-        </div>
-        <span class="server-hint">¿No carga? Prueba otro servidor</span>
+      <div class="server-buttons" id="serverButtonsContainer">
+        <!-- Se llena dinámicamente -->
       </div>
     </div>
   </div>
