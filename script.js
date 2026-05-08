@@ -1,8 +1,11 @@
 /* ============================================================
-   POPOROPO — SERIES.JS  (Series · TMDB + embeds de TV +
-   optimización extrema TV/Móvil/Memoria baja)
+   POPOROPO — SCRIPT.JS  (Películas + Series unificado ·
+   TMDB Bearer Token · 11 servidores directos · TV/Móvil)
    ============================================================ */
 
+/* ============================================================
+   A. ADBLOCKER (Ligero en baja memoria)
+   ============================================================ */
 (function () {
   'use strict';
 
@@ -92,6 +95,7 @@
     }
   }, true);
 
+  // En dispositivos de baja memoria NO observar el DOM constantemente
   if (!isLowMemory) {
     const SAFE_IDS = new Set([
       'videoModal','infoModal','searchEmpty','mainHeader','mainBanner',
@@ -148,12 +152,12 @@
     console.log('[AdBlock] Modo ligero (baja memoria) – sin MutationObserver');
   }
 
-  console.log('[AdBlock] Poporopo AdBlock v4.5 Activo ✓');
+  console.log('[AdBlock] Poporopo AdBlock v4.6 ACTIVO ✓');
 })();
 
 
 /* ============================================================
-   TMDB CLIENT (Bearer Token v4)
+   B. TMDB CLIENT (Bearer Token v4)
    ============================================================ */
 const TMDB_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1ZjQxZTE2MzE2ZjE0NTIxMjJmZTRkMmMxMjM0YjA2OCIsIm5iZiI6MTc3ODAyNTg0MS45MTIsInN1YiI6IjY5ZmE4NTcxNzk1ZGNmMzY2NDFkMmI2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VMAdawqdcOr-KzZ1LzBxJIV1bqujwEnIyXUj6lqrcYo';
 const TMDB_API = 'https://api.themoviedb.org/3';
@@ -168,23 +172,24 @@ const IS_LOW_MEMORY = (navigator.deviceMemory && navigator.deviceMemory <= 2) ||
 const POSTER_SIZE = IS_LOW_MEMORY ? 'w185' : 'w342';
 const BACKDROP_SIZE = IS_LOW_MEMORY ? 'w1280' : 'original';
 
-// Géneros de TV (los mismos IDs que en películas, TMDB los comparte)
+// Géneros mezclados (películas y series, IDs válidos en ambos endpoints)
 const GENRES = [
-  { id: 10759, name: 'Acción & Aventura' },
+  { id: 28,    name: 'Acción' },
+  { id: 12,    name: 'Aventura' },
   { id: 16,    name: 'Animación' },
   { id: 35,    name: 'Comedia' },
   { id: 80,    name: 'Crimen' },
   { id: 99,    name: 'Documental' },
   { id: 18,    name: 'Drama' },
   { id: 10751, name: 'Familia' },
-  { id: 10762, name: 'Kids' },
+  { id: 14,    name: 'Fantasía' },
+  { id: 27,    name: 'Terror' },
   { id: 9648,  name: 'Misterio' },
-  { id: 10763, name: 'Noticias' },
-  { id: 10764, name: 'Reality' },
-  { id: 10765, name: 'Sci-Fi & Fantasía' },
-  { id: 10766, name: 'Soap' },
-  { id: 10767, name: 'Talk' },
-  { id: 10768, name: 'Guerra & Política' },
+  { id: 10749, name: 'Romance' },
+  { id: 878,   name: 'Ciencia ficción' },
+  { id: 53,    name: 'Suspense' },
+  { id: 10752, name: 'Bélica' },
+  { id: 36,    name: 'Historia' }
 ];
 
 async function tmdb(path, params = {}, options = {}) {
@@ -218,16 +223,16 @@ const PLACEHOLDER_POSTER =
 
 
 /* ============================================================
-   EMBED SERVERS (series)
+   C. EMBED SERVERS (se adaptan a película o serie)
    ============================================================ */
 const EMBED_SERVERS = [
-  { name: 'Vidsrc.pm', short: '1', url: (id) => `https://vidsrc.pm/embed/tv/${id}` },
-  { name: 'Vidsrc.me', short: '2', url: (id) => `https://vidsrc.me/embed/tv/${id}` }
+  { name: 'Vidsrc.pm', short: '1', url: (id, type) => `https://vidsrc.pm/embed/${type}/${id}` },
+  { name: 'Vidsrc.me', short: '2', url: (id, type) => `https://vidsrc.me/embed/${type}/${id}` }
 ];
 
 
 /* ============================================================
-   LÓGICA PRINCIPAL
+   D. LÓGICA PRINCIPAL (unificada)
    ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -284,7 +289,9 @@ document.addEventListener('DOMContentLoaded', function () {
   const infoDescEl      = infoModal.querySelector('.info-desc');
   const infoPlayBtn     = $('#infoPlayBtn');
 
-  let currentTvId = null;
+  // Ahora guardamos id y tipo (movie / tv)
+  let currentMediaId = null;
+  let currentMediaType = 'movie'; // 'movie' o 'tv'
   let currentServerIndex = 0;
   const modalStack = [];
 
@@ -345,16 +352,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     CARGA DE SERVIDOR
+     CARGA DE SERVIDOR (según tipo)
      ──────────────────────────────────────────────── */
   function loadServer(serverIndex) {
-    if (!currentTvId || serverIndex < 0 || serverIndex >= EMBED_SERVERS.length) return;
+    if (!currentMediaId || serverIndex < 0 || serverIndex >= EMBED_SERVERS.length) return;
 
     currentServerIndex = serverIndex;
     updateServerSelectorUI();
 
     if (playerSpin) playerSpin.classList.remove('is-hidden');
-    videoPlayer.src = EMBED_SERVERS[serverIndex].url(currentTvId);
+    videoPlayer.src = EMBED_SERVERS[serverIndex].url(currentMediaId, currentMediaType);
   }
 
   function updateServerSelectorUI() {
@@ -371,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const btn = e.target.closest('.server-btn');
     if (!btn) return;
     const idx = Number(btn.dataset.server);
-    if (idx === currentServerIndex || !currentTvId) return;
+    if (idx === currentServerIndex || !currentMediaId) return;
     showToast(`Cambiando a ${EMBED_SERVERS[idx].name}…`, 1500);
     loadServer(idx);
   });
@@ -380,8 +387,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (videoPlayer.src && playerSpin) playerSpin.classList.add('is-hidden');
   });
 
-  function openVideoModal(tvId, opener) {
-    currentTvId = tvId;
+  function openVideoModal(mediaId, mediaType, opener) {
+    currentMediaId = mediaId;
+    currentMediaType = mediaType;
     currentServerIndex = 0;
 
     if (adBlocker) adBlocker.classList.add('is-active');
@@ -393,15 +401,15 @@ document.addEventListener('DOMContentLoaded', function () {
     videoPlayer.src = '';
     if (adBlocker) adBlocker.classList.remove('is-active');
     if (playerSpin) playerSpin.classList.remove('is-hidden');
-    currentTvId = null;
+    currentMediaId = null;
     closeModalEl(videoModal);
   }
 
   closeVideo.addEventListener('click', closeVideoModal);
   videoBack.addEventListener('click', closeVideoModal);
 
-  /* ── Info modal ── */
-  async function openInfoModal(tvId, opener) {
+  /* ── Info modal (dinámico según tipo) ── */
+  async function openInfoModal(mediaId, mediaType, opener) {
     infoTitleEl.textContent = 'Cargando…';
     infoYearEl.textContent = '';
     infoDurationEl.textContent = '';
@@ -409,20 +417,35 @@ document.addEventListener('DOMContentLoaded', function () {
     infoRatingEl.textContent = '';
     infoDescEl.textContent = '';
     infoBackdropEl.style.backgroundImage = '';
-    infoPlayBtn.dataset.tvId = tvId;
+    infoPlayBtn.dataset.mediaId = mediaId;
+    infoPlayBtn.dataset.mediaType = mediaType;
 
     openModal(infoModal, opener);
 
     try {
-      const data = await tmdb(`/tv/${tvId}`);
-      infoTitleEl.textContent = data.name || data.original_name || '';
-      const year = (data.first_air_date || '').slice(0, 4);
+      const endpoint = mediaType === 'movie' ? `/movie/${mediaId}` : `/tv/${mediaId}`;
+      const data = await tmdb(endpoint);
+      const title = data.title || data.name || '';
+      infoTitleEl.textContent = title || data.original_title || data.original_name || '';
+      const year = (data.release_date || data.first_air_date || '').slice(0, 4);
       infoYearEl.textContent = year ? `· ${year}` : '';
-      infoDurationEl.textContent = data.number_of_seasons
-        ? `· ${data.number_of_seasons} temporada(s)`
+
+      if (mediaType === 'movie') {
+        const h = Math.floor((data.runtime || 0) / 60);
+        const m = (data.runtime || 0) % 60;
+        infoDurationEl.textContent = data.runtime ? `· ${h}h ${m}m` : '';
+      } else {
+        infoDurationEl.textContent = data.number_of_seasons
+          ? `· ${data.number_of_seasons} temporada(s)`
+          : '';
+      }
+
+      infoGenreEl.textContent = data.genres?.length
+        ? `· ${data.genres.map(g => g.name).join(', ')}`
         : '';
-      infoGenreEl.textContent = data.genres?.length ? `· ${data.genres.map(g => g.name).join(', ')}` : '';
-      infoRatingEl.textContent = data.vote_average ? `· ★ ${data.vote_average.toFixed(1)}` : '';
+      infoRatingEl.textContent = data.vote_average
+        ? `· ★ ${data.vote_average.toFixed(1)}`
+        : '';
       infoDescEl.textContent = data.overview || 'Sin descripción disponible.';
       if (data.backdrop_path) {
         infoBackdropEl.style.backgroundImage = `url('${backdropUrl(data.backdrop_path)}')`;
@@ -439,25 +462,28 @@ document.addEventListener('DOMContentLoaded', function () {
   infoBack.addEventListener('click', closeInfoModal);
 
   infoPlayBtn.addEventListener('click', () => {
-    const id = infoPlayBtn.dataset.tvId;
+    const id = infoPlayBtn.dataset.mediaId;
+    const type = infoPlayBtn.dataset.mediaType;
     if (!id) { showToast('Próximamente'); return; }
     const opener = modalStack[modalStack.length - 1]?.opener;
     closeInfoModal();
-    openVideoModal(id, opener);
+    openVideoModal(id, type, opener);
   });
 
   /* ────────────────────────────────────────────────
-     CARDS (Series)
+     CARDS (unificadas, distinguen entre película y serie)
      ──────────────────────────────────────────────── */
-  function createCard(tv) {
-    const title = tv.name || tv.original_name || '';
-    const year = (tv.first_air_date || '').slice(0, 4);
+  function createCard(item) {
+    const title = item.title || item.name || item.original_title || item.original_name || '';
+    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const type = item._type; // 'movie' o 'tv' (añadido por nosotros)
 
     const card = document.createElement('div');
     card.className = 'movie';
     card.setAttribute('role', 'button');
     card.tabIndex = 0;
-    card.dataset.tvId = tv.id;        // Nota: usamos dataset.tvId en lugar de tmdbId
+    card.dataset.mediaId = item.id;
+    card.dataset.mediaType = type;
     card.dataset.title = title;
     card.setAttribute('aria-label', `Reproducir ${title}`);
 
@@ -466,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function () {
     img.loading = 'lazy';
     img.decoding = 'async';
     img.width = 160; img.height = 240;
-    img.src = posterUrl(tv.poster_path) || PLACEHOLDER_POSTER;
+    img.src = posterUrl(item.poster_path) || PLACEHOLDER_POSTER;
     img.onerror = () => { img.src = PLACEHOLDER_POSTER; };
     card.appendChild(img);
 
@@ -498,8 +524,8 @@ document.addEventListener('DOMContentLoaded', function () {
       </div>`;
     card.appendChild(overlay);
 
-    const activate = () => openVideoModal(tv.id, card);
-    const showInfo = (opener) => openInfoModal(tv.id, opener || card);
+    const activate = () => openVideoModal(item.id, type, card);
+    const showInfo = (opener) => openInfoModal(item.id, type, opener || card);
 
     card.addEventListener('click', activate);
     card.addEventListener('keydown', (e) => {
@@ -524,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     CARRUSELES (con lazy load)
+     CARRUSELES MEZCLADOS (películas + series por género)
      ──────────────────────────────────────────────── */
   function createCarouselSection(genre) {
     const section = document.createElement('section');
@@ -572,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function () {
       loading: false,
       exhausted: false,
       list, wrapper, loader,
-      seen: new Set(),
+      seen: new Set(), // guardamos "id|tipo" para evitar duplicados
       btnLeft, btnRight,
       initialized: false,
     };
@@ -580,7 +606,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const initCarousel = async () => {
       if (state.initialized) return;
       state.initialized = true;
-
       await loadMoreCarousel(state, true);
       list.querySelectorAll('.movie-skeleton').forEach(n => n.remove());
       list.appendChild(loader);
@@ -598,7 +623,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }, { rootMargin: '200px' });
 
     observer.observe(section);
-
     return section;
   }
 
@@ -608,35 +632,59 @@ document.addEventListener('DOMContentLoaded', function () {
     if (state.loader && !isFirst) state.loader.hidden = false;
 
     try {
-      const data = await tmdb('/discover/tv', {
-        with_genres: state.genreId,
-        page: state.page,
-        sort_by: 'popularity.desc',
-        include_adult: 'false',
-        include_video: 'false',
-        region: REGION,
-        'vote_count.gte': 30,
-      });
+      const [movieData, tvData] = await Promise.all([
+        tmdb('/discover/movie', {
+          with_genres: state.genreId,
+          page: state.page,
+          sort_by: 'popularity.desc',
+          'vote_count.gte': 30,
+          region: REGION,
+        }),
+        tmdb('/discover/tv', {
+          with_genres: state.genreId,
+          page: state.page,
+          sort_by: 'popularity.desc',
+          'vote_count.gte': 30,
+          region: REGION,
+        })
+      ]);
 
-      const results = (data.results || []).filter(m => m.poster_path);
+      // Mezclar y enriquecer con _type
+      let items = [];
+      if (movieData.results) {
+        items.push(...movieData.results.map(m => ({ ...m, _type: 'movie' })));
+      }
+      if (tvData.results) {
+        items.push(...tvData.results.map(t => ({ ...t, _type: 'tv' })));
+      }
+      // Ordenar por popularidad descendente
+      items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
-      results.forEach(m => {
-        if (!state.seen.has(m.id)) {
-          state.seen.add(m.id);
-          const card = createCard(m);
+      const results = items.filter(item => item.poster_path);
+
+      for (const item of results) {
+        const key = `${item.id}|${item._type}`;
+        if (!state.seen.has(key)) {
+          state.seen.add(key);
+          const card = createCard(item);
           if (state.loader && state.loader.parentNode === state.list) {
             state.list.insertBefore(card, state.loader);
           } else {
             state.list.appendChild(card);
           }
         }
-      });
-
-      state.page++;
-      if (data.page >= data.total_pages || results.length === 0) {
-        state.exhausted = true;
-        if (state.loader) state.loader.hidden = true;
       }
+
+      // Control de fin de datos: cuando ambos endpoints se quedan sin páginas
+      const movieExhausted = movieData.page >= movieData.total_pages || !movieData.results?.length;
+      const tvExhausted = tvData.page >= tvData.total_pages || !tvData.results?.length;
+      if (movieExhausted && tvExhausted) {
+        state.exhausted = true;
+      } else {
+        state.page++;
+      }
+
+      if (state.exhausted && state.loader) state.loader.hidden = true;
     } catch (err) {
       console.error('TMDB carousel error:', err);
     } finally {
@@ -712,7 +760,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     BANNER (Trending TV de la semana)
+     BANNER (tendencia semanal de todo tipo)
      ──────────────────────────────────────────────── */
   async function initBanner() {
     const banner = $('#mainBanner');
@@ -724,41 +772,48 @@ document.addEventListener('DOMContentLoaded', function () {
     const infoBtn = $('#bannerInfoBtn');
 
     try {
-      const data = await tmdb('/trending/tv/week');
-      const tv = (data.results || []).find(t =>
-        t.backdrop_path && t.overview && t.poster_path
+      const data = await tmdb('/trending/all/week');
+      const item = (data.results || []).find(i =>
+        i.backdrop_path && i.overview && i.poster_path && i.media_type !== 'person'
       );
-      if (!tv) return;
+      if (!item) return;
 
-      banner.style.backgroundImage = `url('${backdropUrl(tv.backdrop_path)}')`;
-      titleEl.textContent = tv.name || tv.original_name || '';
-      descEl.textContent = tv.overview || '';
+      const title = item.title || item.name || '';
+      banner.style.backgroundImage = `url('${backdropUrl(item.backdrop_path)}')`;
+      titleEl.textContent = title;
+      descEl.textContent = item.overview || '';
 
-      const year = (tv.first_air_date || '').slice(0, 4);
+      const year = (item.release_date || item.first_air_date || '').slice(0, 4);
       metaEl.innerHTML = `
         <span class="badge badge-hd">HD</span>
         ${year ? `<span class="badge">${escapeHtml(year)}</span>` : ''}
-        ${tv.vote_average ? `<span class="badge">★ ${tv.vote_average.toFixed(1)}</span>` : ''}
+        ${item.vote_average ? `<span class="badge">★ ${item.vote_average.toFixed(1)}</span>` : ''}
         <span class="badge">Tendencia</span>
       `;
 
-      playBtn.dataset.tvId = tv.id;
-      infoBtn.dataset.tvId = tv.id;
+      playBtn.dataset.mediaId = item.id;
+      playBtn.dataset.mediaType = item.media_type; // 'movie' o 'tv'
+      infoBtn.dataset.mediaId = item.id;
+      infoBtn.dataset.mediaType = item.media_type;
 
-      playBtn.addEventListener('click', () => openVideoModal(tv.id, playBtn));
-      infoBtn.addEventListener('click', () => openInfoModal(tv.id, infoBtn));
+      playBtn.addEventListener('click', () =>
+        openVideoModal(item.id, item.media_type, playBtn)
+      );
+      infoBtn.addEventListener('click', () =>
+        openInfoModal(item.id, item.media_type, infoBtn)
+      );
 
       content.hidden = false;
     } catch (err) {
       console.error('Banner error:', err);
       content.hidden = false;
       titleEl.textContent = 'POPOROPO';
-      descEl.textContent = 'Series gratis en HD.';
+      descEl.textContent = 'Películas y series gratis en HD.';
     }
   }
 
   /* ────────────────────────────────────────────────
-     BÚSQUEDA (Series)
+     BÚSQUEDA (multimedia: películas + series)
      ──────────────────────────────────────────────── */
   const searchBar      = $('#searchBar');
   const searchClearBtn = $('#searchClear');
@@ -799,13 +854,15 @@ document.addEventListener('DOMContentLoaded', function () {
     searchAbort = new AbortController();
 
     try {
-      const data = await tmdb('/search/tv', {
+      const data = await tmdb('/search/multi', {
         query,
         include_adult: 'false',
         page: '1',
       }, { signal: searchAbort.signal });
 
-      const results = (data.results || []).filter(t => t.poster_path);
+      const results = (data.results || [])
+        .filter(item => item.media_type !== 'person' && item.poster_path)
+        .map(item => ({ ...item, _type: item.media_type })); // movie o tv
 
       searchGrid.innerHTML = '';
       if (results.length === 0) {
@@ -813,7 +870,7 @@ document.addEventListener('DOMContentLoaded', function () {
         emptyMsg.hidden = false;
       } else {
         const frag = document.createDocumentFragment();
-        results.forEach(t => frag.appendChild(createCard(t)));
+        results.forEach(item => frag.appendChild(createCard(item)));
         searchGrid.appendChild(frag);
       }
     } catch (err) {
@@ -834,7 +891,7 @@ document.addEventListener('DOMContentLoaded', function () {
   searchClearBtn.addEventListener('click', clearSearch);
 
   /* ────────────────────────────────────────────────
-     NAVEGACIÓN CON FLECHAS (TV / teclado)
+     E. NAVEGACIÓN CON FLECHAS (TV / teclado)
      ──────────────────────────────────────────────── */
   document.addEventListener('keydown', (e) => {
     if (modalStack.length && e.key === 'Tab') {
