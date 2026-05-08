@@ -1,9 +1,9 @@
 /* ============================================================
-   POPOROPO — SCRIPT.JS  (TMDB v4 + multi-servidor v2 + TV/Móvil)
+   POPOROPO — SCRIPT.JS  (TMDB v3 + servidor manual + TV/Móvil)
    Sections:
      A. AdBlocker (IIFE)
-     B. TMDB client (Bearer v4)
-     C. Embed servers + detección por iframe.load
+     B. TMDB client (api_key v3)
+     C. Embed servers (3 manuales, sin auto-fallback)
      D. Lógica principal
      E. Navegación con flechas (TV / teclado)
    ============================================================ */
@@ -150,24 +150,18 @@
     startObserver();
   }
 
-  console.log('[AdBlock] Poporopo AdBlock v4.3 ACTIVO ✓');
+  console.log('[AdBlock] Poporopo AdBlock v4.4 ACTIVO ✓');
 })();
 
 
 /* ============================================================
-   B. TMDB CLIENT (Bearer Token v4)
+   B. TMDB CLIENT (api_key v3)
    ============================================================ */
-const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1ZjQxZTE2MzE2ZjE0NTIxMjJmZTRkMmMxMjM0YjA2OCIsIm5iZiI6MTc3ODAyNTg0MS45MTIsInN1YiI6IjY5ZmE4NTcxNzk1ZGNmMzY2NDFkMmI2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VMAdawqdcOr-KzZ1LzBxJIV1bqujwEnIyXUj6lqrcYo';
-
-const TMDB_API  = 'https://api.themoviedb.org/3';
-const TMDB_IMG  = 'https://image.tmdb.org/t/p';
-const LANG      = 'es-ES';
-const REGION    = 'GT';
-
-const TMDB_HEADERS = {
-  'Authorization': `Bearer ${TMDB_TOKEN}`,
-  'Accept': 'application/json',
-};
+const TMDB_KEY = '5f41e16316f1452122fe4d2c1234b068';
+const TMDB_API = 'https://api.themoviedb.org/3';
+const TMDB_IMG = 'https://image.tmdb.org/t/p';
+const LANG     = 'es-ES';
+const REGION   = 'GT';
 
 const GENRES = [
   { id: 28,    name: 'Acción' },
@@ -189,15 +183,12 @@ const GENRES = [
 
 async function tmdb(path, params = {}, options = {}) {
   const url = new URL(TMDB_API + path);
+  url.searchParams.set('api_key', TMDB_KEY);
   url.searchParams.set('language', LANG);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   }
-  const res = await fetch(url.toString(), {
-    method: 'GET',
-    headers: TMDB_HEADERS,
-    signal: options.signal,
-  });
+  const res = await fetch(url.toString(), { signal: options.signal });
   if (!res.ok) throw new Error('TMDB ' + res.status);
   return res.json();
 }
@@ -216,7 +207,7 @@ const PLACEHOLDER_POSTER =
 
 
 /* ============================================================
-   C. EMBED SERVERS  (URLs actualizadas + detección por iframe.load)
+   C. EMBED SERVERS (3 manuales, sin auto-fallback ni auto-mark)
    ============================================================ */
 const EMBED_SERVERS = [
   {
@@ -236,18 +227,11 @@ const EMBED_SERVERS = [
   },
 ];
 
-// Si el iframe NO dispara su evento `load` en este tiempo, asumimos que
-// el servidor está caído / bloqueado y probamos el siguiente.
-const SERVER_LOAD_TIMEOUT = 25000; // 25s
-
-// 🔧 LIMPIEZA: borrar el localStorage contaminado de versiones anteriores.
-// Esa cache marcaba películas como "no disponibles" por falsos positivos.
+// 🔧 LIMPIEZA: borrar el localStorage contaminado de versiones anteriores
+// que marcaba películas como "no disponibles" por falsos positivos.
 try {
   localStorage.removeItem('poporopo_unavailable_movies');
 } catch (e) {}
-
-// Cache de películas no disponibles SOLO en memoria (se borra al recargar).
-const badMovies = new Set();
 
 
 /* ============================================================
@@ -309,7 +293,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let currentMovieId = null;
   let currentServerIndex = 0;
-  let serverFailures = new Set();
   const modalStack = [];
 
   function getFocusable(container) {
@@ -350,93 +333,29 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     DETECCIÓN DE SERVIDOR (vía iframe.load)
+     CARGA DE SERVIDOR (simple, sin timeouts ni fallback)
      ──────────────────────────────────────────────── */
-  // Estado: { serverIndex, listener, timer, loaded }
-  let detection = null;
-
-  function cancelDetection() {
-    if (!detection) return;
-    if (detection.timer) clearTimeout(detection.timer);
-    if (detection.listener) videoPlayer.removeEventListener('load', detection.listener);
-    detection = null;
-  }
-
   function loadServer(serverIndex) {
     if (!currentMovieId || serverIndex < 0 || serverIndex >= EMBED_SERVERS.length) return;
 
-    cancelDetection();
     currentServerIndex = serverIndex;
     updateServerSelectorUI();
 
     if (playerSpin) playerSpin.classList.remove('is-hidden');
 
-    // Limpia src antes del cambio para garantizar que `load` se dispare.
-    videoPlayer.src = 'about:blank';
-
-    const state = { serverIndex, loaded: false, listener: null, timer: null };
-
-    state.listener = () => {
-      // Solo nos interesa el load del servidor activo (no del about:blank inicial)
-      if (videoPlayer.src.includes('about:blank')) return;
-      state.loaded = true;
-      if (playerSpin) playerSpin.classList.add('is-hidden');
-      cancelDetection();
-    };
-    videoPlayer.addEventListener('load', state.listener);
-
-    state.timer = setTimeout(() => {
-      if (!state.loaded &&
-          currentMovieId &&
-          currentServerIndex === serverIndex &&
-          detection === state) {
-        cancelDetection();
-        handleServerTimeout(currentMovieId, serverIndex);
-      }
-    }, SERVER_LOAD_TIMEOUT);
-
-    detection = state;
-
-    // Asignar el src real en el siguiente frame
-    requestAnimationFrame(() => {
-      if (currentMovieId && currentServerIndex === serverIndex) {
-        videoPlayer.src = EMBED_SERVERS[serverIndex].url(currentMovieId);
-      }
-    });
-  }
-
-  function handleServerTimeout(tmdbId, serverIndex) {
-    serverFailures.add(serverIndex);
-
-    let nextIndex = -1;
-    for (let i = 0; i < EMBED_SERVERS.length; i++) {
-      if (!serverFailures.has(i)) { nextIndex = i; break; }
-    }
-
-    if (nextIndex === -1) {
-      handleAllServersFailed(tmdbId);
-    } else {
-      showToast(`${EMBED_SERVERS[serverIndex].name} no responde. Probando ${EMBED_SERVERS[nextIndex].name}…`, 2800);
-      loadServer(nextIndex);
-    }
-  }
-
-  function handleAllServersFailed(tmdbId) {
-    badMovies.add(tmdbId);
-    closeVideoModal();
-    showToast('Esta película no está disponible en ningún servidor por el momento.', 3500);
+    // Asignación directa del src — sin about:blank, sin timeouts.
+    videoPlayer.src = EMBED_SERVERS[serverIndex].url(currentMovieId);
   }
 
   function updateServerSelectorUI() {
     serverButtons.forEach(btn => {
       const idx = Number(btn.dataset.server);
       const isActive = idx === currentServerIndex;
-      const failed = serverFailures.has(idx);
       btn.classList.toggle('is-active', isActive);
-      btn.classList.toggle('is-failed', failed && !isActive);
+      btn.classList.remove('is-failed'); // ya no se marca como fallido
       btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
       btn.setAttribute('aria-current', isActive ? 'true' : 'false');
-      btn.title = failed ? `${EMBED_SERVERS[idx].name} (no respondió)` : EMBED_SERVERS[idx].name;
+      btn.title = EMBED_SERVERS[idx].name;
     });
   }
 
@@ -444,20 +363,18 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.addEventListener('click', () => {
       const idx = Number(btn.dataset.server);
       if (idx === currentServerIndex || !currentMovieId) return;
-      // Reintenta el servidor aunque haya fallado antes
-      serverFailures.delete(idx);
-      showToast(`Cambiando a ${EMBED_SERVERS[idx].name}…`, 1800);
+      showToast(`Cambiando a ${EMBED_SERVERS[idx].name}…`, 1500);
       loadServer(idx);
     });
   });
 
+  // Ocultar spinner cuando el iframe termina de cargar (solo señal visual)
+  videoPlayer.addEventListener('load', () => {
+    if (videoPlayer.src && playerSpin) playerSpin.classList.add('is-hidden');
+  });
+
   function openVideoModal(tmdbId, opener) {
-    if (badMovies.has(tmdbId)) {
-      showToast('Esta película no está disponible. Recarga la página para volver a intentarlo.');
-      return;
-    }
     currentMovieId = tmdbId;
-    serverFailures = new Set();
     currentServerIndex = 0;
 
     if (adBlocker) adBlocker.classList.add('is-active');
@@ -466,12 +383,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function closeVideoModal() {
-    cancelDetection();
     videoPlayer.src = '';
     if (adBlocker) adBlocker.classList.remove('is-active');
     if (playerSpin) playerSpin.classList.remove('is-hidden');
     currentMovieId = null;
-    serverFailures = new Set();
     closeModalEl(videoModal);
   }
 
@@ -681,9 +596,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'vote_count.gte': 30,
       });
 
-      const results = (data.results || []).filter(m =>
-        m.poster_path && !badMovies.has(m.id)
-      );
+      const results = (data.results || []).filter(m => m.poster_path);
 
       results.forEach(m => {
         if (!state.seen.has(m.id)) {
@@ -791,7 +704,7 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       const data = await tmdb('/trending/movie/week');
       const movie = (data.results || []).find(m =>
-        m.backdrop_path && m.overview && m.poster_path && !badMovies.has(m.id)
+        m.backdrop_path && m.overview && m.poster_path
       );
       if (!movie) return;
 
@@ -870,9 +783,7 @@ document.addEventListener('DOMContentLoaded', function () {
         page: '1',
       }, { signal: searchAbort.signal });
 
-      const results = (data.results || []).filter(m =>
-        m.poster_path && !badMovies.has(m.id)
-      );
+      const results = (data.results || []).filter(m => m.poster_path);
 
       searchGrid.innerHTML = '';
       if (results.length === 0) {
