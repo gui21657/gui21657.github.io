@@ -1,9 +1,9 @@
 /* ============================================================
-   POPOROPO — SCRIPT.JS  (TMDB + multi-servidor + TV/Móvil)
+   POPOROPO — SCRIPT.JS  (TMDB v4 + multi-servidor v2 + TV/Móvil)
    Sections:
      A. AdBlocker (IIFE)
-     B. TMDB client
-     C. Embed servers (3 con fallback automático) + cache
+     B. TMDB client (Bearer v4)
+     C. Embed servers + detección por iframe.load
      D. Lógica principal
      E. Navegación con flechas (TV / teclado)
    ============================================================ */
@@ -19,10 +19,9 @@
     'cinepoporopo.com',
     'themoviedb.org',
     'image.tmdb.org',
-    'vidsrc.xyz', 'vidsrc.to', 'vidsrc.me', 'vidsrc.in', 'vidsrc.pm', 'vidsrc.cc',
-    'embed.su', '2embed.cc', '2embed.skin', 'multiembed.mov',
+    'vidsrc.xyz', 'vidsrc.to', 'vidsrc.me', 'vidsrc.in', 'vidsrc.pm', 'vidsrc.cc', 'vidsrc.net',
+    'embed.su', '2embed.cc', '2embed.skin', 'multiembed.mov', 'vidlink.pro',
     'cloudnestra.com', 'filemoon.sx', 'streamwish.to',
-    // legacy:
     'mega.nz', 'drive.google.com', 'docs.google.com',
   ];
 
@@ -151,18 +150,24 @@
     startObserver();
   }
 
-  console.log('[AdBlock] Poporopo AdBlock v4.2 ACTIVO ✓');
+  console.log('[AdBlock] Poporopo AdBlock v4.3 ACTIVO ✓');
 })();
 
 
 /* ============================================================
-   B. TMDB CLIENT
+   B. TMDB CLIENT (Bearer Token v4)
    ============================================================ */
-const TMDB_KEY  = '5f41e16316f1452122fe4d2c1234b068';
+const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1ZjQxZTE2MzE2ZjE0NTIxMjJmZTRkMmMxMjM0YjA2OCIsIm5iZiI6MTc3ODAyNTg0MS45MTIsInN1YiI6IjY5ZmE4NTcxNzk1ZGNmMzY2NDFkMmI2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VMAdawqdcOr-KzZ1LzBxJIV1bqujwEnIyXUj6lqrcYo';
+
 const TMDB_API  = 'https://api.themoviedb.org/3';
 const TMDB_IMG  = 'https://image.tmdb.org/t/p';
 const LANG      = 'es-ES';
 const REGION    = 'GT';
+
+const TMDB_HEADERS = {
+  'Authorization': `Bearer ${TMDB_TOKEN}`,
+  'Accept': 'application/json',
+};
 
 const GENRES = [
   { id: 28,    name: 'Acción' },
@@ -182,14 +187,17 @@ const GENRES = [
   { id: 36,    name: 'Historia' },
 ];
 
-async function tmdb(path, params = {}) {
+async function tmdb(path, params = {}, options = {}) {
   const url = new URL(TMDB_API + path);
-  url.searchParams.set('api_key', TMDB_KEY);
   url.searchParams.set('language', LANG);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   }
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), {
+    method: 'GET',
+    headers: TMDB_HEADERS,
+    signal: options.signal,
+  });
   if (!res.ok) throw new Error('TMDB ' + res.status);
   return res.json();
 }
@@ -208,18 +216,18 @@ const PLACEHOLDER_POSTER =
 
 
 /* ============================================================
-   C. EMBED SERVERS (3 con fallback automático)
+   C. EMBED SERVERS  (URLs actualizadas + detección por iframe.load)
    ============================================================ */
 const EMBED_SERVERS = [
   {
     name: 'Servidor 1',
     short: '1',
-    url: (id) => `https://vidsrc.xyz/embed/movie?tmdb=${id}&ds_lang=es&autoplay=1`,
+    url: (id) => `https://vidsrc.xyz/embed/movie/${id}`,
   },
   {
     name: 'Servidor 2',
     short: '2',
-    url: (id) => `https://vidsrc.to/embed/movie/${id}`,
+    url: (id) => `https://vidsrc.cc/v2/embed/movie/${id}?autoPlay=true`,
   },
   {
     name: 'Servidor 3',
@@ -228,40 +236,18 @@ const EMBED_SERVERS = [
   },
 ];
 
-const AVAILABILITY_TIMEOUT = 15000; // ms por intento de servidor
+// Si el iframe NO dispara su evento `load` en este tiempo, asumimos que
+// el servidor está caído / bloqueado y probamos el siguiente.
+const SERVER_LOAD_TIMEOUT = 25000; // 25s
 
-const BAD_CACHE_KEY = 'poporopo_unavailable_movies';
-const BAD_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+// 🔧 LIMPIEZA: borrar el localStorage contaminado de versiones anteriores.
+// Esa cache marcaba películas como "no disponibles" por falsos positivos.
+try {
+  localStorage.removeItem('poporopo_unavailable_movies');
+} catch (e) {}
 
-function loadBadCache() {
-  try {
-    const raw = localStorage.getItem(BAD_CACHE_KEY);
-    if (!raw) return new Set();
-    const obj = JSON.parse(raw);
-    const now = Date.now();
-    const valid = new Set();
-    const cleaned = {};
-    for (const [id, ts] of Object.entries(obj)) {
-      if (now - ts < BAD_CACHE_TTL) {
-        valid.add(Number(id));
-        cleaned[id] = ts;
-      }
-    }
-    localStorage.setItem(BAD_CACHE_KEY, JSON.stringify(cleaned));
-    return valid;
-  } catch (e) { return new Set(); }
-}
-
-function markBadId(id) {
-  try {
-    const raw = localStorage.getItem(BAD_CACHE_KEY);
-    const obj = raw ? JSON.parse(raw) : {};
-    obj[id] = Date.now();
-    localStorage.setItem(BAD_CACHE_KEY, JSON.stringify(obj));
-  } catch (e) {}
-}
-
-const badMovies = loadBadCache();
+// Cache de películas no disponibles SOLO en memoria (se borra al recargar).
+const badMovies = new Set();
 
 
 /* ============================================================
@@ -307,7 +293,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const videoBack    = videoModal.querySelector('.modal-backdrop');
   const playerSpin   = $('#playerSpinner');
   const adBlocker    = $('#adClickBlocker');
-  const serverBar    = $('#serverBar');
   const serverButtons = $$('.server-btn', videoModal);
 
   const infoModal       = $('#infoModal');
@@ -364,58 +349,62 @@ document.addEventListener('DOMContentLoaded', function () {
     if (opener && typeof opener.focus === 'function') { try { opener.focus(); } catch (e) {} }
   }
 
-  /* ── Detección de disponibilidad ── */
-  let availabilityTimer = null;
-  let availabilityListener = null;
+  /* ────────────────────────────────────────────────
+     DETECCIÓN DE SERVIDOR (vía iframe.load)
+     ──────────────────────────────────────────────── */
+  // Estado: { serverIndex, listener, timer, loaded }
+  let detection = null;
 
-  function startAvailabilityCheck(tmdbId, serverIndex) {
-    stopAvailabilityCheck();
-
-    availabilityListener = (e) => {
-      const data = e.data;
-      if (data == null) return;
-      const origin = e.origin || '';
-      const fromPlayer = /vidsrc|cloudnestra|filemoon|streamwish|vidcloud|hlswish|embed\.su|2embed/i.test(origin);
-      const looksLikePlayer = fromPlayer ||
-        (typeof data === 'string' && /play|pause|time|ready|init|loaded|duration/i.test(data)) ||
-        (typeof data === 'object' && (data.event || data.type || data.player || data.method));
-      if (looksLikePlayer) {
-        // Servidor responde: cancelamos el timer
-        stopAvailabilityCheck();
-      }
-    };
-    window.addEventListener('message', availabilityListener);
-
-    availabilityTimer = setTimeout(() => {
-      if (currentMovieId !== tmdbId || currentServerIndex !== serverIndex) return;
-      handleServerTimeout(tmdbId, serverIndex);
-    }, AVAILABILITY_TIMEOUT);
+  function cancelDetection() {
+    if (!detection) return;
+    if (detection.timer) clearTimeout(detection.timer);
+    if (detection.listener) videoPlayer.removeEventListener('load', detection.listener);
+    detection = null;
   }
 
-  function stopAvailabilityCheck() {
-    if (availabilityTimer) { clearTimeout(availabilityTimer); availabilityTimer = null; }
-    if (availabilityListener) {
-      window.removeEventListener('message', availabilityListener);
-      availabilityListener = null;
-    }
-  }
-
-  /* ── Carga de un servidor concreto ── */
   function loadServer(serverIndex) {
     if (!currentMovieId || serverIndex < 0 || serverIndex >= EMBED_SERVERS.length) return;
+
+    cancelDetection();
     currentServerIndex = serverIndex;
     updateServerSelectorUI();
 
     if (playerSpin) playerSpin.classList.remove('is-hidden');
-    videoPlayer.src = '';
-    requestAnimationFrame(() => {
-      videoPlayer.src = EMBED_SERVERS[serverIndex].url(currentMovieId);
-    });
 
-    startAvailabilityCheck(currentMovieId, serverIndex);
+    // Limpia src antes del cambio para garantizar que `load` se dispare.
+    videoPlayer.src = 'about:blank';
+
+    const state = { serverIndex, loaded: false, listener: null, timer: null };
+
+    state.listener = () => {
+      // Solo nos interesa el load del servidor activo (no del about:blank inicial)
+      if (videoPlayer.src.includes('about:blank')) return;
+      state.loaded = true;
+      if (playerSpin) playerSpin.classList.add('is-hidden');
+      cancelDetection();
+    };
+    videoPlayer.addEventListener('load', state.listener);
+
+    state.timer = setTimeout(() => {
+      if (!state.loaded &&
+          currentMovieId &&
+          currentServerIndex === serverIndex &&
+          detection === state) {
+        cancelDetection();
+        handleServerTimeout(currentMovieId, serverIndex);
+      }
+    }, SERVER_LOAD_TIMEOUT);
+
+    detection = state;
+
+    // Asignar el src real en el siguiente frame
+    requestAnimationFrame(() => {
+      if (currentMovieId && currentServerIndex === serverIndex) {
+        videoPlayer.src = EMBED_SERVERS[serverIndex].url(currentMovieId);
+      }
+    });
   }
 
-  /* ── Fallback automático cuando un servidor no responde ── */
   function handleServerTimeout(tmdbId, serverIndex) {
     serverFailures.add(serverIndex);
 
@@ -425,23 +414,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (nextIndex === -1) {
-      // Los 3 servidores fallaron
-      handleUnavailable(tmdbId);
+      handleAllServersFailed(tmdbId);
     } else {
       showToast(`${EMBED_SERVERS[serverIndex].name} no responde. Probando ${EMBED_SERVERS[nextIndex].name}…`, 2800);
       loadServer(nextIndex);
     }
   }
 
-  function handleUnavailable(tmdbId) {
+  function handleAllServersFailed(tmdbId) {
     badMovies.add(tmdbId);
-    markBadId(tmdbId);
-    document.querySelectorAll(`.movie[data-tmdb-id="${tmdbId}"]`).forEach(c => c.remove());
     closeVideoModal();
-    showToast('Esta película no está disponible en ningún servidor.', 3500);
+    showToast('Esta película no está disponible en ningún servidor por el momento.', 3500);
   }
 
-  /* ── UI del selector manual de servidor ── */
   function updateServerSelectorUI() {
     serverButtons.forEach(btn => {
       const idx = Number(btn.dataset.server);
@@ -459,17 +444,16 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.addEventListener('click', () => {
       const idx = Number(btn.dataset.server);
       if (idx === currentServerIndex || !currentMovieId) return;
-      // El usuario pidió manual: si estaba marcado como fallido, lo reintentamos
+      // Reintenta el servidor aunque haya fallado antes
       serverFailures.delete(idx);
       showToast(`Cambiando a ${EMBED_SERVERS[idx].name}…`, 1800);
       loadServer(idx);
     });
   });
 
-  /* ── Video modal ── */
   function openVideoModal(tmdbId, opener) {
     if (badMovies.has(tmdbId)) {
-      showToast('Esta película no está disponible.');
+      showToast('Esta película no está disponible. Recarga la página para volver a intentarlo.');
       return;
     }
     currentMovieId = tmdbId;
@@ -482,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function closeVideoModal() {
-    stopAvailabilityCheck();
+    cancelDetection();
     videoPlayer.src = '';
     if (adBlocker) adBlocker.classList.remove('is-active');
     if (playerSpin) playerSpin.classList.remove('is-hidden');
@@ -490,10 +474,6 @@ document.addEventListener('DOMContentLoaded', function () {
     serverFailures = new Set();
     closeModalEl(videoModal);
   }
-
-  videoPlayer.addEventListener('load', () => {
-    if (videoPlayer.src && playerSpin) playerSpin.classList.add('is-hidden');
-  });
 
   closeVideo.addEventListener('click', closeVideoModal);
   videoBack.addEventListener('click', closeVideoModal);
@@ -622,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     CARRUSELES + scroll infinito horizontal
+     CARRUSELES
      ──────────────────────────────────────────────── */
   function createCarouselSection(genre) {
     const section = document.createElement('section');
@@ -737,7 +717,6 @@ document.addEventListener('DOMContentLoaded', function () {
       const card = list.querySelector('.movie');
       if (!card) return 600;
       const gap = parseInt(getComputedStyle(list).gap) || 8;
-      // 4 cards en pantallas chicas, 6 en grandes
       const visibleCount = window.innerWidth < 768 ? 3 : 6;
       return (card.offsetWidth + gap) * visibleCount;
     };
@@ -798,7 +777,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ────────────────────────────────────────────────
-     BANNER (trending)
+     BANNER
      ──────────────────────────────────────────────── */
   async function initBanner() {
     const banner = $('#mainBanner');
@@ -885,15 +864,12 @@ document.addEventListener('DOMContentLoaded', function () {
     searchAbort = new AbortController();
 
     try {
-      const url = new URL(TMDB_API + '/search/movie');
-      url.searchParams.set('api_key', TMDB_KEY);
-      url.searchParams.set('language', LANG);
-      url.searchParams.set('query', query);
-      url.searchParams.set('include_adult', 'false');
-      url.searchParams.set('page', '1');
+      const data = await tmdb('/search/movie', {
+        query,
+        include_adult: 'false',
+        page: '1',
+      }, { signal: searchAbort.signal });
 
-      const res = await fetch(url.toString(), { signal: searchAbort.signal });
-      const data = await res.json();
       const results = (data.results || []).filter(m =>
         m.poster_path && !badMovies.has(m.id)
       );
@@ -928,13 +904,11 @@ document.addEventListener('DOMContentLoaded', function () {
      E. NAVEGACIÓN CON FLECHAS (TV / teclado)
      ──────────────────────────────────────────────── */
   document.addEventListener('keydown', (e) => {
-    // Tab dentro de modales
     if (modalStack.length && e.key === 'Tab') {
       trapTab(modalStack[modalStack.length - 1].el, e);
       return;
     }
 
-    // Escape
     if (e.key === 'Escape') {
       if (modalStack.length) {
         const top = modalStack[modalStack.length - 1].el;
@@ -946,13 +920,11 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // No interferir con inputs / cuando hay modales abiertos
     if (modalStack.length > 0) return;
     const active = document.activeElement;
     if (!active) return;
     if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA') return;
 
-    // Solo si el foco está en una card
     if (!active.classList || !active.classList.contains('movie')) return;
 
     let target = null;
@@ -967,7 +939,6 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (e.key === 'ArrowDown') {
       const inGrid = active.closest('.search-grid');
       if (inGrid) {
-        // Estimación por columnas
         const rect = active.getBoundingClientRect();
         const candidates = [...inGrid.querySelectorAll('.movie')];
         target = candidates.find(c => {
