@@ -76,12 +76,12 @@
   <main class="content-area" id="catalog" aria-live="polite"></main>
 
   <!-- Resultados de búsqueda -->
-  <main class="search-results-area" id="searchResults" hidden>
+  <div class="search-results-area" id="searchResults" hidden>
     <div class="section-header">
       <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Resultados de búsqueda</h2>
     </div>
     <div class="search-grid" id="searchGrid"></div>
-  </main>
+  </div>
 
   <!-- Footer -->
   <footer>
@@ -114,6 +114,24 @@
         </div>
       </div>
 
+      <!-- Selector de temporada y episodio (solo para series) -->
+      <div id="seasonEpisodeSelector" class="season-episode-selector" hidden>
+        <div class="selector-group">
+          <label for="seasonSelect">Temporada</label>
+          <select id="seasonSelect" aria-label="Seleccionar temporada"></select>
+        </div>
+        <div class="selector-group">
+          <label for="episodeSelect">Episodio</label>
+          <select id="episodeSelect" aria-label="Seleccionar episodio"></select>
+        </div>
+      </div>
+
+      <!-- Barra de servidores (se usa principalmente para películas, en series queda oculta) -->
+      <div id="serverBar" class="server-bar" hidden>
+        <span class="server-bar-label">Servidor:</span>
+        <div class="server-buttons" id="serverButtonsContainer"></div>
+        <span class="server-hint" id="serverHint"></span>
+      </div>
     </div>
   </div>
 
