@@ -155,6 +155,112 @@
       }
   
       /* ────────────────────────────────────────────────
+         FAVORITOS (localStorage)
+         ──────────────────────────────────────────────── */
+      const FAV_KEY = 'poporopo_favorites_v1';
+  
+      function getFavorites() {
+        try {
+          const raw = localStorage.getItem(FAV_KEY);
+          const arr = raw ? JSON.parse(raw) : [];
+          return Array.isArray(arr) ? arr : [];
+        } catch (e) {
+          return [];
+        }
+      }
+  
+      function saveFavorites(favs) {
+        try {
+          localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+        } catch (e) {
+          console.warn('No se pudo guardar favoritos:', e);
+        }
+      }
+  
+      function favKeyOf(item) { return `${item.id}|${item._type}`; }
+  
+      function isFavorite(id, type) {
+        const favs = getFavorites();
+        return favs.some(f => String(f.id) === String(id) && f._type === type);
+      }
+  
+      function addFavorite(item) {
+        const favs = getFavorites();
+        const key = favKeyOf(item);
+        if (favs.some(f => favKeyOf(f) === key)) return false;
+        // unshift: el más reciente aparece primero
+        favs.unshift({
+          id: item.id,
+          _type: item._type,
+          title: item.title,
+          name: item.name,
+          original_title: item.original_title,
+          original_name: item.original_name,
+          release_date: item.release_date,
+          first_air_date: item.first_air_date,
+          poster_path: item.poster_path,
+          addedAt: Date.now()
+        });
+        saveFavorites(favs);
+        return true;
+      }
+  
+      function removeFavorite(id, type) {
+        const favs = getFavorites();
+        const idx = favs.findIndex(f => String(f.id) === String(id) && f._type === type);
+        if (idx === -1) return false;
+        favs.splice(idx, 1);
+        saveFavorites(favs);
+        return true;
+      }
+  
+      /** Sincroniza el estado visual del botón corazón en TODAS las cards
+          del mismo media (id + type) presentes en el DOM. */
+      function syncFavoriteButtons(id, type) {
+        const fav = isFavorite(id, type);
+        const sel = `.movie[data-media-id="${id}"][data-media-type="${type}"]`;
+        document.querySelectorAll(sel).forEach(card => {
+          const heart = card.querySelector('.movie-fav-btn');
+          if (!heart) return;
+          heart.classList.toggle('is-fav', fav);
+          heart.setAttribute('aria-pressed', fav ? 'true' : 'false');
+          heart.setAttribute('aria-label', fav ? 'Quitar de favoritos' : 'Agregar a favoritos');
+          heart.title = fav ? 'Quitar de favoritos' : 'Agregar a favoritos';
+        });
+      }
+  
+      function handleFavoriteToggle(item, originBtn) {
+        const wasFav = isFavorite(item.id, item._type);
+        if (wasFav) removeFavorite(item.id, item._type);
+        else        addFavorite(item);
+  
+        syncFavoriteButtons(item.id, item._type);
+        updateFavoritesSection();
+  
+        // Pulso visual en el botón que se apretó
+        if (originBtn && !wasFav) {
+          originBtn.classList.remove('just-added');
+          // forzar reflow para reiniciar la animación
+          // eslint-disable-next-line no-unused-expressions
+          void originBtn.offsetWidth;
+          originBtn.classList.add('just-added');
+          setTimeout(() => originBtn.classList.remove('just-added'), 500);
+        }
+  
+        showToast(wasFav ? 'Eliminado de Favoritos' : 'Agregado a Favoritos', 1400);
+      }
+  
+      // Sincronización entre pestañas: si cambia localStorage en otra pestaña,
+      // actualizamos esta también.
+      window.addEventListener('storage', (e) => {
+        if (e.key !== FAV_KEY) return;
+        updateFavoritesSection();
+        document.querySelectorAll('.movie[data-media-id]').forEach(card => {
+          syncFavoriteButtons(card.dataset.mediaId, card.dataset.mediaType);
+        });
+      });
+  
+      /* ────────────────────────────────────────────────
          MODALES
          ──────────────────────────────────────────────── */
       const videoModal      = $('#videoModal');
@@ -528,13 +634,41 @@
         // Registrar para gestión de memoria en TV
         registerImageForMemory(img, realSrc);
   
-        // Botón de info: solo en NO-TV (en TV se accede con tecla "i" si se quiere)
+        // ───── Botón Favoritos (corazón) — arriba derecha ─────
+        // Se crea SIEMPRE (TV o no), el CSS controla visibilidad en TV.
+        const favBtn = document.createElement('button');
+        favBtn.type = 'button';
+        favBtn.className = 'movie-fav-btn';
+        const isFav = isFavorite(item.id, item._type);
+        if (isFav) favBtn.classList.add('is-fav');
+        favBtn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+        favBtn.setAttribute('aria-label', isFav ? 'Quitar de favoritos' : 'Agregar a favoritos');
+        favBtn.title = isFav ? 'Quitar de favoritos' : 'Agregar a favoritos';
+        // Tabindex -1: la card es lo focuseable, no sus botones internos.
+        favBtn.tabIndex = -1;
+        favBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>`;
+        card.appendChild(favBtn);
+  
+        favBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          handleFavoriteToggle(item, favBtn);
+        });
+        favBtn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') e.stopPropagation();
+        });
+  
+        // ───── Botón Info — abajo derecha (solo NO-TV) ─────
         if (!IS_TV) {
           const infoBtn = document.createElement('button');
           infoBtn.type = 'button';
           infoBtn.className = 'movie-info-btn';
           infoBtn.setAttribute('aria-label', `Más información sobre ${title}`);
           infoBtn.title = 'Más información';
+          infoBtn.tabIndex = -1;
           infoBtn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                  fill="none" stroke="currentColor" stroke-width="2.4"
@@ -578,6 +712,11 @@
         card.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
           if (e.key === 'i' || e.key === 'I')     { e.preventDefault(); showInfo(card); }
+          if (e.key === 'f' || e.key === 'F')     {
+            e.preventDefault();
+            const heart = card.querySelector('.movie-fav-btn');
+            handleFavoriteToggle(item, heart);
+          }
         });
         if (!IS_TV) {
           card.addEventListener('contextmenu', (e) => {
@@ -807,14 +946,101 @@
         updateUI();
       }
   
+      /* ────────────────────────────────────────────────
+         CARRUSEL DE FAVORITOS
+         ────────────────────────────────────────────────
+         Sección especial: no consulta TMDB, lee de localStorage.
+         Aparece como PRIMER carrusel; se oculta si no hay favoritos.
+         ──────────────────────────────────────────────── */
+  
+      function createFavoritesSection() {
+        const section = document.createElement('section');
+        section.className = 'carousel-section favorites-section';
+        section.id = 'favoritesSection';
+        section.hidden = true; // arranca oculto, updateFavoritesSection lo muestra si hay items
+        section.innerHTML = `
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="title-accent" aria-hidden="true">|</span> Favoritos
+            </h2>
+          </div>
+          <div class="carousel-wrapper">
+            <button type="button" class="scroll-btn scroll-left" aria-label="Anterior" tabindex="-1">
+              <svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="movies"></div>
+            <button type="button" class="scroll-btn scroll-right" aria-label="Siguiente" tabindex="-1">
+              <svg class="scroll-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>`;
+  
+        const state = {
+          list:     section.querySelector('.movies'),
+          wrapper:  section.querySelector('.carousel-wrapper'),
+          btnLeft:  section.querySelector('.scroll-left'),
+          btnRight: section.querySelector('.scroll-right'),
+          loader:   null,
+          loading:  false,
+          exhausted: true, // nunca pagina TMDB
+          page: 999,
+          seen: new Set(),
+        };
+  
+        initCarouselUI(state);
+        section._favState = state;
+        return section;
+      }
+  
+      function updateFavoritesSection() {
+        const section = document.getElementById('favoritesSection');
+        if (!section) return;
+  
+        const favs = getFavorites();
+        const list = section.querySelector('.movies');
+  
+        if (favs.length === 0) {
+          section.hidden = true;
+          list.innerHTML = '';
+          if (section._favState) section._favState.seen = new Set();
+          return;
+        }
+  
+        // Render: reconstruir todas las cards (más simple que diff).
+        // Como son pocas (las que el usuario marcó), no hay impacto en TV.
+        section.hidden = false;
+        const state = section._favState;
+        list.innerHTML = '';
+        if (state) state.seen = new Set();
+  
+        favs.forEach(fav => {
+          const card = createCard(fav);
+          list.appendChild(card);
+          if (state) state.seen.add(`${fav.id}|${fav._type}`);
+        });
+  
+        // Disparar update de UI del carrusel (botones de scroll, overflow, etc.)
+        list.dispatchEvent(new Event('scroll'));
+      }
+  
       function buildCatalog() {
         const catalog = $('#catalog');
         catalog.innerHTML = '';
-        // Primeros 2 géneros: carga inmediata (mejor UX inicial)
+  
+        // 1. Primer carrusel: Favoritos (oculto si no hay nada)
+        catalog.appendChild(createFavoritesSection());
+  
+        // 2. Géneros desde TMDB
         GENRES.forEach((genre, i) => {
           const g = { ...genre, _eager: i < 2 };
           catalog.appendChild(createCarouselSection(g));
         });
+  
+        // 3. Renderizar favoritos guardados (puede mostrar el carrusel)
+        updateFavoritesSection();
       }
   
       /* ────────────────────────────────────────────────
