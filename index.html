@@ -18,13 +18,33 @@
   <meta name="mobile-web-app-capable" content="yes">
   <title>POPOROPO</title>
 
+  <!-- Detección temprana de TV: añade clase tv-mode antes de cargar CSS para evitar parpadeo -->
+  <script>
+    (function () {
+      try {
+        var ua = navigator.userAgent || '';
+        var qs = location.search || '';
+        var forced = /[?&]tv=1/.test(qs);
+        var disabled = /[?&]tv=0/.test(qs);
+        var isTV = forced || (!disabled && (
+          /WebOS|Web0S|webOS|NetCast|SmartTV|SMART-TV|Smart-TV|Tizen|HbbTV|VIERA|BRAVIA|AQUOS|CrKey|GoogleTV|AppleTV|PlayStation|Nintendo|Xbox|DTV|InettvBrowser|HomeCenter/i.test(ua)
+        ));
+        if (isTV) {
+          document.documentElement.className += ' tv-mode';
+          window.__IS_TV__ = true;
+        } else {
+          window.__IS_TV__ = false;
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://api.themoviedb.org">
   <link rel="preconnect" href="https://image.tmdb.org">
-  <link rel="dns-prefetch" href="https://vidsrc.xyz">
-  <link rel="dns-prefetch" href="https://vidsrc.to">
-  <link rel="dns-prefetch" href="https://embed.su">
+  <link rel="dns-prefetch" href="https://vidsrc.pm">
+  <link rel="dns-prefetch" href="https://vidsrc.me">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
@@ -45,7 +65,7 @@
         <span class="search-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>
         </span>
-        <input type="text" id="searchBar" placeholder="Buscar películas..." aria-label="Buscar películas" autocomplete="off" inputmode="search">
+        <input type="text" id="searchBar" placeholder="Buscar películas..." aria-label="Buscar películas" autocomplete="off">
         <button type="button" id="searchClear" class="search-clear" aria-label="Limpiar búsqueda" hidden>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="6" y1="18" x2="18" y2="6"></line></svg>
         </button>
@@ -105,8 +125,7 @@
           src=""
           title="Reproductor de video"
           allowfullscreen
-          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-          loading="lazy">
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture">
         </iframe>
         <div id="adClickBlocker" aria-hidden="true">
           <div class="blocker-strip blocker-top"></div>
@@ -126,7 +145,7 @@
         </div>
       </div>
 
-      <!-- Barra de servidores (se usa principalmente para películas, en series queda oculta) -->
+      <!-- Barra de servidores -->
       <div id="serverBar" class="server-bar" hidden>
         <span class="server-bar-label">Servidor:</span>
         <div class="server-buttons" id="serverButtonsContainer"></div>
