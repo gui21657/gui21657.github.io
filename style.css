@@ -413,7 +413,7 @@
   
   .movie-info-btn {
     position: absolute;
-    top: 8px;
+    bottom: 8px;
     right: 8px;
     z-index: 4;
     width: 32px;
@@ -428,7 +428,7 @@
     border: 1px solid rgba(255, 255, 255, 0.18);
     color: #fff;
     opacity: 0;
-    transform: translateY(-4px) scale(0.9);
+    transform: translateY(4px) scale(0.9);
     transition: opacity 0.25s ease, transform 0.25s ease,
                 background 0.2s ease, border-color 0.2s ease;
     pointer-events: none;
@@ -452,6 +452,100 @@
   
   .movie-info-btn:active { transform: translateY(0) scale(0.95); }
   
+  /* ── Botón Favoritos (corazón) — arriba derecha ── */
+  .movie-fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 4;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.9);
+    transition: opacity 0.25s ease, transform 0.25s ease,
+                background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    pointer-events: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  
+  .movie-fav-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: fill 0.2s ease, transform 0.2s ease;
+  }
+  
+  /* Cuando es favorito: visible siempre, fondo rojo, corazón relleno */
+  .movie-fav-btn.is-fav {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+  }
+  .movie-fav-btn.is-fav svg {
+    fill: currentColor;
+  }
+  
+  /* Aparece al hover/focus */
+  .movie:hover .movie-fav-btn,
+  .movie:focus-within .movie-fav-btn,
+  .movie-fav-btn:focus-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  
+  .movie-fav-btn:hover {
+    background: rgba(229, 9, 20, 0.85);
+    border-color: var(--red);
+    color: #fff;
+    transform: translateY(0) scale(1.1);
+  }
+  .movie-fav-btn.is-fav:hover {
+    background: rgba(60, 60, 60, 0.9);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+  .movie-fav-btn.is-fav:hover svg {
+    fill: none;
+  }
+  
+  .movie-fav-btn:active { transform: translateY(0) scale(0.95); }
+  
+  /* Pulso al agregarse */
+  @keyframes favPulse {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.35); }
+    100% { transform: scale(1); }
+  }
+  .movie-fav-btn.just-added { animation: favPulse 0.45s ease; }
+  
+  /* Favoritos: acento sutil en el título de la sección */
+  .favorites-section .title-accent { color: var(--red); }
+  .favorites-section .section-title::after {
+    content: "❤";
+    margin-left: 8px;
+    color: var(--red);
+    font-size: 0.85em;
+    vertical-align: middle;
+  }
+  .favorites-section[hidden] { display: none; }
+  
   @media (hover: none) {
     .movie-info-btn {
       opacity: 0.9;
@@ -461,6 +555,15 @@
       height: 36px;
     }
     .movie-info-btn svg { width: 16px; height: 16px; }
+    .movie-fav-btn {
+      opacity: 0.9;
+      transform: none;
+      pointer-events: auto;
+      width: 36px;
+      height: 36px;
+    }
+    .movie-fav-btn svg { width: 16px; height: 16px; }
+    .movie-fav-btn.is-fav { opacity: 1; }
     .movie:hover { transform: none; box-shadow: none; }
     .movie:hover img { transform: none; }
     .movie:hover .movie-overlay { opacity: 0; }
@@ -1120,8 +1223,28 @@
   html.tv-mode .movie:hover .movie-overlay { opacity: 0 !important; }
   html.tv-mode .movie:hover .movie-info-btn { opacity: 0 !important; pointer-events: none !important; }
   
-  /* Botón de info en cards: oculto en TV (se accede por tecla "i" o menú) */
+  /* Botón de info en cards: oculto en TV (se accede por tecla "i") */
   html.tv-mode .movie-info-btn { display: none !important; }
+  
+  /* Botón de favoritos en TV: oculto por defecto.
+     Se muestra cuando la card tiene foco, o siempre si ya es favorito.
+     Se toggea con la tecla "F" del control remoto / teclado. */
+  html.tv-mode .movie-fav-btn {
+    display: none;
+  }
+  html.tv-mode .movie:focus-visible .movie-fav-btn,
+  html.tv-mode .movie.tv-focus .movie-fav-btn,
+  html.tv-mode .movie-fav-btn.is-fav {
+    display: flex;
+    opacity: 1;
+    transform: none;
+    pointer-events: none; /* en TV no es focuseable, se usa tecla F */
+    width: 40px;
+    height: 40px;
+    top: 6px;
+    right: 6px;
+  }
+  html.tv-mode .movie-fav-btn svg { width: 18px; height: 18px; stroke-width: 2.4; }
   
   /* Foco TV: borde rojo gigante, muy visible a 2-3 metros */
   html.tv-mode .movie:focus,
