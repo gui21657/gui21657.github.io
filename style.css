@@ -1,21 +1,6 @@
 /* ============================================================
-   POPOROPO — STYLE.CSS  (TMDB · multi-servidor · TV/Móvil)
-   Sections:
-     1.  Variables & Reset
-     2.  Utilidades
-     3.  Header & Search
-     4.  Banner
-     5.  Carrousels
-     6.  Movie Cards
-     7.  Search Results Grid
-     8.  Modal de Video + Server Bar
-     9.  Season/Episode Selector
-     10. Info Modal
-     11. Toast & Search Empty
-     12. Footer
-     13. Reduced motion
-     14. Media queries (móvil)
-     15. TV / pantallas grandes
+   POPOROPO — STYLE.CSS
+   Optimizado para TVs LG viejas (WebOS) + móvil + desktop
    ============================================================ */
 
 /* =====================
@@ -610,7 +595,7 @@
   .blocker-strip.blocker-bottom { bottom: 0; }
   #adClickBlocker.is-active .blocker-strip { pointer-events: auto; }
   
-  /* ── Server Bar (películas principalmente) ── */
+  /* ── Server Bar ── */
   .server-bar {
     display: flex; align-items: center; gap: 14px;
     padding: 10px 18px;
@@ -992,7 +977,7 @@
   }
   
   /* =====================
-     15. TV / PANTALLAS GRANDES
+     15. PANTALLAS GRANDES (no-TV)
      ===================== */
   @media (min-width: 1600px) {
     :root {
@@ -1040,34 +1025,6 @@
     .scroll-btn .scroll-arrow { width: 30px; height: 30px; }
   }
   
-  /* TVs — sin hover, focus muy visible */
-  @media (hover: none) and (min-width: 1280px),
-         (pointer: coarse) and (min-width: 1280px) {
-    .movie:focus-visible {
-      transform: scale(1.10);
-      box-shadow: 0 0 0 4px var(--red), 0 16px 40px rgba(0,0,0,0.7);
-    }
-    .movie:focus-visible .movie-overlay { opacity: 1; }
-    .movie:focus-visible .movie-info-btn {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-    }
-    .scroll-btn { display: none; }
-    :focus-visible {
-      outline: 4px solid var(--red);
-      outline-offset: 4px;
-    }
-    .btn:focus-visible {
-      transform: scale(1.05);
-      box-shadow: 0 0 0 4px rgba(229,9,20,0.5);
-    }
-    .server-btn:focus-visible {
-      transform: scale(1.12);
-      box-shadow: 0 0 0 4px rgba(229,9,20,0.5);
-    }
-  }
-  
   /* Pantallas en horizontal con poca altura */
   @media (max-height: 600px) and (orientation: landscape) {
     .banner { height: 100vh; min-height: 320px; }
@@ -1078,3 +1035,199 @@
       width: min(96vw, calc((100vh - 100px) * 16 / 9));
     }
   }
+  
+  /* ============================================================
+     16. MODO TV — OVERRIDES PARA SMART TV (LG WebOS, Tizen, etc.)
+     ============================================================
+     Activado por la clase .tv-mode en <html>.
+     Objetivo: minimizar uso de memoria/GPU y optimizar navegación
+     con control remoto en TVs viejas.
+     ============================================================ */
+  
+  html.tv-mode :root,
+  html.tv-mode {
+    --card-w: 175px;
+    --card-h: 263px;
+    --header-h: 70px;
+  }
+  
+  /* Quitar TODO efecto caro: blur, backdrop-filter, sombras grandes,
+     animaciones de scale, gradientes complejos. */
+  html.tv-mode *,
+  html.tv-mode *::before,
+  html.tv-mode *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    text-shadow: none !important;
+  }
+  
+  html.tv-mode body {
+    font-size: 16px;
+    scroll-behavior: auto !important;
+  }
+  
+  html.tv-mode html { scroll-behavior: auto !important; }
+  
+  /* Animaciones desactivadas en TV (pesan en webkits viejos) */
+  html.tv-mode *,
+  html.tv-mode *::before,
+  html.tv-mode *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+  }
+  
+  /* Spinner sí debe rotar */
+  html.tv-mode .spinner-ring,
+  html.tv-mode .carousel-loader-ring {
+    animation: spin 1s linear infinite !important;
+  }
+  
+  /* Header simplificado */
+  html.tv-mode .header {
+    background: rgba(20, 20, 20, 0.95);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+  html.tv-mode .header.scrolled {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+  
+  /* Banner: sin animación de entrada, sin sombras de texto pesadas */
+  html.tv-mode .banner-content { animation: none; }
+  html.tv-mode .banner h1 { font-size: 64px; }
+  html.tv-mode .banner-desc { font-size: 16px; max-width: 560px; }
+  
+  /* Botones de scroll horizontal: ocultos en TV (se navega con flechas) */
+  html.tv-mode .scroll-btn { display: none !important; }
+  
+  /* Cards: sin hover scale, sin shadow grande, sin overlay con gradiente.
+     El foco se ve por borde sólido grueso. */
+  html.tv-mode .movie {
+    transition: transform 0.12s linear, box-shadow 0.12s linear;
+    background: #1a1a1a;
+    border-radius: 6px;
+    /* Damos un margen interno con outline-offset al focus, así que
+       necesitamos espacio. Lo simulamos con un poco más de gap. */
+  }
+  html.tv-mode .movies { gap: 12px; padding: 16px 4%; }
+  html.tv-mode .search-grid { gap: 18px 14px; }
+  
+  html.tv-mode .movie:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  html.tv-mode .movie:hover img { transform: none !important; }
+  html.tv-mode .movie:hover .movie-overlay { opacity: 0 !important; }
+  html.tv-mode .movie:hover .movie-info-btn { opacity: 0 !important; pointer-events: none !important; }
+  
+  /* Botón de info en cards: oculto en TV (se accede por tecla "i" o menú) */
+  html.tv-mode .movie-info-btn { display: none !important; }
+  
+  /* Foco TV: borde rojo gigante, muy visible a 2-3 metros */
+  html.tv-mode .movie:focus,
+  html.tv-mode .movie:focus-visible,
+  html.tv-mode .movie.tv-focus {
+    outline: 5px solid var(--red) !important;
+    outline-offset: 3px;
+    transform: none !important;
+    box-shadow: 0 0 0 5px var(--red), 0 0 24px rgba(229,9,20,0.55) !important;
+    z-index: 5;
+  }
+  html.tv-mode .movie:focus-visible .movie-overlay,
+  html.tv-mode .movie.tv-focus .movie-overlay {
+    opacity: 0 !important;
+  }
+  
+  /* Botones grandes con foco visible */
+  html.tv-mode .btn:focus,
+  html.tv-mode .btn:focus-visible,
+  html.tv-mode .server-btn:focus,
+  html.tv-mode .server-btn:focus-visible,
+  html.tv-mode .close:focus,
+  html.tv-mode .close:focus-visible,
+  html.tv-mode .selector-group select:focus,
+  html.tv-mode .menu a:focus,
+  html.tv-mode .menu a:focus-visible,
+  html.tv-mode .search-container input:focus,
+  html.tv-mode #searchClear:focus,
+  html.tv-mode #searchClear:focus-visible {
+    outline: 4px solid #fff !important;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px var(--red) !important;
+  }
+  
+  /* Modales sin blur en TV — solo color sólido oscuro */
+  html.tv-mode .modal-backdrop {
+    background: rgba(0,0,0,0.94);
+  }
+  html.tv-mode .modal-content {
+    animation: none !important;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 0 12px 30px rgba(0,0,0,0.7);
+  }
+  
+  /* Cierre sin blur ni rotación */
+  html.tv-mode .close {
+    background: rgba(0,0,0,0.85);
+  }
+  html.tv-mode .close:hover { transform: none; }
+  
+  /* Server-bar más grande para TV */
+  html.tv-mode .server-btn {
+    width: 48px; height: 48px; font-size: 16px;
+  }
+  
+  /* Selector temporada/episodio: tipografía más legible */
+  html.tv-mode .selector-group label { font-size: 14px; }
+  html.tv-mode .selector-group select {
+    font-size: 16px; padding: 12px 30px 12px 14px;
+    min-width: 130px;
+  }
+  
+  /* Overlay de cards: nunca se muestra en TV (consume GPU) */
+  html.tv-mode .movie-overlay { display: none !important; }
+  
+  /* Skeleton más simple en TV */
+  html.tv-mode .movie-skeleton {
+    background: #1a1a1a;
+    animation: none;
+  }
+  
+  /* Carrusel: el indicador de overflow y el fade lateral lo quitamos
+     (cuestan composición extra) */
+  html.tv-mode .carousel-wrapper::before,
+  html.tv-mode .carousel-wrapper::after {
+    display: none !important;
+  }
+  
+  /* Scroll snap puede causar jumps raros con foco programático */
+  html.tv-mode .movies { scroll-snap-type: none; }
+  
+  /* Reducir pesos de banner: sin transición de imagen */
+  html.tv-mode .banner { transition: none; }
+  
+  /* Quitar animación del shimmer de skeleton (consume CPU) */
+  html.tv-mode .movie-skeleton { animation: none !important; }
+  
+  /* Selector temporada/episodio en TV: dropdown más amigable */
+  html.tv-mode .season-episode-selector { padding: 16px 20px; }
+  
+  /* Tipografía de título de sección un poco mayor */
+  html.tv-mode .section-title { font-size: 24px; }
+  html.tv-mode .title-accent { font-size: 26px; }
+  
+  /* Reduce gradientes complejos del banner */
+  html.tv-mode .banner-overlay {
+    background: linear-gradient(
+      105deg,
+      rgba(20,20,20,0.95) 0%,
+      rgba(20,20,20,0.55) 55%,
+      rgba(20,20,20,0.15) 100%
+    );
+  }
+  html.tv-mode .banner-fade-bottom {
+    background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+    height: 140px;
+  }
+  
+  /* btn-info sin blur (sólido) */
+  html.tv-mode .btn-info { background: rgba(80,80,82,0.9); }
