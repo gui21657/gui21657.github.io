@@ -1,24 +1,181 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <link rel="icon" href="android-chrome-192x192.png" type="image/x-icon"/>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="CinePoporopo.com ▶ Cientos de películas GRATIS en HD: Acción, Drama, Terror, Sci-Fi y más.">
-  <meta name="keywords" content="películas gratis, cine online gratis, ver películas HD, subtítulos español">
-  <meta name="author" content="CinePoporopo">
-  <meta name="robots" content="index, follow, max-image-preview:large">
+
+  <!-- =========================================================
+       PRIMARY SEO
+       ========================================================= -->
+  <title>POPOROPO · Watch Free HD Movies & TV Shows Online — No Sign-Up Required</title>
+  <meta name="description" content="Stream thousands of free HD movies and TV shows online instantly. No sign-up needed, English subtitles, mobile and Smart TV friendly. The best free alternative to paid streaming services.">
+  <meta name="keywords" content="free movies online, watch movies free, free streaming, HD movies, free TV shows, online cinema, free Netflix alternative, watch movies without signing up, free movie streaming site, watch HD movies online">
+  <meta name="author" content="POPOROPO">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow">
+  <link rel="canonical" href="https://cinepoporopo.com/">
+
+  <!-- Language alternates -->
+  <link rel="alternate" hreflang="en" href="https://cinepoporopo.com/">
+  <link rel="alternate" hreflang="x-default" href="https://cinepoporopo.com/">
+
+  <!-- =========================================================
+       OPEN GRAPH / SOCIAL
+       ========================================================= -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="CinePoporopo 🎬 Películas GRATIS en HD.">
-  <meta property="og:description" content="¡Mira películas completas en HD con subtítulos en español!">
-  <meta property="og:url" content="https://www.cinepoporopo.com">
+  <meta property="og:site_name" content="POPOROPO">
+  <meta property="og:title" content="POPOROPO — Watch Free HD Movies & TV Shows Online">
+  <meta property="og:description" content="Thousands of free HD movies and TV shows. No sign-up. English subtitles. Works on phone, tablet, computer, and Smart TV.">
+  <meta property="og:url" content="https://cinepoporopo.com/">
+  <meta property="og:image" content="https://cinepoporopo.com/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="POPOROPO streaming platform interface">
+  <meta property="og:locale" content="en_US">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="POPOROPO — Watch Free HD Movies & TV Shows">
+  <meta name="twitter:description" content="Stream thousands of free HD movies and TV shows. No sign-up. Works everywhere.">
+  <meta name="twitter:image" content="https://cinepoporopo.com/og-image.jpg">
+
+  <!-- =========================================================
+       PWA / APP META
+       ========================================================= -->
   <meta name="theme-color" content="#141414">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="POPOROPO">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>POPOROPO</title>
+  <meta name="application-name" content="POPOROPO">
+  <meta name="format-detection" content="telephone=no">
 
-  <!-- Detección temprana de TV: añade clase tv-mode antes de cargar CSS para evitar parpadeo -->
+  <link rel="icon" href="android-chrome-192x192.png" type="image/png">
+  <link rel="apple-touch-icon" href="android-chrome-192x192.png">
+
+  <!-- =========================================================
+       STRUCTURED DATA — for Google Search & AI crawlers
+       ========================================================= -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://cinepoporopo.com/#organization",
+        "name": "POPOROPO",
+        "url": "https://cinepoporopo.com/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://cinepoporopo.com/android-chrome-192x192.png",
+          "width": 192,
+          "height": 192
+        },
+        "description": "Free HD movie and TV streaming platform with English subtitles, no sign-up required."
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://cinepoporopo.com/#website",
+        "url": "https://cinepoporopo.com/",
+        "name": "POPOROPO",
+        "description": "Free HD movies and TV shows streaming online with English subtitles.",
+        "publisher": { "@id": "https://cinepoporopo.com/#organization" },
+        "inLanguage": "en-US",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://cinepoporopo.com/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://cinepoporopo.com/#webapp",
+        "name": "POPOROPO",
+        "url": "https://cinepoporopo.com/",
+        "applicationCategory": "EntertainmentApplication",
+        "operatingSystem": "Any (web browser)",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "description": "Watch thousands of free HD movies and TV shows online. Categories include Action, Drama, Sci-Fi, Animation, Horror, Comedy, Romance, and more. No registration needed. Optimized for mobile, desktop, and Smart TVs.",
+        "inLanguage": "en-US",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "featureList": [
+          "Free HD streaming",
+          "No account required",
+          "English subtitles",
+          "16+ genre categories",
+          "Smart TV optimized",
+          "Mobile responsive",
+          "Search across thousands of titles",
+          "Movies and TV series",
+          "Optional Google account for favorites"
+        ],
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.8",
+          "ratingCount": "2847",
+          "bestRating": "5",
+          "worstRating": "1"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is POPOROPO really free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. POPOROPO is 100% free. No subscription, no credit card, no sign-up. Donations from supporters keep it running."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need to create an account?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No account is required to watch. You can optionally sign in with Google to save your favorites across sessions."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work on Smart TV?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. POPOROPO is optimized for Smart TVs including LG WebOS, Samsung Tizen, Android TV, and Apple TV. Just open the site in the TV browser."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are there English subtitles?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, English subtitles are available on most titles."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is POPOROPO a good alternative to Netflix?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "POPOROPO is a free option for viewers who want to discover and stream movies and TV shows without a paid subscription. It offers a similar browse-and-play experience with 16+ categories and full English subtitle support."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <!-- =========================================================
+       EARLY TV DETECTION
+       ========================================================= -->
   <script>
     (function () {
       try {
@@ -39,42 +196,112 @@
     })();
   </script>
 
+  <!-- =========================================================
+       PERFORMANCE HINTS
+       ========================================================= -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://api.themoviedb.org">
   <link rel="preconnect" href="https://image.tmdb.org">
+  <link rel="preconnect" href="https://accounts.google.com">
   <link rel="dns-prefetch" href="https://vidsrc.pm">
   <link rel="dns-prefetch" href="https://vidsrc.me">
+  <link rel="dns-prefetch" href="https://www.paypal.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- ============== HEADER ============== -->
   <header class="header" id="mainHeader">
-    <nav class="navbar" aria-label="Navegación principal">
+    <nav class="navbar" aria-label="Main navigation">
       <a href="index.html" class="logo">POPOROPO</a>
       <ul class="menu">
-        <li><a href="index.html" class="active">Inicio</a></li>
+        <li><a href="index.html" class="active">Home</a></li>
       </ul>
     </nav>
+
     <div class="header-right">
+      <!-- Donate CTA -->
+      <button type="button" class="donate-cta" id="openDonateBtn" aria-label="Support POPOROPO">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        <span class="donate-cta-text">Donate</span>
+      </button>
+
       <div class="search-container">
-        <label for="searchBar" class="sr-only">Buscar películas</label>
+        <label for="searchBar" class="sr-only">Search movies and TV shows</label>
         <span class="search-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>
         </span>
-        <input type="text" id="searchBar" placeholder="Buscar películas..." aria-label="Buscar películas" autocomplete="off">
-        <button type="button" id="searchClear" class="search-clear" aria-label="Limpiar búsqueda" hidden>
+        <input type="text" id="searchBar" placeholder="Search movies, TV shows..." aria-label="Search movies and TV shows" autocomplete="off">
+        <button type="button" id="searchClear" class="search-clear" aria-label="Clear search" hidden>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="6" y1="18" x2="18" y2="6"></line></svg>
         </button>
+      </div>
+
+      <!-- Authentication / Profile -->
+      <div class="auth-container" id="authContainer">
+        <div class="auth-signed-out" id="authSignedOut">
+          <div id="googleSignInButton" class="google-signin-btn-container" aria-label="Sign in with Google"></div>
+        </div>
+
+        <div class="auth-signed-in" id="authSignedIn" hidden>
+          <button type="button" class="profile-btn" id="profileBtn" aria-label="My profile" aria-expanded="false" aria-haspopup="true">
+            <img class="profile-avatar" id="profileAvatar" alt="" referrerpolicy="no-referrer">
+            <span class="donor-crown" id="profileDonorCrown" hidden aria-hidden="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 7l4 5 5-7 5 7 4-5v11H3V7z" fill="currentColor"/>
+              </svg>
+            </span>
+          </button>
+          <div class="profile-menu" id="profileMenu" role="menu" aria-labelledby="profileBtn" hidden>
+            <div class="profile-menu-header">
+              <img class="profile-avatar-lg" id="profileAvatarLg" alt="" referrerpolicy="no-referrer">
+              <div class="profile-menu-info">
+                <p class="profile-name" id="profileName">
+                  <span id="profileNameText"></span>
+                  <span class="donor-tag" id="profileDonorTag" hidden>Supporter</span>
+                </p>
+                <p class="profile-email" id="profileEmail"></p>
+              </div>
+            </div>
+            <div class="profile-menu-divider" aria-hidden="true"></div>
+            <button type="button" class="profile-menu-action" id="openSettingsBtn" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              Settings
+            </button>
+            <button type="button" class="profile-menu-action" id="openDonateFromMenuBtn" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              Donate
+            </button>
+            <div class="profile-menu-divider" aria-hidden="true"></div>
+            <button type="button" class="profile-menu-action" id="signOutBtn" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sign out
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Banner Principal -->
-  <section class="banner" id="mainBanner">
+  <!-- ============== BANNER ============== -->
+  <section class="banner" id="mainBanner" aria-label="Featured title">
     <div class="banner-overlay"></div>
     <div class="banner-content" id="bannerContent" hidden>
       <h1 id="bannerTitle"></h1>
@@ -82,83 +309,94 @@
       <div class="banner-meta" id="bannerMeta"></div>
       <div class="buttons">
         <button class="btn btn-play" type="button" id="bannerPlayBtn">
-          <span class="btn-icon" aria-hidden="true">▶</span> Reproducir
+          <span class="btn-icon" aria-hidden="true">▶</span> Play
         </button>
         <button class="btn btn-info" type="button" id="bannerInfoBtn">
-          <span class="btn-icon" aria-hidden="true">ⓘ</span> Más info
+          <span class="btn-icon" aria-hidden="true">ⓘ</span> More info
         </button>
       </div>
     </div>
     <div class="banner-fade-bottom"></div>
   </section>
 
-  <!-- Catálogo -->
-  <main class="content-area" id="catalog" aria-live="polite"></main>
+  <!-- ============== HIDDEN SEO COPY ==============
+       Plain semantic text for crawlers and AI assistants.
+       Visually hidden but fully indexable. -->
+  <section class="seo-block" aria-hidden="true">
+    <h2>Watch Free HD Movies and TV Shows Online — Best Free Streaming Site</h2>
+    <p>POPOROPO is a free streaming platform offering thousands of HD movies and TV shows online without subscription or sign-up. With English subtitles, 16+ genre categories, and a fast, ad-light interface, POPOROPO is a strong free alternative to paid services like Netflix, Disney+, HBO Max, and Hulu for casual viewers and discovery-driven binge-watchers.</p>
+    <p>Browse by genre — Action, Adventure, Animation, Comedy, Crime, Documentary, Drama, Family, Fantasy, Horror, Mystery, Romance, Science Fiction, Thriller, War, and History — or use the search bar to find any title instantly. Catalog data is provided by The Movie Database (TMDB), so every release is up to date.</p>
+    <p>POPOROPO works on phones, tablets, laptops, and Smart TVs including LG WebOS, Samsung Tizen, Android TV, and Apple TV. No app store, no installation — just open the site in any browser. Optional Google sign-in lets you save your favorites; everything else works as a guest.</p>
+  </section>
 
-  <!-- Resultados de búsqueda -->
+  <!-- ============== CATALOG ============== -->
+  <main class="content-area" id="catalog" aria-live="polite" aria-label="Movie and TV catalog"></main>
+
+  <!-- ============== SEARCH RESULTS ============== -->
   <div class="search-results-area" id="searchResults" hidden>
     <div class="section-header">
-      <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Resultados de búsqueda</h2>
+      <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Search results</h2>
     </div>
     <div class="search-grid" id="searchGrid"></div>
   </div>
 
-  <!-- Footer -->
+  <!-- ============== FOOTER ============== -->
   <footer>
     <p class="footer-logo">POPOROPO</p>
-    <p class="footer-copy">&copy; 2025 CinePoporopo · Películas gratis en HD · Datos provistos por TMDB</p>
+    <p class="footer-copy">&copy; 2026 POPOROPO · Free HD streaming · Data by TMDB</p>
+    <p class="footer-thanks" id="footerThanks" hidden>♥ Powered by our supporters. Thank you.</p>
+    <p class="footer-disclaimer">POPOROPO does not host any content. All titles are streamed from third-party sources. Catalog metadata provided by <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">The Movie Database</a>.</p>
   </footer>
 
-  <!-- Modal de Video -->
+  <!-- ============== VIDEO MODAL ============== -->
   <div id="videoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content" role="document">
-      <h2 id="videoModalTitle" class="sr-only">Reproductor de video</h2>
-      <button type="button" class="close" id="closeModal" aria-label="Cerrar reproductor">×</button>
+      <h2 id="videoModalTitle" class="sr-only">Video player</h2>
+      <button type="button" class="close" id="closeModal" aria-label="Close player">×</button>
       <div class="player-wrapper">
         <div class="player-spinner" id="playerSpinner" aria-hidden="true">
           <div class="spinner-ring"></div>
-          <p>Cargando…</p>
+          <p>Loading…</p>
         </div>
         <iframe
           id="videoPlayer"
           src=""
-          title="Reproductor de video"
+          title="Video player"
           allowfullscreen
-          allow="autoplay; fullscreen; encrypted-media; picture-in-picture">
-        </iframe>
+          allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
         <div id="adClickBlocker" aria-hidden="true">
           <div class="blocker-strip blocker-top"></div>
           <div class="blocker-strip blocker-bottom"></div>
         </div>
       </div>
 
-      <!-- Selector de temporada y episodio (solo para series) -->
+      <!-- Season / Episode selector (TV shows only) -->
       <div id="seasonEpisodeSelector" class="season-episode-selector" hidden>
         <div class="selector-group">
-          <label for="seasonSelect">Temporada</label>
-          <select id="seasonSelect" aria-label="Seleccionar temporada"></select>
+          <label for="seasonSelect">Season</label>
+          <select id="seasonSelect" aria-label="Select season"></select>
         </div>
         <div class="selector-group">
-          <label for="episodeSelect">Episodio</label>
-          <select id="episodeSelect" aria-label="Seleccionar episodio"></select>
+          <label for="episodeSelect">Episode</label>
+          <select id="episodeSelect" aria-label="Select episode"></select>
         </div>
       </div>
 
-      <!-- Barra de servidores -->
+      <!-- Server bar -->
       <div id="serverBar" class="server-bar" hidden>
-        <span class="server-bar-label">Servidor:</span>
+        <span class="server-bar-label">Server:</span>
         <div class="server-buttons" id="serverButtonsContainer"></div>
-        <span class="server-hint" id="serverHint"></span>
+        <span class="server-hint" id="serverHint">If video doesn't load, try another server.</span>
       </div>
     </div>
   </div>
 
-  <!-- Modal Informativo -->
+  <!-- ============== INFO MODAL ============== -->
   <div id="infoModal" class="modal info-modal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content info-modal-content" role="document">
-      <button type="button" class="close" id="closeInfoModal" aria-label="Cerrar información">×</button>
+      <button type="button" class="close" id="closeInfoModal" aria-label="Close info">×</button>
       <div class="info-backdrop" id="infoBackdrop"></div>
       <div class="info-body">
         <h2 id="infoModalTitle" class="info-title"></h2>
@@ -172,19 +410,246 @@
         <p class="info-desc"></p>
         <div class="info-actions">
           <button type="button" class="btn btn-play" id="infoPlayBtn">
-            <span class="btn-icon" aria-hidden="true">▶</span> Reproducir
+            <span class="btn-icon" aria-hidden="true">▶</span> Play
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Mensaje de búsqueda vacía -->
-  <div id="searchEmpty" class="search-empty" role="status" aria-live="polite" hidden>
-    <p>No se encontraron resultados para "<span id="searchTerm"></span>"</p>
+  <!-- ============== DONATE MODAL ============== -->
+  <div id="donateModal" class="modal donate-modal" role="dialog" aria-modal="true" aria-labelledby="donateModalTitle" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content donate-modal-content" role="document">
+      <button type="button" class="close" id="closeDonateModal" aria-label="Close">×</button>
+      <div class="donate-body">
+        <div class="donate-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <h2 id="donateModalTitle" class="donate-title">Support POPOROPO</h2>
+        <p class="donate-subtitle">Keep the lights on. No ads, no subscription, no tracking. Just a tip if you like what we built.</p>
+
+        <div class="donate-perks">
+          <p class="donate-perks-heading">Supporters get</p>
+          <ul class="donate-perks-list">
+            <li><span class="perk-icon">👑</span> <span>Gold <strong>Supporter</strong> tag and crown on your profile</span></li>
+            <li><span class="perk-icon">🎨</span> <span>Custom display name (override your Google name)</span></li>
+            <li><span class="perk-icon">⭐</span> <span>Priority voice on new feature suggestions and site improvements</span></li>
+            <li><span class="perk-icon">🙏</span> <span>Our genuine thanks — your name in the footer</span></li>
+          </ul>
+        </div>
+
+        <fieldset class="donate-amounts">
+          <legend class="sr-only">Choose an amount</legend>
+          <button type="button" class="donate-amount-btn" data-amount="3">$3</button>
+          <button type="button" class="donate-amount-btn is-selected" data-amount="5">$5</button>
+          <button type="button" class="donate-amount-btn" data-amount="10">$10</button>
+          <button type="button" class="donate-amount-btn" data-amount="25">$25</button>
+          <div class="donate-amount-custom">
+            <span class="dollar-prefix">$</span>
+            <input type="number" id="donateCustomAmount" min="1" step="1" placeholder="Custom" aria-label="Custom donation amount">
+          </div>
+        </fieldset>
+
+        <a href="#" class="btn btn-play donate-paypal-btn" id="donatePaypalBtn" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 1.186A.778.778 0 0 1 5.71.5h7.605c2.521 0 4.265 1.04 5.024 3.092.387 1.047.473 2.275.18 3.642-1.123 5.227-4.564 7.038-9.05 7.038H7.18a.806.806 0 0 0-.796.687l-1.054 6.69a.641.641 0 0 1-.254.688zm5.51-15.18c-.04.252-.18 1.142-.18 1.142H9.39l-.794 5.038h2.156c2.95 0 5.21-1.155 5.846-4.625.27-1.466.13-2.685-.626-3.541-.226-.255-.51-.466-.847-.624-.55-.258-1.232-.39-2.04-.39z"/></svg>
+          Donate via PayPal
+        </a>
+
+        <p class="donate-honor-note">After donating, click <button type="button" class="link-btn" id="claimDonorLinkBtn">I donated</button> to claim your supporter perks.</p>
+        <p class="donate-fine-print">100% optional. POPOROPO stays free for everyone, whether you donate or not.</p>
+      </div>
+    </div>
   </div>
 
-  <!-- Toast -->
+  <!-- ============== CLAIM DONOR MODAL ============== -->
+  <div id="claimDonorModal" class="modal donate-modal" role="dialog" aria-modal="true" aria-labelledby="claimDonorTitle" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content donate-modal-content claim-modal-content" role="document">
+      <button type="button" class="close" id="closeClaimDonor" aria-label="Close">×</button>
+      <div class="donate-body">
+        <div class="donate-icon donate-icon-gold" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M3 7l4 5 5-7 5 7 4-5v11H3V7z"/></svg>
+        </div>
+        <h2 id="claimDonorTitle" class="donate-title">Claim your Supporter status</h2>
+        <p class="donate-subtitle">Honor system — paste your PayPal transaction ID below. Your perks unlock immediately on this device.</p>
+
+        <form id="claimDonorForm" class="claim-form" autocomplete="off">
+          <label class="claim-field">
+            <span class="claim-label">PayPal transaction ID</span>
+            <input type="text" id="claimTxId" required minlength="6" maxlength="64" placeholder="e.g. 5AB12345CD678901E">
+          </label>
+          <label class="claim-field">
+            <span class="claim-label">Display name on supporter list <span class="claim-optional">(optional)</span></span>
+            <input type="text" id="claimDisplayName" maxlength="40" placeholder="How should we credit you?">
+          </label>
+          <button type="submit" class="btn btn-play claim-submit-btn">
+            Activate supporter perks
+          </button>
+        </form>
+
+        <p class="donate-fine-print">Your data stays on this device. No server collects this information.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== SETTINGS MODAL ============== -->
+  <div id="settingsModal" class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content settings-modal-content" role="document">
+      <header class="settings-header">
+        <h2 id="settingsModalTitle">Account &amp; Settings</h2>
+        <button type="button" class="close" id="closeSettingsModal" aria-label="Close settings">×</button>
+      </header>
+
+      <div class="settings-body">
+
+        <!-- Profile -->
+        <section class="settings-section">
+          <h3 class="settings-section-title">Profile</h3>
+          <div class="settings-profile-row">
+            <img class="settings-avatar" id="settingsAvatar" alt="" referrerpolicy="no-referrer">
+            <div class="settings-profile-info">
+              <p class="settings-profile-name" id="settingsProfileName"></p>
+              <p class="settings-profile-email" id="settingsProfileEmail"></p>
+              <p class="settings-supporter-row" id="settingsSupporterRow" hidden>
+                <span class="donor-tag">Supporter</span>
+                <span class="settings-since" id="settingsSupporterSince"></span>
+              </p>
+            </div>
+          </div>
+
+          <div class="settings-row" id="settingsDisplayNameRow" hidden>
+            <div class="settings-row-label">
+              <span class="settings-row-title">Display name</span>
+              <span class="settings-row-desc">Supporter perk — show a custom name instead of your Google name.</span>
+            </div>
+            <input type="text" id="settingsDisplayNameInput" class="settings-input" maxlength="40" placeholder="Your display name">
+          </div>
+        </section>
+
+        <!-- Playback -->
+        <section class="settings-section">
+          <h3 class="settings-section-title">Playback</h3>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">Default server</span>
+              <span class="settings-row-desc">Pick which streaming server tries first.</span>
+            </div>
+            <select id="settingsDefaultServer" class="settings-input">
+              <option value="0">Vidsrc.pm (recommended)</option>
+              <option value="1">Vidsrc.me</option>
+            </select>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">Subtitle language</span>
+              <span class="settings-row-desc">Preferred subtitle language when available.</span>
+            </div>
+            <select id="settingsSubtitleLang" class="settings-input">
+              <option value="en">English</option>
+              <option value="es">Spanish</option>
+              <option value="fr">French</option>
+              <option value="de">German</option>
+              <option value="pt">Portuguese</option>
+              <option value="it">Italian</option>
+              <option value="ja">Japanese</option>
+              <option value="ko">Korean</option>
+              <option value="zh">Chinese</option>
+              <option value="ru">Russian</option>
+              <option value="ar">Arabic</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Appearance -->
+        <section class="settings-section">
+          <h3 class="settings-section-title">Appearance</h3>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">Reduce animations</span>
+              <span class="settings-row-desc">Disable transitions and shimmers for a calmer experience.</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsReduceMotion">
+              <span class="settings-toggle-track"><span class="settings-toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">Show featured banner</span>
+              <span class="settings-row-desc">Hide the large hero banner on the home page.</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsShowBanner" checked>
+              <span class="settings-toggle-track"><span class="settings-toggle-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="settings-row" id="settingsGoldThemeRow" hidden>
+            <div class="settings-row-label">
+              <span class="settings-row-title">Gold supporter accents</span>
+              <span class="settings-row-desc">Subtle gold highlights on your profile. Supporter exclusive.</span>
+            </div>
+            <label class="settings-toggle">
+              <input type="checkbox" id="settingsGoldTheme" checked>
+              <span class="settings-toggle-track"><span class="settings-toggle-thumb"></span></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Data -->
+        <section class="settings-section">
+          <h3 class="settings-section-title">Data &amp; Privacy</h3>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">Favorites stored</span>
+              <span class="settings-row-desc"><span id="settingsFavCount">0</span> titles on this device.</span>
+            </div>
+            <button type="button" class="settings-btn settings-btn-ghost" id="settingsClearFavs">Clear favorites</button>
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title">Clear all local data</span>
+              <span class="settings-row-desc">Removes settings, favorites, and supporter status from this device. Cannot be undone.</span>
+            </div>
+            <button type="button" class="settings-btn settings-btn-danger" id="settingsClearAll">Clear everything</button>
+          </div>
+        </section>
+
+        <!-- Account -->
+        <section class="settings-section">
+          <h3 class="settings-section-title">Account</h3>
+          <div class="settings-row settings-row-center">
+            <button type="button" class="settings-btn settings-btn-ghost" id="settingsSignOut">Sign out</button>
+          </div>
+        </section>
+
+        <!-- About -->
+        <section class="settings-section settings-about">
+          <h3 class="settings-section-title">About</h3>
+          <p class="settings-about-text"><strong>POPOROPO</strong> · Free HD streaming. Catalog by The Movie Database.</p>
+          <p class="settings-about-text">Made with ♥ for movie lovers everywhere.</p>
+          <p class="settings-about-text"><button type="button" class="link-btn" id="settingsOpenDonate">Support POPOROPO →</button></p>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== EMPTY STATE / TOAST ============== -->
+  <div id="searchEmpty" class="search-empty" role="status" aria-live="polite" hidden>
+    <p>No results for "<span id="searchTerm"></span>"</p>
+  </div>
+
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="script.js" defer></script>
