@@ -846,15 +846,19 @@ ul { list-style: none; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* The ad-click blocker only covers a thin band at the top of the player
+   (where third-party embed players typically inject "X" buttons that
+   open ads). The bottom is left untouched so the user can use the
+   real video controls (seek bar, volume, fullscreen). */
 #adClickBlocker {
   position: absolute; inset: 0; z-index: 5; pointer-events: none;
 }
 .blocker-strip {
   position: absolute; left: 0; right: 0;
-  height: 8%; pointer-events: none; background: transparent;
+  pointer-events: none; background: transparent;
 }
-.blocker-strip.blocker-top    { top: 0; }
-.blocker-strip.blocker-bottom { bottom: 0; }
+.blocker-strip.blocker-top    { top: 0;    height: 5%; }
+.blocker-strip.blocker-bottom { display: none; }
 #adClickBlocker.is-active .blocker-strip { pointer-events: auto; }
 
 /* ── Server bar ── */
@@ -1313,6 +1317,18 @@ ul { list-style: none; }
   font-size: 14px;
   font-weight: 600;
   color: #fff;
+}
+.settings-row-pill {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: var(--red);
+  padding: 1px 6px;
+  border-radius: 3px;
+  vertical-align: middle;
 }
 .settings-row-desc {
   font-size: 12.5px;
