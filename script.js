@@ -148,6 +148,26 @@
     }
 
     /* ============================================================
+       BROWSER / LOCALE DETECTION
+       ============================================================ */
+    function detectDefaultSubtitleLang() {
+      // Subtitle codes that vidsrc accepts via the `ds_lang` parameter.
+      const supported = new Set(['en','es','fr','de','pt','it','ja','ko','zh','ru','ar','nl','sv','no','da','fi','pl','tr','hi','id','th']);
+      try {
+        const sources = [];
+        if (navigator.language) sources.push(navigator.language);
+        if (navigator.languages) sources.push(...navigator.languages);
+        for (const lang of sources) {
+          if (!lang) continue;
+          const code = String(lang).toLowerCase().split('-')[0];
+          if (supported.has(code)) return code;
+        }
+      } catch (e) {}
+      return 'en';
+    }
+    const DETECTED_SUB_LANG = detectDefaultSubtitleLang();
+
+    /* ============================================================
        SETTINGS
        ============================================================ */
     const SETTINGS_KEY_PREFIX = 'poporopo_settings_v1';
@@ -155,7 +175,7 @@
 
     const DEFAULT_SETTINGS = {
       defaultServer: 0,
-      subtitleLang: 'en',
+      subtitleLang: DETECTED_SUB_LANG,
       reduceMotion: false,
       showBanner: true,
       goldTheme: true,
@@ -179,6 +199,21 @@
     function saveSettings(s) {
       try { localStorage.setItem(settingsKey(), JSON.stringify(s)); }
       catch (e) {}
+    }
+
+    /* ============================================================
+       CONTENT FILTER (used everywhere we receive TMDB results)
+       ============================================================
+       TMDB's `/discover/tv`, `/trending/*` and a few other endpoints
+       do NOT accept the `include_adult` query param, so adult titles
+       can leak through if we don't filter the results client-side.
+       This helper is the single source of truth for that filter.
+       ============================================================ */
+    function filterContent(items) {
+      if (!items || !items.length) return [];
+      const s = getSettings();
+      if (s.adultContent) return items;
+      return items.filter(item => !item.adult);
     }
 
     function applySettings() {
@@ -723,14 +758,13 @@
 
     videoPlayer.addEventListener('load', () => {
       if (videoPlayer.src && playerSpin) playerSpin.classList.add('is-hidden');
-      // Disable the ad-click blocker after the iframe has had a few seconds to settle.
-      // Initial popups/overlays from third-party players fire within the first 1-3s of load;
-      // after that we want full control of the video's own UI (seek bar, fullscreen, etc.)
+      // Tear the ad-click blocker down quickly so the iframe's native
+      // controls (seek bar, fullscreen, etc.) regain full pointer access.
       if (adBlocker && adBlocker.classList.contains('is-active')) {
         clearTimeout(adBlocker._disableTimer);
         adBlocker._disableTimer = setTimeout(() => {
           adBlocker.classList.remove('is-active');
-        }, 3500);
+        }, 1500);
       }
     });
 
@@ -742,7 +776,10 @@
       currentSeason  = 1;
       currentEpisode = 1;
 
-      // Re-arm the ad-click blocker for the first few seconds after load.
+      // Re-arm the ad-click blocker for the first 1.5 seconds after load.
+      // This is short enough to not interfere with the iframe's own UI
+      // auto-hide while still catching the popup spam most ad-laden
+      // embeds fire on initial load.
       if (adBlocker) {
         clearTimeout(adBlocker._disableTimer);
         adBlocker.classList.add('is-active');
@@ -1135,11 +1172,15 @@
       const s = getSettings();
       s.adultContent = settingsAdult.checked;
       saveSettings(s);
-      if (settingsAdult.checked) {
-        showToast('Adult content enabled. Refresh to update catalog.', 3200);
-      } else {
-        showToast('Adult content disabled. Refresh to update catalog.', 2800);
-      }
+      // Rebuild the catalog and banner in place so the new filter
+      // takes effect immediately — no manual refresh needed.
+      buildCatalog();
+      initBanner();
+      showToast(
+        settingsAdult.checked ? 'Adult content enabled (18+)' : 'Adult content hidden',
+        2200,
+        { gold: settingsAdult.checked }
+      );
     });
     settingsClearF.addEventListener('click', () => {
       if (!confirm('Clear all favorites on this device?')) return;
@@ -1512,6 +1553,8 @@
         let items = [];
         if (movieData.results) items.push(...movieData.results.map(m => ({ ...m, _type: 'movie' })));
         if (tvData.results)    items.push(...tvData.results.map(t => ({ ...t, _type: 'tv' })));
+        // Client-side adult filter (TMDB's /discover/tv ignores include_adult).
+        items = filterContent(items);
         items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
         if (IS_TV) items = items.slice(0, 16);
@@ -1698,7 +1741,9 @@
 
       try {
         const data = await tmdb('/trending/all/week');
-        const item = (data.results || []).find(i =>
+        // Banner uses /trending which doesn't honour include_adult — filter client-side.
+        const safe = filterContent(data.results || []);
+        const item = safe.find(i =>
           i.backdrop_path && i.overview && i.poster_path && i.media_type !== 'person'
         );
         if (!item) return;
@@ -1784,6 +1829,30 @@
         let results = (data.results || [])
           .filter(item => item.media_type !== 'person' && item.poster_path)
           .map(item => ({ ...item, _type: item.media_type }));
+
+        // Defence in depth + smarter ordering
+        results = filterContent(results);
+
+        const q = query.toLowerCase().trim();
+        results.sort((a, b) => {
+          const ta = (a.title || a.name || '').toLowerCase();
+          const tb = (b.title || b.name || '').toLowerCase();
+          // 1. Exact title match wins
+          if (ta === q && tb !== q) return -1;
+          if (tb === q && ta !== q) return 1;
+          // 2. Then titles that START with the query
+          const aStarts = ta.startsWith(q);
+          const bStarts = tb.startsWith(q);
+          if (aStarts && !bStarts) return -1;
+          if (bStarts && !aStarts) return 1;
+          // 3. Then titles that CONTAIN the query
+          const aHas = ta.includes(q);
+          const bHas = tb.includes(q);
+          if (aHas && !bHas) return -1;
+          if (bHas && !aHas) return 1;
+          // 4. Fall back to popularity
+          return (b.popularity || 0) - (a.popularity || 0);
+        });
 
         if (IS_TV) results = results.slice(0, 30);
 
