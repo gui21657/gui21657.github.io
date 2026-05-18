@@ -159,7 +159,8 @@
       reduceMotion: false,
       showBanner: true,
       goldTheme: true,
-      displayName: ''
+      displayName: '',
+      adultContent: false
     };
 
     function settingsKey() {
@@ -722,6 +723,15 @@
 
     videoPlayer.addEventListener('load', () => {
       if (videoPlayer.src && playerSpin) playerSpin.classList.add('is-hidden');
+      // Disable the ad-click blocker after the iframe has had a few seconds to settle.
+      // Initial popups/overlays from third-party players fire within the first 1-3s of load;
+      // after that we want full control of the video's own UI (seek bar, fullscreen, etc.)
+      if (adBlocker && adBlocker.classList.contains('is-active')) {
+        clearTimeout(adBlocker._disableTimer);
+        adBlocker._disableTimer = setTimeout(() => {
+          adBlocker.classList.remove('is-active');
+        }, 3500);
+      }
     });
 
     function openVideoModal(mediaId, mediaType, opener) {
@@ -732,7 +742,11 @@
       currentSeason  = 1;
       currentEpisode = 1;
 
-      if (adBlocker) adBlocker.classList.add('is-active');
+      // Re-arm the ad-click blocker for the first few seconds after load.
+      if (adBlocker) {
+        clearTimeout(adBlocker._disableTimer);
+        adBlocker.classList.add('is-active');
+      }
       openModal(videoModal, opener);
 
       if (mediaType === 'tv') {
@@ -748,7 +762,10 @@
 
     function closeVideoModal() {
       videoPlayer.src = '';
-      if (adBlocker) adBlocker.classList.remove('is-active');
+      if (adBlocker) {
+        clearTimeout(adBlocker._disableTimer);
+        adBlocker.classList.remove('is-active');
+      }
       if (playerSpin) playerSpin.classList.remove('is-hidden');
       currentMediaId = null;
       closeModalEl(videoModal);
@@ -1003,7 +1020,8 @@
     const settingsBanner  = $('#settingsShowBanner');
     const settingsGoldRow = $('#settingsGoldThemeRow');
     const settingsGold    = $('#settingsGoldTheme');
-    const settingsFavCnt  = $('#settingsFavCount');
+    const settingsAdult    = $('#settingsAdultContent');
+    const settingsFavCnt   = $('#settingsFavCount');
     const settingsClearF  = $('#settingsClearFavs');
     const settingsClearA  = $('#settingsClearAll');
     const settingsSignOut = $('#settingsSignOut');
@@ -1053,6 +1071,9 @@
       settingsGoldRow.hidden = !donor;
       settingsGold.checked = !!s.goldTheme;
 
+      // Content
+      settingsAdult.checked = !!s.adultContent;
+
       // Data
       settingsFavCnt.textContent = getFavorites().length;
     }
@@ -1085,6 +1106,12 @@
       const s = getSettings();
       s.subtitleLang = settingsSubLang.value;
       saveSettings(s);
+      // If the video player is currently open, reload the current server
+      // so the new subtitle language takes effect immediately.
+      if (currentMediaId && videoModal.classList.contains('active')) {
+        loadServer(currentServerIndex);
+        showToast('Subtitle language updated', 1600);
+      }
     });
     settingsReduce.addEventListener('change', () => {
       const s = getSettings();
@@ -1102,6 +1129,17 @@
       const s = getSettings();
       s.goldTheme = settingsGold.checked;
       saveSettings(s);
+    });
+
+    settingsAdult.addEventListener('change', () => {
+      const s = getSettings();
+      s.adultContent = settingsAdult.checked;
+      saveSettings(s);
+      if (settingsAdult.checked) {
+        showToast('Adult content enabled. Refresh to update catalog.', 3200);
+      } else {
+        showToast('Adult content disabled. Refresh to update catalog.', 2800);
+      }
     });
     settingsClearF.addEventListener('click', () => {
       if (!confirm('Clear all favorites on this device?')) return;
@@ -1455,15 +1493,19 @@
       state.loading = true;
       if (state.loader && !isFirst) state.loader.hidden = false;
 
+      const includeAdult = getSettings().adultContent ? 'true' : 'false';
+
       try {
         const [movieData, tvData] = await Promise.all([
           tmdb('/discover/movie', {
             with_genres: state.genreId, page: state.page,
-            sort_by: 'popularity.desc', 'vote_count.gte': 30, region: REGION
+            sort_by: 'popularity.desc', 'vote_count.gte': 30, region: REGION,
+            include_adult: includeAdult
           }),
           tmdb('/discover/tv', {
             with_genres: state.genreId, page: state.page,
-            sort_by: 'popularity.desc', 'vote_count.gte': 30, region: REGION
+            sort_by: 'popularity.desc', 'vote_count.gte': 30, region: REGION,
+            include_adult: includeAdult
           })
         ]);
 
@@ -1733,9 +1775,10 @@
       if (searchAbort) searchAbort.abort();
       searchAbort = new AbortController();
 
+      const includeAdult = getSettings().adultContent ? 'true' : 'false';
       try {
         const data = await tmdb('/search/multi', {
-          query, include_adult: 'false', page: '1',
+          query, include_adult: includeAdult, page: '1',
         }, { signal: searchAbort.signal });
 
         let results = (data.results || [])
