@@ -808,10 +808,17 @@
       currentSeason  = 1;
       currentEpisode = 1;
 
+      // On TV, free as much memory as we can before the iframe loads.
+      // The catalog can stay in DOM but loses its image data + render.
+      if (IS_TV) {
+        unloadAllPosters();
+        const catalog = $('#catalog');
+        if (catalog) catalog.style.display = 'none';
+        const searchArea = $('#searchResults');
+        if (searchArea) searchArea.style.display = 'none';
+      }
+
       // Re-arm the ad-click blocker for the first 1.5 seconds after load.
-      // This is short enough to not interfere with the iframe's own UI
-      // auto-hide while still catching the popup spam most ad-laden
-      // embeds fire on initial load.
       if (adBlocker) {
         clearTimeout(adBlocker._disableTimer);
         adBlocker.classList.add('is-active');
@@ -838,6 +845,16 @@
       if (playerSpin) playerSpin.classList.remove('is-hidden');
       currentMediaId = null;
       closeModalEl(videoModal);
+
+      // Restore the catalog and bring back posters that are on screen.
+      if (IS_TV) {
+        const catalog = $('#catalog');
+        if (catalog) catalog.style.display = '';
+        const searchArea = $('#searchResults');
+        if (searchArea && !searchArea.hidden) searchArea.style.display = '';
+        // Slight delay so the iframe has time to actually unload first.
+        setTimeout(reloadVisiblePosters, 400);
+      }
     }
 
     closeVideo.addEventListener('click', closeVideoModal);
@@ -1350,12 +1367,25 @@
     });
 
     /* ============================================================
-       IMAGE MEMORY MGMT (TV)
+       TV MEMORY MANAGEMENT
+       ============================================================
+       LG WebOS gives the browser a tight RAM budget (200-500 MB).
+       Decoded images alone can blow past that, especially once a
+       vidsrc iframe with its video stream and ads is loaded on top.
+       So on TV we:
+         1. Observe each poster image with a SHORT rootMargin so
+            anything more than ~1 screen away gets swapped for a
+            tiny data-URL placeholder.
+         2. When the video modal opens, ALL non-visible posters are
+            force-unloaded, AND the catalog gets display:none so
+            the renderer can drop its layer cache.
+         3. When the modal closes we re-attach the catalog and let
+            the IntersectionObserver bring back what's on screen.
        ============================================================ */
     let imageMemObserver = null;
     function setupImageMemoryManagement() {
       if (!IS_TV) return;
-      if (!('IntersectionObserver' in window)) return;
+      if (!SUPPORTS.IntersectionObserver) return;
       imageMemObserver = new IntersectionObserver((entries) => {
         for (const entry of entries) {
           const img = entry.target;
@@ -1371,12 +1401,42 @@
             }
           }
         }
-      }, { rootMargin: '600px 200px 600px 200px', threshold: 0 });
+      }, { rootMargin: '150px 100px 150px 100px', threshold: 0 });
     }
     function registerImageForMemory(img, realSrc) {
       if (!IS_TV || !imageMemObserver || !realSrc) return;
       img.setAttribute('data-real-src', realSrc);
       imageMemObserver.observe(img);
+    }
+
+    function unloadAllPosters() {
+      // Called when we're about to load something heavy (video iframe).
+      // Strips every poster image down to a tiny data-URL so the
+      // browser can free their decoded bitmaps.
+      document.querySelectorAll('.movie img').forEach(img => {
+        let real = img.getAttribute('data-real-src');
+        if (!real && img.src && !img.src.startsWith('data:')) {
+          real = img.src;
+          img.setAttribute('data-real-src', real);
+        }
+        if (real && !img.src.startsWith('data:')) {
+          img.src = PLACEHOLDER_POSTER;
+        }
+      });
+    }
+
+    function reloadVisiblePosters() {
+      // Called when we close the heavy view. Restore posters that are
+      // currently on (or near) the screen; the rest stay as placeholders
+      // and get reloaded individually by the IntersectionObserver.
+      const winH = window.innerHeight;
+      document.querySelectorAll('.movie img[data-real-src]').forEach(img => {
+        const r = img.getBoundingClientRect();
+        const onScreen = r.bottom > -200 && r.top < winH + 200;
+        if (onScreen && img.src.startsWith('data:')) {
+          img.src = img.getAttribute('data-real-src');
+        }
+      });
     }
 
     /* ============================================================
@@ -1605,7 +1665,7 @@
         items = filterContent(items);
         items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
-        if (IS_TV) items = items.slice(0, 16);
+        if (IS_TV) items = items.slice(0, 10);  // tighter cap on TV (memory budget)
 
         const results = items.filter(item => item.poster_path);
 
