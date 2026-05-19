@@ -24,13 +24,30 @@
 
   /* ============================================================
      B. TMDB CLIENT
+     ============================================================
+     We use the v3 API key as a query parameter (NOT the v4 Bearer
+     token in a header). This is deliberately less "modern":
+       - No Authorization header  → no CORS preflight (OPTIONS).
+       - No fetch options at all  → maximally compatible with old
+         Smart-TV browsers (WebOS 4.x, Tizen 4.x, Android TV 7+).
+     The Bearer flow triggers a preflight that several TV browsers
+     either reject or stall on, which is the #1 reason a TV ends up
+     with empty carousels.
      ============================================================ */
-  const TMDB_ACCESS_TOKEN =
-    'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1ZjQxZTE2MzE2ZjE0NTIxMjJmZTRkMmMxMjM0YjA2OCIsIm5iZiI6MTc3ODAyNTg0MS45MTIsInN1YiI6IjY5ZmE4NTcxNzk1ZGNmMzY2NDFkMmI2OCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VMAdawqdcOr-KzZ1LzBxJIV1bqujwEnIyXUj6lqrcYo';
+  const TMDB_API_KEY = '5f41e16316f1452122fe4d2c1234b068';
   const TMDB_API = 'https://api.themoviedb.org/3';
   const TMDB_IMG = 'https://image.tmdb.org/t/p';
   const LANG = 'en-US';
   const REGION = 'US';
+
+  // Feature detection — used everywhere we'd otherwise hit a TypeError
+  // on an old TV browser.
+  const SUPPORTS = {
+    AbortController:       typeof AbortController !== 'undefined',
+    IntersectionObserver:  typeof IntersectionObserver !== 'undefined',
+    ResizeObserver:        typeof ResizeObserver !== 'undefined',
+    fetch:                 typeof fetch !== 'undefined'
+  };
 
   const POSTER_SIZE   = IS_TV ? 'w154' : 'w342';
   const BACKDROP_SIZE = IS_TV ? 'w780' : 'original';
@@ -59,21 +76,36 @@
 
   const GENRES = IS_TV ? GENRES_FULL.slice(0, MAX_GENRES_VISIBLE) : GENRES_FULL;
 
-  async function tmdb(path, params = {}, options = {}) {
-    const url = new URL(TMDB_API + path);
-    url.searchParams.set('language', LANG);
-    for (const [k, v] of Object.entries(params)) {
-      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+  /* ============================================================
+     TMDB fetch — manual URL construction, no headers, no preflight.
+     If the TV browser lacks AbortController, we silently skip the
+     signal so the call still works.
+     ============================================================ */
+  function tmdb(path, params, options) {
+    params = params || {};
+    options = options || {};
+
+    var parts = [
+      'api_key=' + encodeURIComponent(TMDB_API_KEY),
+      'language=' + encodeURIComponent(LANG)
+    ];
+    for (var key in params) {
+      if (!Object.prototype.hasOwnProperty.call(params, key)) continue;
+      var v = params[key];
+      if (v === undefined || v === null || v === '') continue;
+      parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v));
     }
-    const res = await fetch(url.toString(), {
-      signal: options.signal,
-      headers: {
-        'Authorization': `Bearer ${TMDB_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json;charset=utf-8'
-      }
+    var url = TMDB_API + path + '?' + parts.join('&');
+
+    var fetchOpts = null;
+    if (options.signal && SUPPORTS.AbortController) {
+      fetchOpts = { signal: options.signal };
+    }
+
+    return fetch(url, fetchOpts || undefined).then(function (res) {
+      if (!res.ok) throw new Error('TMDB ' + res.status);
+      return res.json();
     });
-    if (!res.ok) throw new Error('TMDB ' + res.status);
-    return res.json();
   }
 
   const posterUrl   = (p, size = POSTER_SIZE)   => p ? `${TMDB_IMG}/${size}${p}` : '';
@@ -121,7 +153,7 @@
     const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
     function escapeHtml(s) {
-      return String(s ?? '').replace(/[&<>"']/g,
+      return String(s == null ? '' : s).replace(/[&<>"']/g,
         m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
@@ -468,26 +500,26 @@
     function openProfileMenu() {
       if (!profileMenu) return;
       profileMenu.hidden = false;
-      profileBtn?.setAttribute('aria-expanded', 'true');
+      if (profileBtn) profileBtn.setAttribute('aria-expanded', 'true');
       profileMenuOpen = true;
     }
     function closeProfileMenu() {
       if (!profileMenu) return;
       profileMenu.hidden = true;
-      profileBtn?.setAttribute('aria-expanded', 'false');
+      if (profileBtn) profileBtn.setAttribute('aria-expanded', 'false');
       profileMenuOpen = false;
     }
     function toggleProfileMenu() {
       profileMenuOpen ? closeProfileMenu() : openProfileMenu();
     }
 
-    profileBtn?.addEventListener('click', (e) => { e.stopPropagation(); toggleProfileMenu(); });
+    if (profileBtn) profileBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleProfileMenu(); });
     document.addEventListener('click', (e) => {
-      if (profileMenuOpen && profileMenu && !profileMenu.contains(e.target) && !profileBtn?.contains(e.target)) {
+      if (profileMenuOpen && profileMenu && !profileMenu.contains(e.target) && !(profileBtn && profileBtn.contains(e.target))) {
         closeProfileMenu();
       }
     });
-    signOutBtn?.addEventListener('click', () => { closeProfileMenu(); signOut(); });
+    if (signOutBtn) signOutBtn.addEventListener('click', () => { closeProfileMenu(); signOut(); });
 
     updateAuthUI();
     initGoogleAuth();
@@ -747,7 +779,7 @@
       });
     }
 
-    serverContainer?.addEventListener('click', (e) => {
+    if (serverContainer) serverContainer.addEventListener('click', (e) => {
       const btn = e.target.closest('.server-btn');
       if (!btn) return;
       const idx = Number(btn.dataset.server);
@@ -909,7 +941,7 @@
             ? `· ${data.number_of_seasons} season${data.number_of_seasons > 1 ? 's' : ''}` : '';
         }
 
-        infoGenreEl.textContent = data.genres?.length
+        infoGenreEl.textContent = (data.genres && data.genres.length)
           ? `· ${data.genres.map(g => g.name).join(', ')}` : '';
         infoRatingEl.textContent = data.vote_average
           ? `· ★ ${data.vote_average.toFixed(1)}` : '';
@@ -930,7 +962,8 @@
       const id = infoPlayBtn.dataset.mediaId;
       const type = infoPlayBtn.dataset.mediaType;
       if (!id) { showToast('Coming soon'); return; }
-      const opener = modalStack[modalStack.length - 1]?.opener;
+      const topModal = modalStack[modalStack.length - 1];
+      const opener = topModal ? topModal.opener : null;
       closeModalEl(infoModal);
       openVideoModal(id, type, opener);
     });
@@ -986,8 +1019,10 @@
     closeDonateBtn.addEventListener('click', () => closeModalEl(donateModal));
     donateBack.addEventListener('click', () => closeModalEl(donateModal));
 
-    $('#openDonateBtn')?.addEventListener('click', (e) => openDonateModal(e.currentTarget));
-    $('#openDonateFromMenuBtn')?.addEventListener('click', (e) => {
+    const openDonateBtnEl = $('#openDonateBtn');
+    if (openDonateBtnEl) openDonateBtnEl.addEventListener('click', (e) => openDonateModal(e.currentTarget));
+    const openDonateFromMenuBtnEl = $('#openDonateFromMenuBtn');
+    if (openDonateFromMenuBtnEl) openDonateFromMenuBtnEl.addEventListener('click', (e) => {
       closeProfileMenu();
       openDonateModal(e.currentTarget);
     });
@@ -1010,7 +1045,7 @@
 
     closeClaimBtn.addEventListener('click', () => closeModalEl(claimModal));
     claimBack.addEventListener('click', () => closeModalEl(claimModal));
-    claimLinkBtn?.addEventListener('click', () => {
+    if (claimLinkBtn) claimLinkBtn.addEventListener('click', () => {
       closeModalEl(donateModal);
       setTimeout(() => openClaimModal(claimLinkBtn), 200);
     });
@@ -1099,7 +1134,7 @@
       settingsDNInput.value = s.displayName || '';
 
       // Playback
-      settingsDefSrv.value = String(s.defaultServer ?? 0);
+      settingsDefSrv.value = String(s.defaultServer == null ? 0 : s.defaultServer);
       settingsSubLang.value = s.subtitleLang || 'en';
 
       // Appearance
@@ -1123,7 +1158,8 @@
     closeSettings.addEventListener('click', () => closeModalEl(settingsModal));
     settingsModal.querySelector('.modal-backdrop').addEventListener('click', () => closeModalEl(settingsModal));
 
-    $('#openSettingsBtn')?.addEventListener('click', () => {
+    const openSettingsBtnEl = $('#openSettingsBtn');
+    if (openSettingsBtnEl) openSettingsBtnEl.addEventListener('click', () => {
       closeProfileMenu();
       openSettingsModal($('#profileBtn'));
     });
@@ -1270,7 +1306,7 @@
           });
         } else {
           const section = active.closest('.carousel-section');
-          let next = section?.nextElementSibling;
+          let next = section ? section.nextElementSibling : null;
           while (next && !next.classList.contains('carousel-section')) next = next.nextElementSibling;
           while (next && next.hidden) {
             next = next.nextElementSibling;
@@ -1289,7 +1325,7 @@
           });
         } else {
           const section = active.closest('.carousel-section');
-          let prev = section?.previousElementSibling;
+          let prev = section ? section.previousElementSibling : null;
           while (prev && !prev.classList.contains('carousel-section')) prev = prev.previousElementSibling;
           while (prev && prev.hidden) {
             prev = prev.previousElementSibling;
@@ -1513,18 +1549,30 @@
         initCarouselUI(state);
       };
 
-      const observerMargin = IS_TV ? '100px' : '200px';
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            initCarousel();
-            observer.unobserve(section);
-          }
-        });
-      }, { rootMargin: observerMargin });
-      observer.observe(section);
+      const observerMargin = IS_TV ? '300px' : '200px';
+      var observer = null;
+      if (SUPPORTS.IntersectionObserver) {
+        observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              initCarousel();
+              if (observer) observer.unobserve(section);
+            }
+          });
+        }, { rootMargin: observerMargin });
+        observer.observe(section);
+      }
 
-      if (genre._eager) initCarousel();
+      // Fallback / eager paths:
+      //   - On TV always init (TVs sometimes throttle or mis-fire IO,
+      //     so we'd rather just load the 6 sections up front).
+      //   - If IntersectionObserver isn't available at all, init now.
+      //   - Otherwise honour the explicit _eager flag (first 2 sections).
+      if (genre._eager || IS_TV || !SUPPORTS.IntersectionObserver) {
+        var delay = genre._delay || 0;
+        if (delay > 0) setTimeout(initCarousel, delay);
+        else initCarousel();
+      }
       return section;
     }
 
@@ -1574,8 +1622,8 @@
           }
         }
 
-        const movieExhausted = movieData.page >= movieData.total_pages || !movieData.results?.length;
-        const tvExhausted    = tvData.page    >= tvData.total_pages    || !tvData.results?.length;
+        const movieExhausted = movieData.page >= movieData.total_pages || !(movieData.results && movieData.results.length);
+        const tvExhausted    = tvData.page    >= tvData.total_pages    || !(tvData.results && tvData.results.length);
         if (movieExhausted && tvExhausted) state.exhausted = true;
         else {
           state.page++;
@@ -1583,8 +1631,13 @@
         }
 
         if (state.exhausted && state.loader) state.loader.hidden = true;
+        catalogLoadOK = true;
       } catch (err) {
         console.error('TMDB carousel error:', err);
+        // Surface a visible error if EVERY initial carousel fails
+        // (typically: network/CORS issue on an old TV browser).
+        catalogLoadFailures++;
+        maybeShowLoadError();
       } finally {
         state.loading = false;
         if (!isFirst && state.loader && !state.exhausted) state.loader.hidden = true;
@@ -1721,10 +1774,41 @@
       catalog.innerHTML = '';
       catalog.appendChild(createFavoritesSection());
       GENRES.forEach((genre, i) => {
-        const g = { ...genre, _eager: i < 2 };
+        // On TV we eager-init everything but STAGGER the network calls
+        // (300 ms apart) so a weak TV browser doesn't get hit with 6
+        // simultaneous fetches that could timeout or starve.
+        const g = {
+          ...genre,
+          _eager: i < 2,
+          _delay: IS_TV ? i * 300 : 0
+        };
         catalog.appendChild(createCarouselSection(g));
       });
       updateFavoritesSection();
+    }
+
+    let catalogLoadOK = false;
+    let catalogLoadFailures = 0;
+    let loadErrorShown = false;
+
+    function maybeShowLoadError() {
+      // Only show the error UI if we've had several failures AND no
+      // section has successfully loaded yet. Once any data comes back,
+      // we never tell the user the catalog failed.
+      if (loadErrorShown || catalogLoadOK) return;
+      if (catalogLoadFailures < 3) return;
+      loadErrorShown = true;
+      const catalog = $('#catalog');
+      if (!catalog) return;
+      catalog.innerHTML =
+        '<div class="load-error">' +
+          '<h2>We couldn\u2019t load the catalog</h2>' +
+          '<p>Check your internet connection and try again. ' +
+          'On older Smart TVs, please make sure your browser is up to date.</p>' +
+          '<button type="button" class="btn btn-play" id="reloadBtn">Reload</button>' +
+        '</div>';
+      const rb = $('#reloadBtn');
+      if (rb) rb.addEventListener('click', () => { location.reload(); });
     }
 
     /* ============================================================
@@ -1793,6 +1877,12 @@
     let searchTimer;
     let searchAbort = null;
 
+    function makeAbortController() {
+      if (SUPPORTS.AbortController) return new AbortController();
+      // No-op fallback so the rest of the search code can stay simple.
+      return { signal: undefined, abort: function () {} };
+    }
+
     function clearSearch() {
       searchBar.value = '';
       searchClearBtn.hidden = true;
@@ -1818,7 +1908,7 @@
       window.scrollTo({ top: 0, behavior: IS_TV ? 'auto' : 'smooth' });
 
       if (searchAbort) searchAbort.abort();
-      searchAbort = new AbortController();
+      searchAbort = makeAbortController();
 
       const includeAdult = getSettings().adultContent ? 'true' : 'false';
       try {
@@ -1936,7 +2026,7 @@
     }
 
     function maybeLoadMoreInCarousel(card) {
-      const section = card?.closest('.carousel-section');
+      const section = card ? card.closest('.carousel-section') : null;
       if (!section) return;
       const list = section.querySelector('.movies');
       if (!list) return;
