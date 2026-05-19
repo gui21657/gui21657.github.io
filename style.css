@@ -114,6 +114,63 @@ ul { list-style: none; }
   letter-spacing: 2px; user-select: none;
 }
 
+/* ============================================================
+   FLEX GAP FALLBACK (WebOS 5.0 = Chromium 68; no flex `gap`)
+   ============================================================
+   We can't detect flex-gap support with @supports (`gap` is also a
+   valid CSS property for grid, where support is much older). So we
+   add margin-based spacing as a SAFE base, and zero the margins out
+   inside an @supports selector that only newer engines parse.
+   This is harmless on modern browsers (gap still wins visually).
+   ============================================================ */
+.navbar > * + *      { margin-left: 32px; }
+.menu > * + *        { margin-left: 4px;  }
+.header-right > * + *{ margin-left: 12px; }
+.banner-meta > * + *,
+.overlay-meta > * + *{ margin-left: 6px;  }
+.buttons > * + *     { margin-left: 12px; }
+.btn > * + *,
+.section-title > * + *,
+.donate-cta > * + *,
+.signin-btn > * + *,
+.profile-menu-action > * + * { margin-left: 8px; }
+.movies > * + *      { margin-left: 8px;  }
+.search-grid > * + *,
+.donate-amounts > * + *,
+.donate-perks-list > li + li,
+.info-meta > * + *,
+.server-buttons > * + *,
+.selector-group > * + *,
+.season-episode-selector > * + *,
+.settings-row > * + *,
+.info-actions > * + * { margin-left: 8px; }
+.donate-perks-list > li > * + * { margin-left: 10px; }
+.donate-perks-list > li + li { margin-top: 8px; margin-left: 0; }
+.claim-form > * + * { margin-top: 16px; margin-left: 0; }
+.claim-field > * + * { margin-top: 6px; margin-left: 0; }
+
+@supports (display: flex) and (column-gap: 1em) and (row-gap: 1em) {
+  /* Modern browsers that ALSO understand row-gap/column-gap on flex
+     (Chromium 84+, FF 63+, Safari 14.1+). Older engines that only
+     know grid-gap won't match this, so the margin fallback stays. */
+  .navbar > * + *, .menu > * + *, .header-right > * + *,
+  .banner-meta > * + *, .overlay-meta > * + *, .buttons > * + *,
+  .btn > * + *, .section-title > * + *, .donate-cta > * + *,
+  .signin-btn > * + *, .profile-menu-action > * + *,
+  .movies > * + *, .search-grid > * + *, .donate-amounts > * + *,
+  .info-meta > * + *, .server-buttons > * + *, .selector-group > * + *,
+  .season-episode-selector > * + *, .settings-row > * + *,
+  .info-actions > * + *, .donate-perks-list > li > * + * {
+    margin-left: 0;
+  }
+  .donate-perks-list > li + li,
+  .claim-form > * + *,
+  .claim-field > * + * {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}
+
 .menu { display: flex; gap: 4px; }
 .menu a {
   font-size: 14px; font-weight: 500; color: var(--text-muted);
@@ -389,6 +446,7 @@ ul { list-style: none; }
 
 .banner h1 {
   font-family: var(--font-title);
+  font-size: 64px; /* fallback for browsers without clamp() (WebOS 5, etc.) */
   font-size: clamp(48px, 7vw, 80px);
   color: #fff; letter-spacing: 3px;
   line-height: 1; margin-bottom: 16px;
@@ -1459,6 +1517,33 @@ select.settings-input {
   max-width: 90vw; text-align: center;
 }
 .search-empty[hidden] { display: none; }
+
+/* Catalog load-error UI (shown when TMDB fetches keep failing — e.g. on
+   an older Smart TV with no working CORS/fetch path). Kept simple on
+   purpose so it renders on very old TV browsers. */
+.load-error {
+  margin: 80px auto;
+  max-width: 520px;
+  padding: 40px 28px;
+  text-align: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-med);
+  border-radius: 12px;
+}
+.load-error h2 {
+  font-family: var(--font-title);
+  font-size: 28px;
+  letter-spacing: 1.5px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.load-error p {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+}
+.load-error .btn { margin: 0 auto; }
 
 .toast {
   position: fixed;
