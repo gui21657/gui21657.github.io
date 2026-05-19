@@ -49,11 +49,13 @@
     fetch:                 typeof fetch !== 'undefined'
   };
 
-  const POSTER_SIZE   = IS_TV ? 'w154' : 'w342';
-  const BACKDROP_SIZE = IS_TV ? 'w780' : 'original';
+  const POSTER_SIZE   = IS_TV ? 'w92' : 'w342';
+  const BACKDROP_SIZE = IS_TV ? 'w300' : 'original';
 
   const MAX_PAGES_PER_GENRE = IS_TV ? 1 : 99;
-  const MAX_GENRES_VISIBLE  = IS_TV ? 6  : 16;
+  const MAX_GENRES_VISIBLE  = IS_TV ? 4  : 16;
+  const TV_CARDS_PER_GENRE  = 5;  // we trim every carousel to this on TV
+  const TV_BANNER_DISABLED  = true;  // banner backdrop is the single biggest image we load
 
   const GENRES_FULL = [
     { id: 28,    name: 'Action' },
@@ -421,6 +423,7 @@
     }
 
     function initGoogleAuth(attempts = 0) {
+      if (IS_TV) return;  // Google sign-in is unusable with a TV remote anyway
       if (gisInitialized) return;
       if (!clientIdConfigured()) {
         showFallbackButton('Sign-in not configured');
@@ -808,22 +811,50 @@
       currentSeason  = 1;
       currentEpisode = 1;
 
-      // On TV, free as much memory as we can before the iframe loads.
-      // The catalog can stay in DOM but loses its image data + render.
-      if (IS_TV) {
-        unloadAllPosters();
-        const catalog = $('#catalog');
-        if (catalog) catalog.style.display = 'none';
-        const searchArea = $('#searchResults');
-        if (searchArea) searchArea.style.display = 'none';
-      }
-
       // Re-arm the ad-click blocker for the first 1.5 seconds after load.
       if (adBlocker) {
         clearTimeout(adBlocker._disableTimer);
         adBlocker.classList.add('is-active');
       }
+
+      if (IS_TV) {
+        // —— TV PATH ——
+        // 1. Open the modal so the user sees feedback immediately.
+        // 2. Nuke the whole catalog out of the DOM (and every image
+        //    src in the page) before we let the iframe pull its
+        //    own ~50-100 MB of player + stream into RAM.
+        // 3. Defer setting the iframe src for a beat so WebOS has
+        //    time to actually GC the freed DOM before we ask it
+        //    to allocate again.
+        openModal(videoModal, opener);
+        tvNuclearCleanup();
+        setTimeout(() => {
+          if (mediaType === 'tv') {
+            serverBar.hidden = true;
+            seasonSelector.hidden = false;
+            loadSeasonData(mediaId);
+          } else {
+            serverBar.hidden = false;
+            seasonSelector.hidden = true;
+            loadServer(currentServerIndex);
+          }
+        }, 350);
+        return;
+      }
+
+      // Desktop / mobile path — unchanged.
       openModal(videoModal, opener);
+
+      if (mediaType === 'tv') {
+        serverBar.hidden = true;
+        seasonSelector.hidden = false;
+        loadSeasonData(mediaId);
+      } else {
+        serverBar.hidden = false;
+        seasonSelector.hidden = true;
+        loadServer(currentServerIndex);
+      }
+    }
 
       if (mediaType === 'tv') {
         serverBar.hidden = true;
@@ -846,14 +877,13 @@
       currentMediaId = null;
       closeModalEl(videoModal);
 
-      // Restore the catalog and bring back posters that are on screen.
       if (IS_TV) {
-        const catalog = $('#catalog');
-        if (catalog) catalog.style.display = '';
-        const searchArea = $('#searchResults');
-        if (searchArea && !searchArea.hidden) searchArea.style.display = '';
-        // Slight delay so the iframe has time to actually unload first.
-        setTimeout(reloadVisiblePosters, 400);
+        // —— TV PATH ——
+        // After the iframe is torn down, the safest way to recover
+        // the catalog is a full page reload. Trying to rebuild in
+        // place leaks too reliably on WebOS — a reload guarantees
+        // a clean memory slate.
+        setTimeout(() => { try { location.reload(); } catch (e) {} }, 200);
       }
     }
 
@@ -963,7 +993,7 @@
         infoRatingEl.textContent = data.vote_average
           ? `· ★ ${data.vote_average.toFixed(1)}` : '';
         infoDescEl.textContent = data.overview || 'No description available.';
-        if (data.backdrop_path) {
+        if (data.backdrop_path && !IS_TV) {
           infoBackdropEl.style.backgroundImage = `url('${backdropUrl(data.backdrop_path)}')`;
         }
       } catch (err) {
@@ -1440,6 +1470,65 @@
     }
 
     /* ============================================================
+       TV NUCLEAR CLEANUP
+       ============================================================
+       When the user clicks a poster on a TV we have to fit the whole
+       vidsrc iframe (player + ads + 1080p stream) into the same RAM
+       budget that's currently holding the catalog. The safest way to
+       make sure WebOS doesn't kill the tab is to tear down EVERY
+       non-essential piece of the page first.
+
+       This is called only on TV, only when about to open the video.
+       On close we reload the page (see closeVideoModal) — that's the
+       only reliable way to bring the catalog back without leaking.
+       ============================================================ */
+    function tvNuclearCleanup() {
+      try {
+        // 1. Stop any further work
+        if (imageMemObserver && typeof imageMemObserver.disconnect === 'function') {
+          imageMemObserver.disconnect();
+          imageMemObserver = null;
+        }
+        if (searchAbort && typeof searchAbort.abort === 'function') {
+          searchAbort.abort();
+        }
+
+        // 2. Tear down heavy DOM
+        const removeNode = (sel) => {
+          const el = (typeof sel === 'string') ? document.querySelector(sel) : sel;
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        };
+        const emptyNode = (sel) => {
+          const el = document.querySelector(sel);
+          if (el) el.innerHTML = '';
+        };
+
+        emptyNode('#catalog');
+        removeNode('#mainBanner');
+        removeNode('#searchResults');
+        removeNode('.seo-block');
+        removeNode('footer');
+        // Profile menu / settings panel etc. are kept but their backing
+        // images are nuked below.
+
+        // 3. Nuke every img src on the page (favicon, avatar, etc.)
+        document.querySelectorAll('img').forEach(img => {
+          try {
+            img.removeAttribute('srcset');
+            img.removeAttribute('src');
+          } catch (e) {}
+        });
+
+        // 4. Drop any background-image on inline styles we can find
+        document.querySelectorAll('[style*="background-image"]').forEach(el => {
+          try { el.style.backgroundImage = 'none'; } catch (e) {}
+        });
+      } catch (e) {
+        console.warn('tvNuclearCleanup error', e);
+      }
+    }
+
+    /* ============================================================
        CARDS
        ============================================================ */
     function createCard(item) {
@@ -1665,7 +1754,7 @@
         items = filterContent(items);
         items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
-        if (IS_TV) items = items.slice(0, 10);  // tighter cap on TV (memory budget)
+        if (IS_TV) items = items.slice(0, TV_CARDS_PER_GENRE);  // memory budget
 
         const results = items.filter(item => item.poster_path);
 
@@ -1876,6 +1965,13 @@
        ============================================================ */
     async function initBanner() {
       const banner   = $('#mainBanner');
+      if (!banner) return;
+      // On TV we drop the banner entirely — the backdrop image is huge
+      // and the banner takes up a screenful of memory budget by itself.
+      if (IS_TV && TV_BANNER_DISABLED) {
+        if (banner.parentNode) banner.parentNode.removeChild(banner);
+        return;
+      }
       const content  = $('#bannerContent');
       const titleEl  = $('#bannerTitle');
       const descEl   = $('#bannerDesc');
