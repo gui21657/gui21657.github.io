@@ -174,7 +174,19 @@
   </script>
 
   <!-- =========================================================
-       EARLY TV DETECTION
+       EARLY TV DETECTION + CONDITIONAL GSI LOADING
+       =========================================================
+       We need to know if we're on a TV before anything heavy
+       runs. Doing it inline avoids waiting for script.js.
+
+       Side effects on TV:
+         - <html class="tv-mode"> is added so CSS can react
+         - window.__IS_TV__ is set
+         - Google Identity Services is NOT loaded (saves ~80KB
+           of script + parse memory, and sign-in via remote is
+           awful anyway).
+       On non-TV we dynamically inject the GSI script after the
+       check, so it's only fetched where it'll actually be used.
        ========================================================= -->
   <script>
     (function () {
@@ -191,6 +203,11 @@
           window.__IS_TV__ = true;
         } else {
           window.__IS_TV__ = false;
+          // Inject Google Identity Services only on non-TV
+          var s = document.createElement('script');
+          s.src = 'https://accounts.google.com/gsi/client';
+          s.async = true; s.defer = true;
+          document.head.appendChild(s);
         }
       } catch (e) {}
     })();
@@ -210,9 +227,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
-
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
