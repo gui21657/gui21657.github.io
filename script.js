@@ -132,15 +132,6 @@
             return `https://vidsrc.pm/embed/tv/${id}/${season}/${episode}${sub}`;
           return `https://vidsrc.pm/embed/${type}/${id}${sub}`;
         }
-      },
-      {
-        name: 'Vidsrc.me', short: '2',
-        url: (id, type, season, episode, subLang) => {
-          const sub = subLang ? `?ds_lang=${subLang}` : '';
-          if (type === 'tv' && season !== undefined && episode !== undefined)
-            return `https://vidsrc.me/embed/tv/${id}/${season}/${episode}${sub}`;
-          return `https://vidsrc.me/embed/${type}/${id}${sub}`;
-        }
       }
     ];
   
