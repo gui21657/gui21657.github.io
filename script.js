@@ -54,6 +54,7 @@
   
     const MAX_PAGES_PER_GENRE = IS_TV ? 1 : 99;
     const MAX_GENRES_VISIBLE  = IS_TV ? 6  : 16;
+    const MAX_SEARCH_PAGES    = IS_TV ? 2  : 10;
   
     const GENRES_FULL = [
       { id: 28,    name: 'Action' },
@@ -75,6 +76,30 @@
     ];
   
     const GENRES = IS_TV ? GENRES_FULL.slice(0, MAX_GENRES_VISIBLE) : GENRES_FULL;
+
+    /* TMDB uses a DIFFERENT genre-id set for TV than for movies, so the
+       Series view + the TV half of the mixed Home view need their own list. */
+    const TV_GENRES = [
+      { id: 10759, name: 'Action & Adventure' },
+      { id: 16,    name: 'Animation' },
+      { id: 35,    name: 'Comedy' },
+      { id: 80,    name: 'Crime' },
+      { id: 99,    name: 'Documentary' },
+      { id: 18,    name: 'Drama' },
+      { id: 10751, name: 'Family' },
+      { id: 9648,  name: 'Mystery' },
+      { id: 10765, name: 'Sci-Fi & Fantasy' },
+      { id: 10768, name: 'War & Politics' },
+      { id: 37,    name: 'Western' },
+      { id: 10764, name: 'Reality' }
+    ];
+    const TV_GENRES_VISIBLE = IS_TV ? TV_GENRES.slice(0, MAX_GENRES_VISIBLE) : TV_GENRES;
+    // Map a MOVIE genre id → closest TV genre id (null = no TV equivalent).
+    const MOVIE_TO_TV_GENRE = {
+      28: 10759, 12: 10759, 16: 16, 35: 35, 80: 80, 99: 99,
+      18: 18, 10751: 10751, 14: 10765, 27: null, 9648: 9648,
+      10749: null, 878: 10765, 53: null, 10752: 10768, 36: null
+    };
   
     /* ============================================================
        TMDB fetch — manual URL construction, no headers, no preflight.
@@ -153,6 +178,9 @@
       const handleScroll = () => header.classList.toggle('scrolled', window.scrollY > 20);
       window.addEventListener('scroll', handleScroll, { passive: true });
       handleScroll();
+
+      // Current page view: 'home' | 'movie' | 'tv'
+      let currentView = 'home';
   
       /* ── Toast ── */
       const toastEl = $('#toast');
@@ -235,8 +263,10 @@
       function filterContent(items) {
         if (!items || !items.length) return [];
         const s = getSettings();
-        if (s.adultContent) return items;
-        return items.filter(item => !item.adult);
+        let out = s.adultContent ? items : items.filter(item => !item.adult);
+        // HD-minimum platform: never show CAM (recent-theatrical) titles.
+        out = out.filter(item => !isCamQuality(item) && !isLikelyUnavailable(item));
+        return out;
       }
   
       function applySettings() {
@@ -678,6 +708,8 @@
       const infoRatingEl    = infoModal.querySelector('.info-rating');
       const infoDescEl      = infoModal.querySelector('.info-desc');
       const infoPlayBtn     = $('#infoPlayBtn');
+      const infoQualityEl   = infoModal.querySelector('.info-meta .badge-hd');
+      const infoCertEl      = infoModal.querySelector('.info-cert');
   
       let currentMediaId     = null;
       let currentMediaType   = 'movie';
@@ -927,6 +959,8 @@
         infoRatingEl.textContent = '';
         infoDescEl.textContent = '';
         infoBackdropEl.style.backgroundImage = '';
+        if (infoQualityEl) infoQualityEl.textContent = 'HD';
+        if (infoCertEl) infoCertEl.hidden = true;
         infoPlayBtn.dataset.mediaId   = mediaId;
         infoPlayBtn.dataset.mediaType = mediaType;
   
@@ -934,7 +968,9 @@
   
         try {
           const endpoint = mediaType === 'movie' ? `/movie/${mediaId}` : `/tv/${mediaId}`;
-          const data = await tmdb(endpoint);
+          const data = await tmdb(endpoint, {
+            append_to_response: mediaType === 'movie' ? 'release_dates' : 'content_ratings'
+          });
           const title = data.title || data.name || '';
           infoTitleEl.textContent = title || data.original_title || data.original_name || '';
           const year = (data.release_date || data.first_air_date || '').slice(0, 4);
@@ -956,6 +992,23 @@
           infoDescEl.textContent = data.overview || 'No description available.';
           if (data.backdrop_path) {
             infoBackdropEl.style.backgroundImage = `url('${backdropUrl(data.backdrop_path)}')`;
+          }
+
+          if (infoQualityEl) {
+            infoQualityEl.textContent = qualityLabel({
+              release_date: data.release_date,
+              first_air_date: data.first_air_date,
+              _type: mediaType
+            });
+          }
+          const certResults = mediaType === 'movie'
+            ? (data.release_dates && data.release_dates.results)
+            : (data.content_ratings && data.content_ratings.results);
+          const certVal = mediaType === 'movie' ? pickUsCertMovie(certResults) : pickUsCertTv(certResults);
+          certCache.set(mediaId + '|' + mediaType, certVal || '');
+          if (infoCertEl) {
+            if (certVal) { infoCertEl.textContent = certVal; infoCertEl.hidden = false; }
+            else infoCertEl.hidden = true;
           }
         } catch (err) {
           console.error('Info error:', err);
@@ -1151,8 +1204,8 @@
         settingsGoldRow.hidden = !donor;
         settingsGold.checked = !!s.goldTheme;
   
-        // Content
-        settingsAdult.checked = !!s.adultContent;
+        // Content (the checkbox is the FILTER: checked = hide explicit content)
+        settingsAdult.checked = !s.adultContent;
   
         // Data
         settingsFavCnt.textContent = getFavorites().length;
@@ -1214,16 +1267,19 @@
   
       settingsAdult.addEventListener('change', () => {
         const s = getSettings();
-        s.adultContent = settingsAdult.checked;
+        // Checkbox is the explicit-content FILTER: checked = ON = hide adult.
+        s.adultContent = !settingsAdult.checked;
         saveSettings(s);
         // Rebuild the catalog and banner in place so the new filter
         // takes effect immediately — no manual refresh needed.
-        buildCatalog();
-        initBanner();
+        buildCatalog(currentView);
+        initBanner(currentView);
         showToast(
-          settingsAdult.checked ? 'Adult content enabled (18+)' : 'Adult content hidden',
-          2200,
-          { gold: settingsAdult.checked }
+          settingsAdult.checked
+            ? 'Explicit content filter on'
+            : 'Explicit content filter off — adult titles may appear',
+          2400,
+          { gold: !settingsAdult.checked }
         );
       });
       settingsClearF.addEventListener('click', () => {
@@ -1431,6 +1487,92 @@
       }
   
       /* ============================================================
+         QUALITY + CONTENT RATING (age certification)
+         ============================================================
+         TMDB does not expose streaming quality (HD/4K/CAM), so quality
+         is approximated from theatrical recency: a movie still in (or
+         barely out of) theaters is labelled CAM, everything else HD.
+         The age rating (PG-13, R, TV-MA…) IS real TMDB data and is
+         fetched lazily + cached so it never blocks rendering.
+         ============================================================ */
+      const certCache = new Map();
+
+      // A movie still in (or barely out of) theaters only exists as a CAM rip.
+      function isCamQuality(item) {
+        const type = item._type || item.media_type;
+        const dateStr = item.release_date || item.first_air_date || '';
+        if (type === 'movie' && dateStr) {
+          const rel = new Date(dateStr);
+          if (!isNaN(rel.getTime())) {
+            const days = (Date.now() - rel.getTime()) / 86400000;
+            if (days >= 0 && days < 45) return true;
+          }
+        }
+        return false;
+      }
+      // A future-dated or undated title isn't actually out yet, so no streaming
+      // server has it — treat as unavailable and hide it (avoids fake "available"
+      // titles that open to a 404 / "Content not found").
+      function isLikelyUnavailable(item) {
+        const dateStr = item.release_date || item.first_air_date || '';
+        if (!dateStr) return true;
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return true;
+        if (d.getTime() > Date.now()) return true;
+        return false;
+      }
+      // HD-minimum platform: CAM titles are filtered out everywhere, so every
+      // visible title is HD.
+      function qualityLabel(item) {
+        return 'HD';
+      }
+
+      function pickUsCertMovie(results) {
+        if (!results || !results.length) return '';
+        const order = ['US', 'GB', 'CA', 'AU'];
+        for (const code of order) {
+          const entry = results.find(r => r.iso_3166_1 === code);
+          if (entry && entry.release_dates) {
+            const withCert = entry.release_dates.find(rd => rd.certification);
+            if (withCert) return withCert.certification;
+          }
+        }
+        for (const entry of results) {
+          if (entry.release_dates) {
+            const withCert = entry.release_dates.find(rd => rd.certification);
+            if (withCert) return withCert.certification;
+          }
+        }
+        return '';
+      }
+
+      function pickUsCertTv(results) {
+        if (!results || !results.length) return '';
+        const order = ['US', 'GB', 'CA', 'AU'];
+        for (const code of order) {
+          const entry = results.find(r => r.iso_3166_1 === code);
+          if (entry && entry.rating) return entry.rating;
+        }
+        for (const entry of results) {
+          if (entry.rating) return entry.rating;
+        }
+        return '';
+      }
+
+      function fetchCertification(id, type) {
+        const key = id + '|' + type;
+        if (certCache.has(key)) return Promise.resolve(certCache.get(key));
+        const path = type === 'movie'
+          ? '/movie/' + id + '/release_dates'
+          : '/tv/' + id + '/content_ratings';
+        return tmdb(path).then(data => {
+          const cert = type === 'movie' ? pickUsCertMovie(data.results) : pickUsCertTv(data.results);
+          certCache.set(key, cert || '');
+          return cert || '';
+        }).catch(() => { certCache.set(key, ''); return ''; });
+      }
+
+      /* ============================================================
          CARDS
          ============================================================ */
       function createCard(item) {
@@ -1505,16 +1647,33 @@
         if (!IS_TV) {
           const overlay = document.createElement('div');
           overlay.className = 'movie-overlay';
+          const quality = qualityLabel(item);
           overlay.innerHTML = `
             <div class="overlay-content">
               <p class="overlay-title">${escapeHtml(title)}</p>
               <div class="overlay-meta">
                 <span>${escapeHtml(year || '—')}</span>
-                <span class="badge-sm">HD</span>
+                <span class="badge-sm">${escapeHtml(quality)}</span>
+                <span class="badge-rating" hidden></span>
               </div>
               <span class="overlay-play" aria-hidden="true">▶</span>
             </div>`;
           card.appendChild(overlay);
+
+          // Age rating (PG-13, R, TV-MA…) loads lazily on first hover/focus so
+          // it never blocks scrolling, then is cached.
+          let ratingRequested = false;
+          const loadRating = () => {
+            if (ratingRequested) return;
+            ratingRequested = true;
+            fetchCertification(item.id, type).then(cert => {
+              if (!cert) return;
+              const rEl = overlay.querySelector('.badge-rating');
+              if (rEl) { rEl.textContent = cert; rEl.hidden = false; }
+            }).catch(() => {});
+          };
+          card.addEventListener('mouseenter', loadRating);
+          card.addEventListener('focus', loadRating, true);
         }
   
         const activate = () => openVideoModal(item.id, type, card);
@@ -1538,7 +1697,7 @@
       /* ============================================================
          CAROUSELS
          ============================================================ */
-      function createCarouselSection(genre) {
+      function createCarouselSection(genre, mediaMode) {
         const section = document.createElement('section');
         section.className = 'carousel-section';
         section.dataset.genreId = genre.id;
@@ -1584,6 +1743,7 @@
           page: 1,
           loading: false,
           exhausted: false,
+          mode: mediaMode || 'all',
           list, wrapper, loader,
           seen: new Set(),
           btnLeft, btnRight,
@@ -1634,24 +1794,28 @@
         if (state.loader && !isFirst) state.loader.hidden = false;
   
         const includeAdult = getSettings().adultContent ? 'true' : 'false';
+        const mode = state.mode || 'all';
+        const wantMovie = (mode === 'all' || mode === 'movie');
+        const tvGenre = mode === 'tv' ? state.genreId : MOVIE_TO_TV_GENRE[state.genreId];
+        const wantTv = (mode === 'tv') || (mode === 'all' && tvGenre != null);
   
         try {
           const [movieData, tvData] = await Promise.all([
-            tmdb('/discover/movie', {
+            wantMovie ? tmdb('/discover/movie', {
               with_genres: state.genreId, page: state.page,
               sort_by: 'popularity.desc', 'vote_count.gte': 30, region: REGION,
               include_adult: includeAdult
-            }),
-            tmdb('/discover/tv', {
-              with_genres: state.genreId, page: state.page,
+            }) : Promise.resolve(null),
+            wantTv ? tmdb('/discover/tv', {
+              with_genres: tvGenre, page: state.page,
               sort_by: 'popularity.desc', 'vote_count.gte': 30, region: REGION,
               include_adult: includeAdult
-            })
+            }) : Promise.resolve(null)
           ]);
   
           let items = [];
-          if (movieData.results) items.push(...movieData.results.map(m => ({ ...m, _type: 'movie' })));
-          if (tvData.results)    items.push(...tvData.results.map(t => ({ ...t, _type: 'tv' })));
+          if (movieData && movieData.results) items.push(...movieData.results.map(m => ({ ...m, _type: 'movie' })));
+          if (tvData && tvData.results)       items.push(...tvData.results.map(t => ({ ...t, _type: 'tv' })));
           // Client-side adult filter (TMDB's /discover/tv ignores include_adult).
           items = filterContent(items);
           items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
@@ -1673,8 +1837,8 @@
             }
           }
   
-          const movieExhausted = movieData.page >= movieData.total_pages || !(movieData.results && movieData.results.length);
-          const tvExhausted    = tvData.page    >= tvData.total_pages    || !(tvData.results && tvData.results.length);
+          const movieExhausted = !wantMovie || !movieData || movieData.page >= movieData.total_pages || !(movieData.results && movieData.results.length);
+          const tvExhausted    = !wantTv    || !tvData    || tvData.page    >= tvData.total_pages    || !(tvData.results && tvData.results.length);
           if (movieExhausted && tvExhausted) state.exhausted = true;
           else {
             state.page++;
@@ -1754,15 +1918,17 @@
       }
   
       /* ── Favorites carousel ── */
-      function createFavoritesSection() {
+      function createFavoritesSection(kind, title) {
+        kind = kind || 'all';
         const section = document.createElement('section');
         section.className = 'carousel-section favorites-section';
-        section.id = 'favoritesSection';
+        section.id = 'favoritesSection_' + kind;
+        section.dataset.favKind = kind;
         section.hidden = true;
         section.innerHTML = `
           <div class="section-header">
             <h2 class="section-title">
-              <span class="title-accent" aria-hidden="true">|</span> Favorites
+              <span class="title-accent" aria-hidden="true">|</span> ${title || 'Favorites'}
             </h2>
           </div>
           <div class="carousel-wrapper">
@@ -1795,36 +1961,47 @@
       }
   
       function updateFavoritesSection() {
-        const section = document.getElementById('favoritesSection');
-        if (!section) return;
+        const sections = document.querySelectorAll('.favorites-section');
+        if (!sections.length) return;
         const favs = getFavorites();
-        const list = section.querySelector('.movies');
-  
-        if (favs.length === 0) {
-          section.hidden = true;
+        sections.forEach(section => {
+          const kind = section.dataset.favKind || 'all';
+          const list = section.querySelector('.movies');
+          const items = kind === 'all' ? favs : favs.filter(f => f._type === kind);
+          if (items.length === 0) {
+            section.hidden = true;
+            list.innerHTML = '';
+            if (section._favState) section._favState.seen = new Set();
+            return;
+          }
+          section.hidden = false;
+          const state = section._favState;
           list.innerHTML = '';
-          if (section._favState) section._favState.seen = new Set();
-          return;
-        }
-        section.hidden = false;
-        const state = section._favState;
-        list.innerHTML = '';
-        if (state) state.seen = new Set();
-  
-        favs.forEach(fav => {
-          const card = createCard(fav);
-          list.appendChild(card);
-          if (state) state.seen.add(`${fav.id}|${fav._type}`);
+          if (state) state.seen = new Set();
+          items.forEach(fav => {
+            const card = createCard(fav);
+            list.appendChild(card);
+            if (state) state.seen.add(`${fav.id}|${fav._type}`);
+          });
+          list.dispatchEvent(new Event('scroll'));
         });
-  
-        list.dispatchEvent(new Event('scroll'));
       }
   
-      function buildCatalog() {
+      function buildCatalog(view) {
+        view = view || currentView;
         const catalog = $('#catalog');
         catalog.innerHTML = '';
-        catalog.appendChild(createFavoritesSection());
-        GENRES.forEach((genre, i) => {
+        if (view === 'movie') {
+          catalog.appendChild(createFavoritesSection('movie', 'Favorite Movies'));
+        } else if (view === 'tv') {
+          catalog.appendChild(createFavoritesSection('tv', 'Favorite Series'));
+        } else {
+          catalog.appendChild(createFavoritesSection('movie', 'Favorite Movies'));
+          catalog.appendChild(createFavoritesSection('tv', 'Favorite Series'));
+        }
+        const mode = view === 'movie' ? 'movie' : (view === 'tv' ? 'tv' : 'all');
+        const genreList = view === 'tv' ? TV_GENRES_VISIBLE : GENRES;
+        genreList.forEach((genre, i) => {
           // On TV we eager-init everything but STAGGER the network calls
           // (300 ms apart) so a weak TV browser doesn't get hit with 6
           // simultaneous fetches that could timeout or starve.
@@ -1833,7 +2010,7 @@
             _eager: i < 2,
             _delay: IS_TV ? i * 300 : 0
           };
-          catalog.appendChild(createCarouselSection(g));
+          catalog.appendChild(createCarouselSection(g, mode));
         });
         updateFavoritesSection();
       }
@@ -1865,7 +2042,8 @@
       /* ============================================================
          BANNER
          ============================================================ */
-      async function initBanner() {
+      async function initBanner(view) {
+        view = view || currentView;
         const banner   = $('#mainBanner');
         const content  = $('#bannerContent');
         const titleEl  = $('#bannerTitle');
@@ -1875,34 +2053,44 @@
         const infoBtn  = $('#bannerInfoBtn');
   
         try {
-          const data = await tmdb('/trending/all/week');
-          // Banner uses /trending which doesn't honour include_adult — filter client-side.
+          let endpoint = '/trending/all/week';
+          if (view === 'movie') endpoint = '/trending/movie/week';
+          else if (view === 'tv') endpoint = '/trending/tv/week';
+          const data = await tmdb(endpoint);
+          // /trending doesn't honour include_adult — filter client-side.
           const safe = filterContent(data.results || []);
           const item = safe.find(i =>
             i.backdrop_path && i.overview && i.poster_path && i.media_type !== 'person'
           );
           if (!item) return;
   
+          const mediaType = item.media_type || (view === 'tv' ? 'tv' : 'movie');
           const title = item.title || item.name || '';
           banner.style.backgroundImage = `url('${backdropUrl(item.backdrop_path)}')`;
           titleEl.textContent = title;
           descEl.textContent  = item.overview || '';
   
           const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+          const quality = qualityLabel({ ...item, _type: mediaType });
           metaEl.innerHTML = `
-            <span class="badge badge-hd">HD</span>
+            <span class="badge badge-hd">${escapeHtml(quality)}</span>
+            <span class="badge badge-cert" id="bannerCert" hidden></span>
             ${year ? `<span class="badge">${escapeHtml(year)}</span>` : ''}
             ${item.vote_average ? `<span class="badge">★ ${item.vote_average.toFixed(1)}</span>` : ''}
             <span class="badge">Trending</span>
           `;
+          fetchCertification(item.id, mediaType).then(cert => {
+            const cEl = $('#bannerCert');
+            if (cEl && cert) { cEl.textContent = cert; cEl.hidden = false; }
+          }).catch(() => {});
   
           playBtn.dataset.mediaId   = item.id;
-          playBtn.dataset.mediaType = item.media_type;
+          playBtn.dataset.mediaType = mediaType;
           infoBtn.dataset.mediaId   = item.id;
-          infoBtn.dataset.mediaType = item.media_type;
+          infoBtn.dataset.mediaType = mediaType;
   
-          playBtn.addEventListener('click', () => openVideoModal(item.id, item.media_type, playBtn));
-          infoBtn.addEventListener('click', () => openInfoModal(item.id, item.media_type, infoBtn));
+          playBtn.onclick = () => openVideoModal(item.id, mediaType, playBtn);
+          infoBtn.onclick = () => openInfoModal(item.id, mediaType, infoBtn);
   
           content.hidden = false;
         } catch (err) {
@@ -1927,6 +2115,7 @@
   
       let searchTimer;
       let searchAbort = null;
+      let searchToken = 0;
   
       function makeAbortController() {
         if (SUPPORTS.AbortController) return new AbortController();
@@ -1962,59 +2151,133 @@
         searchAbort = makeAbortController();
   
         const includeAdult = getSettings().adultContent ? 'true' : 'false';
+        const myToken = ++searchToken;
+        const q = query.toLowerCase().trim();
         try {
-          const data = await tmdb('/search/multi', {
-            query, include_adult: includeAdult, page: '1',
-          }, { signal: searchAbort.signal });
-  
-          let results = (data.results || [])
-            .filter(item => item.media_type !== 'person' && item.poster_path)
-            .map(item => ({ ...item, _type: item.media_type }));
-  
-          // Defence in depth + smarter ordering
-          results = filterContent(results);
-  
-          const q = query.toLowerCase().trim();
+          // 1) Multi-search across MANY pages so results aren't capped at ~20.
+          const first = await tmdb('/search/multi', { query, include_adult: includeAdult, page: 1 });
+          if (myToken !== searchToken) return;
+          let raw = (first.results || []).slice();
+          const totalPages = Math.min(first.total_pages || 1, MAX_SEARCH_PAGES);
+          if (totalPages > 1) {
+            const nums = [];
+            for (let p = 2; p <= totalPages; p++) nums.push(p);
+            const more = await Promise.all(nums.map(p =>
+              tmdb('/search/multi', { query, include_adult: includeAdult, page: p }).catch(() => null)
+            ));
+            if (myToken !== searchToken) return;
+            more.forEach(d => { if (d && d.results) raw = raw.concat(d.results); });
+          }
+          // 2) Person search — find a director/actor by name (e.g. "Christopher
+          //    Nolan") and pull their filmography into the results.
+          const personItems = await searchByPerson(query, includeAdult);
+          if (myToken !== searchToken) return;
+          // 3) Merge titles + person credits; keep movies/TV that have a poster.
+          const merged = [];
+          raw.forEach(item => {
+            if ((item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path) {
+              merged.push({ ...item, _type: item.media_type });
+            }
+          });
+          personItems.forEach(item => merged.push(item));
+          const byKey = new Map();
+          for (const it of merged) {
+            const key = it.id + '|' + it._type;
+            const prev = byKey.get(key);
+            if (!prev) byKey.set(key, it);
+            else if (it._personRole === 'director' && prev._personRole !== 'director') byKey.set(key, it);
+          }
+          let results = filterContent([...byKey.values()]);
           results.sort((a, b) => {
             const ta = (a.title || a.name || '').toLowerCase();
             const tb = (b.title || b.name || '').toLowerCase();
-            // 1. Exact title match wins
             if (ta === q && tb !== q) return -1;
             if (tb === q && ta !== q) return 1;
-            // 2. Then titles that START with the query
-            const aStarts = ta.startsWith(q);
-            const bStarts = tb.startsWith(q);
+            const aStarts = ta.startsWith(q), bStarts = tb.startsWith(q);
             if (aStarts && !bStarts) return -1;
             if (bStarts && !aStarts) return 1;
-            // 3. Then titles that CONTAIN the query
-            const aHas = ta.includes(q);
-            const bHas = tb.includes(q);
+            const aDir = a._personRole === 'director', bDir = b._personRole === 'director';
+            if (aDir && !bDir) return -1;
+            if (bDir && !aDir) return 1;
+            const aHas = ta.includes(q), bHas = tb.includes(q);
             if (aHas && !bHas) return -1;
             if (bHas && !aHas) return 1;
-            // 4. Fall back to popularity
             return (b.popularity || 0) - (a.popularity || 0);
           });
-  
-          if (IS_TV) results = results.slice(0, 30);
-  
+          if (IS_TV) results = results.slice(0, 60);
+          if (myToken !== searchToken) return;
           searchGrid.innerHTML = '';
           if (results.length === 0) {
             searchTermEl.textContent = query;
             emptyMsg.hidden = false;
           } else {
-            const frag = document.createDocumentFragment();
-            results.forEach(item => frag.appendChild(createCard(item)));
-            searchGrid.appendChild(frag);
-            if (IS_TV) {
-              const firstCard = searchGrid.querySelector('.movie');
-              if (firstCard) setTimeout(() => firstCard.focus(), 100);
-            }
+            emptyMsg.hidden = true;
+            renderSearchResults(results, myToken);
           }
         } catch (err) {
-          if (err.name === 'AbortError') return;
+          if (err && err.name === 'AbortError') return;
+          if (myToken !== searchToken) return;
           console.error('Search error:', err);
           searchGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">Search error. Please try again.</p>';
         }
+      }
+
+      // Find a director/actor by name and return their filmography as cards.
+      function searchByPerson(query, includeAdult) {
+        const q = query.toLowerCase().trim();
+        if (q.length < 3) return Promise.resolve([]);
+        return tmdb('/search/person', { query, include_adult: includeAdult, page: 1 })
+          .then(data => {
+            const people = (data.results || []).filter(p => (p.popularity || 0) > 1);
+            const strong = people.filter(p => {
+              const n = (p.name || '').toLowerCase();
+              const words = n.split(/\s+/);
+              return n === q || n.startsWith(q) || words.some(w => w === q) ||
+                     (q.indexOf(' ') !== -1 && n.indexOf(q) !== -1);
+            });
+            strong.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+            const picks = strong.slice(0, 2);
+            if (!picks.length) return [];
+            return Promise.all(picks.map(p =>
+              tmdb('/person/' + p.id + '/combined_credits').catch(() => null)
+            )).then(arr => {
+              const items = [];
+              arr.forEach(c => {
+                if (!c) return;
+                const combined = [];
+                (c.crew || []).forEach(x => { if (x.job === 'Director') combined.push({ ...x, _personRole: 'director' }); });
+                (c.cast || []).forEach(x => combined.push({ ...x, _personRole: 'cast' }));
+                combined.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+                combined.slice(0, 40).forEach(x => {
+                  if ((x.media_type === 'movie' || x.media_type === 'tv') && x.poster_path) {
+                    items.push({ ...x, _type: x.media_type });
+                  }
+                });
+              });
+              return items;
+            });
+          })
+          .catch(() => []);
+      }
+
+      // Render results in chunks (rAF) so a big list never blocks the UI.
+      function renderSearchResults(results, token) {
+        searchGrid.innerHTML = '';
+        let i = 0;
+        const CHUNK = 40;
+        const step = () => {
+          if (token !== searchToken) return;
+          const frag = document.createDocumentFragment();
+          const end = Math.min(i + CHUNK, results.length);
+          for (; i < end; i++) frag.appendChild(createCard(results[i]));
+          searchGrid.appendChild(frag);
+          if (i < results.length) (window.requestAnimationFrame || window.setTimeout)(step);
+          else if (IS_TV) {
+            const firstCard = searchGrid.querySelector('.movie');
+            if (firstCard) setTimeout(() => firstCard.focus(), 100);
+          }
+        };
+        step();
       }
   
       searchBar.addEventListener('input', function () {
@@ -2022,7 +2285,7 @@
         clearTimeout(searchTimer);
         const q = this.value.trim();
         if (!q) { showCatalog(); return; }
-        searchTimer = setTimeout(() => runSearch(q), 350);
+        searchTimer = setTimeout(() => runSearch(q), 250);
       });
   
       searchClearBtn.addEventListener('click', clearSearch);
@@ -2103,12 +2366,38 @@
       }
   
       /* ============================================================
+         VIEW ROUTING — Home / Movies / Series (all in one page)
+         ============================================================ */
+      function viewFromHash() {
+        const h = (location.hash || '').toLowerCase();
+        if (h.indexOf('movie') !== -1) return 'movie';
+        if (h.indexOf('series') !== -1 || h.indexOf('shows') !== -1 || h === '#tv') return 'tv';
+        return 'home';
+      }
+      function setActiveNav(view) {
+        $$('.nav-link').forEach(a => a.classList.toggle('active', a.dataset.view === view));
+      }
+      function setView(view) {
+        currentView = view;
+        setActiveNav(view);
+        if (searchBar) searchBar.value = '';
+        if (searchClearBtn) searchClearBtn.hidden = true;
+        showCatalog();
+        initBanner(view);
+        buildCatalog(view);
+        window.scrollTo({ top: 0, behavior: IS_TV ? 'auto' : 'smooth' });
+      }
+      window.addEventListener('hashchange', () => setView(viewFromHash()));
+
+      /* ============================================================
          BOOT
          ============================================================ */
       applySettings();
       setupImageMemoryManagement();
-      initBanner();
-      buildCatalog();
+      currentView = viewFromHash();
+      setActiveNav(currentView);
+      initBanner(currentView);
+      buildCatalog(currentView);
       autoFocusFirstCard();
   
       if (IS_TV) {
