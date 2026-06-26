@@ -175,18 +175,6 @@
 
   <!-- =========================================================
        EARLY TV DETECTION + CONDITIONAL GSI LOADING
-       =========================================================
-       We need to know if we're on a TV before anything heavy
-       runs. Doing it inline avoids waiting for script.js.
-
-       Side effects on TV:
-         - <html class="tv-mode"> is added so CSS can react
-         - window.__IS_TV__ is set
-         - Google Identity Services is NOT loaded (saves ~80KB
-           of script + parse memory, and sign-in via remote is
-           awful anyway).
-       On non-TV we dynamically inject the GSI script after the
-       check, so it's only fetched where it'll actually be used.
        ========================================================= -->
   <script>
     (function () {
@@ -203,7 +191,6 @@
           window.__IS_TV__ = true;
         } else {
           window.__IS_TV__ = false;
-          // Inject Google Identity Services only on non-TV
           var s = document.createElement('script');
           s.src = 'https://accounts.google.com/gsi/client';
           s.async = true; s.defer = true;
@@ -335,9 +322,7 @@
     <div class="banner-fade-bottom"></div>
   </section>
 
-  <!-- ============== HIDDEN SEO COPY ==============
-       Plain semantic text for crawlers and AI assistants.
-       Visually hidden but fully indexable. -->
+  <!-- ============== HIDDEN SEO COPY ============== -->
   <section class="seo-block" aria-hidden="true">
     <h2>Watch Free HD Movies and TV Shows Online — Best Free Streaming Site</h2>
     <p>POPOROPO is a free streaming platform offering thousands of HD movies and TV shows online without subscription or sign-up. With English subtitles, 16+ genre categories, and a fast, ad-light interface, POPOROPO is a strong free alternative to paid services like Netflix, Disney+, HBO Max, and Hulu for casual viewers and discovery-driven binge-watchers.</p>
@@ -364,12 +349,11 @@
     <p class="footer-disclaimer">POPOROPO does not host any content. All titles are streamed from third-party sources. Catalog metadata provided by <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">The Movie Database</a>.</p>
   </footer>
 
-  <!-- ============== VIDEO MODAL ============== -->
-  <div id="videoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle" aria-hidden="true">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content" role="document">
-      <h2 id="videoModalTitle" class="sr-only">Video player</h2>
+  <!-- ============== VIDEO MODAL (FULLSCREEN) ============== -->
+  <div id="videoModal" class="modal fullscreen-modal" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle" aria-hidden="true">
+    <div class="modal-content fullscreen-content" role="document">
       <button type="button" class="close" id="closeModal" aria-label="Close player">×</button>
+      <h2 id="videoModalTitle" class="sr-only">Video player</h2>
       <div class="player-wrapper">
         <div class="player-spinner" id="playerSpinner" aria-hidden="true">
           <div class="spinner-ring"></div>
@@ -387,23 +371,20 @@
         </div>
       </div>
 
-      <!-- Season / Episode selector (TV shows only) -->
-      <div id="seasonEpisodeSelector" class="season-episode-selector" hidden>
-        <div class="selector-group">
-          <label for="seasonSelect">Season</label>
+      <!-- Barra inferior compacta -->
+      <div class="video-info-bar" id="videoInfoBar">
+        <h2 id="videoTitle" class="video-bar-title"></h2>
+        <div id="seasonEpisodeSelector" class="season-episode-selector" hidden>
           <select id="seasonSelect" aria-label="Select season"></select>
-        </div>
-        <div class="selector-group">
-          <label for="episodeSelect">Episode</label>
           <select id="episodeSelect" aria-label="Select episode"></select>
         </div>
+        <button type="button" class="video-info-btn" id="videoInfoBtn" aria-label="More info" title="More info">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        </button>
       </div>
-
-      <!-- Server bar -->
-      <div id="serverBar" class="server-bar" hidden>
-        <span class="server-bar-label">Server:</span>
-        <div class="server-buttons" id="serverButtonsContainer"></div>
-      </div>
+      <!-- Información oculta (no se muestra) -->
+      <div id="videoMeta" hidden></div>
+      <p id="videoOverview" hidden></p>
     </div>
   </div>
 
@@ -429,6 +410,15 @@
             <span class="btn-icon" aria-hidden="true">▶</span> Play
           </button>
         </div>
+      </div>
+
+      <!-- Episodes (for series) -->
+      <div class="info-episodes" id="infoEpisodes"></div>
+
+      <!-- More Like This -->
+      <div class="info-more-like-this" id="infoMoreLikeThis">
+        <h3>More Like This</h3>
+        <div class="movies more-like-this-grid" id="moreLikeThisGrid"></div>
       </div>
     </div>
   </div>
@@ -546,20 +536,9 @@
           </div>
         </section>
 
-        <!-- Playback -->
+        <!-- Playback (removed server option) -->
         <section class="settings-section">
           <h3 class="settings-section-title">Playback</h3>
-
-          <div class="settings-row">
-            <div class="settings-row-label">
-              <span class="settings-row-title">Default server</span>
-              <span class="settings-row-desc">Pick which streaming server tries first.</span>
-            </div>
-            <select id="settingsDefaultServer" class="settings-input">
-              <option value="0">Vidsrc.pm (recommended)</option>
-            </select>
-          </div>
-
           <div class="settings-row">
             <div class="settings-row-label">
               <span class="settings-row-title">Subtitle language</span>
