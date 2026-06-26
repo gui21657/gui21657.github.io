@@ -233,9 +233,11 @@
   <!-- ============== HEADER ============== -->
   <header class="header" id="mainHeader">
     <nav class="navbar" aria-label="Main navigation">
-      <a href="index.html" class="logo">POPOROPO</a>
+      <a href="#home" class="logo">POPOROPO</a>
       <ul class="menu">
-        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="#home" class="nav-link active" data-view="home">Home</a></li>
+        <li><a href="#movies" class="nav-link" data-view="movie">Movies</a></li>
+        <li><a href="#series" class="nav-link" data-view="tv">Series</a></li>
       </ul>
     </nav>
 
@@ -416,6 +418,7 @@
         <h2 id="infoModalTitle" class="info-title"></h2>
         <div class="info-meta">
           <span class="badge badge-hd">HD</span>
+          <span class="badge badge-cert info-cert" hidden></span>
           <span class="info-year"></span>
           <span class="info-duration"></span>
           <span class="info-genre"></span>
@@ -623,11 +626,11 @@
 
           <div class="settings-row">
             <div class="settings-row-label">
-              <span class="settings-row-title">Show adult content <span class="settings-row-pill">18+</span></span>
-              <span class="settings-row-desc">Include explicit / adult-only titles in browsing and search. Off by default.</span>
+              <span class="settings-row-title">Explicit content filter <span class="settings-row-pill">18+</span></span>
+              <span class="settings-row-desc">Hides explicit / adult-only movies and shows from browsing and search. On by default.</span>
             </div>
             <label class="settings-toggle">
-              <input type="checkbox" id="settingsAdultContent">
+              <input type="checkbox" id="settingsAdultContent" checked>
               <span class="settings-toggle-track"><span class="settings-toggle-thumb"></span></span>
             </label>
           </div>
