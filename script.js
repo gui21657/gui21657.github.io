@@ -1416,6 +1416,7 @@
       saveSettings(s);
       buildCatalog(currentView);
       initBanner(currentView);
+      refreshActiveSearch();
       showToast(
         settingsAdult.checked
           ? 'Explicit content filter on'
@@ -2212,13 +2213,27 @@
     const catalogEl      = $('#catalog');
     const bannerEl       = $('#mainBanner');
 
-    let searchTimer;
+    const SEARCH_DEBOUNCE = 250;
+
+    let searchTimer = null;
     let searchAbort = null;
     let searchToken = 0;
+    let lastQuery   = '';   // query whose results are currently on screen
 
     function makeAbortController() {
       if (SUPPORTS.AbortController) return new AbortController();
       return { signal: undefined, abort: function () {} };
+    }
+
+    /* Drop a queued debounce AND any request already in flight. Bumping the
+       token is what stops a late response from repainting the grid or
+       flashing the "no results" pill once the user has moved on. */
+    function cancelPendingSearch() {
+      clearTimeout(searchTimer);
+      searchTimer = null;
+      searchToken++;
+      if (searchAbort) { searchAbort.abort(); searchAbort = null; }
+      lastQuery = '';
     }
 
     function clearSearch() {
@@ -2229,6 +2244,7 @@
     }
 
     function showCatalog() {
+      cancelPendingSearch();
       const s = getSettings();
       bannerEl.style.display = s.showBanner ? '' : 'none';
       catalogEl.hidden = false;
@@ -2238,6 +2254,20 @@
     }
 
     async function runSearch(query) {
+      const q = query.toLowerCase().trim();
+      if (!q) { showCatalog(); return; }
+      // Typing a trailing space (or re-pressing Enter) must not refetch and
+      // wipe the results that are already on screen.
+      if (q === lastQuery) return;
+
+      clearTimeout(searchTimer);
+      searchTimer = null;
+      if (searchAbort) searchAbort.abort();
+      searchAbort = makeAbortController();
+      const signal  = searchAbort.signal;
+      const myToken = ++searchToken;
+      lastQuery = q;
+
       bannerEl.style.display = 'none';
       catalogEl.hidden = true;
       searchArea.hidden = false;
@@ -2245,14 +2275,13 @@
       searchGrid.innerHTML = '<div class="search-loading"><div class="spinner-ring"></div></div>';
       window.scrollTo({ top: 0, behavior: IS_TV ? 'auto' : 'smooth' });
 
-      if (searchAbort) searchAbort.abort();
-      searchAbort = makeAbortController();
-
       const includeAdult = getSettings().adultContent ? 'true' : 'false';
-      const myToken = ++searchToken;
-      const q = query.toLowerCase().trim();
       try {
-        const first = await tmdb('/search/multi', { query, include_adult: includeAdult, page: 1 });
+        // Kick off the person lookup alongside the title search instead of
+        // waiting for the title pages to finish first.
+        const personPromise = searchByPerson(query, includeAdult, signal);
+
+        const first = await tmdb('/search/multi', { query, include_adult: includeAdult, page: 1 }, { signal });
         if (myToken !== searchToken) return;
         let raw = (first.results || []).slice();
         const totalPages = Math.min(first.total_pages || 1, MAX_SEARCH_PAGES);
@@ -2260,12 +2289,12 @@
           const nums = [];
           for (let p = 2; p <= totalPages; p++) nums.push(p);
           const more = await Promise.all(nums.map(p =>
-            tmdb('/search/multi', { query, include_adult: includeAdult, page: p }).catch(() => null)
+            tmdb('/search/multi', { query, include_adult: includeAdult, page: p }, { signal }).catch(() => null)
           ));
           if (myToken !== searchToken) return;
           more.forEach(d => { if (d && d.results) raw = raw.concat(d.results); });
         }
-        const personItems = await searchByPerson(query, includeAdult);
+        const personItems = await personPromise;
         if (myToken !== searchToken) return;
         const merged = [];
         raw.forEach(item => {
@@ -2312,14 +2341,16 @@
         if (err && err.name === 'AbortError') return;
         if (myToken !== searchToken) return;
         console.error('Search error:', err);
+        // Let the same query be retried after a failure.
+        lastQuery = '';
         searchGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">Search error. Please try again.</p>';
       }
     }
 
-    function searchByPerson(query, includeAdult) {
+    function searchByPerson(query, includeAdult, signal) {
       const q = query.toLowerCase().trim();
       if (q.length < 3) return Promise.resolve([]);
-      return tmdb('/search/person', { query, include_adult: includeAdult, page: 1 })
+      return tmdb('/search/person', { query, include_adult: includeAdult, page: 1 }, { signal })
         .then(data => {
           const people = (data.results || []).filter(p => (p.popularity || 0) > 1);
           const strong = people.filter(p => {
@@ -2332,7 +2363,7 @@
           const picks = strong.slice(0, 2);
           if (!picks.length) return [];
           return Promise.all(picks.map(p =>
-            tmdb('/person/' + p.id + '/combined_credits').catch(() => null)
+            tmdb('/person/' + p.id + '/combined_credits', null, { signal }).catch(() => null)
           )).then(arr => {
             const items = [];
             arr.forEach(c => {
@@ -2375,12 +2406,36 @@
     searchBar.addEventListener('input', function () {
       searchClearBtn.hidden = !this.value;
       clearTimeout(searchTimer);
+      searchTimer = null;
       const q = this.value.trim();
       if (!q) { showCatalog(); return; }
-      searchTimer = setTimeout(() => runSearch(q), 250);
+      if (q.toLowerCase() === lastQuery) return;
+      searchTimer = setTimeout(() => runSearch(q), SEARCH_DEBOUNCE);
+    });
+
+    // Enter commits straight away instead of waiting out the debounce, and
+    // drops focus so the on-screen keyboard gets out of the way.
+    searchBar.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      clearTimeout(searchTimer);
+      searchTimer = null;
+      const q = this.value.trim();
+      if (!q) { showCatalog(); return; }
+      runSearch(q);
+      this.blur();
     });
 
     searchClearBtn.addEventListener('click', clearSearch);
+
+    /* The explicit-content filter applies to search as well as browsing, so
+       re-run whatever is on screen when it changes. */
+    function refreshActiveSearch() {
+      if (searchArea.hidden || !lastQuery) return;
+      const q = lastQuery;
+      lastQuery = '';
+      runSearch(q);
+    }
 
     /* ============================================================
        KEYBOARD NAV HELPERS
