@@ -43,6 +43,10 @@ const IMG  = 'https://image.tmdb.org/t/p';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* Guarda el primer fallo real para poder explicarlo al final. Sin esto,
+   un 401 y un corte de red se ven idénticos desde fuera. */
+let firstError = null;
+
 async function tmdb(path, params = {}, attempt = 0) {
   const qs = new URLSearchParams({ api_key: API_KEY, language: 'en-US', ...params });
   try {
@@ -51,10 +55,17 @@ async function tmdb(path, params = {}, attempt = 0) {
       await sleep(1000 * (attempt + 1));
       return attempt < 4 ? tmdb(path, params, attempt + 1) : null;
     }
-    if (!res.ok) return null;
+    if (!res.ok) {
+      if (!firstError) {
+        const body = await res.text().catch(() => '');
+        firstError = `HTTP ${res.status} en ${path} — ${body.slice(0, 300)}`;
+      }
+      return null;
+    }
     return await res.json();
   } catch (err) {
     if (attempt < 3) { await sleep(500 * (attempt + 1)); return tmdb(path, params, attempt + 1); }
+    if (!firstError) firstError = `Fallo de red en ${path} — ${err.message}`;
     return null;
   }
 }
@@ -261,8 +272,29 @@ async function main() {
   console.log(`  ${items.length} títulos únicos.`);
 
   if (!items.length) {
-    console.error('TMDB no devolvió nada. ¿La API key es válida?');
-    process.exit(1);
+    console.error('::warning::TMDB no devolvió ningún título.');
+    if (firstError) console.error(`  Causa: ${firstError}`);
+
+    /* La confusión más común: TMDB muestra dos credenciales y la más
+       vistosa es el "API Read Access Token" (v4, un JWT largo), que NO
+       sirve como api_key= . La buena es la "API Key" de 32 caracteres. */
+    if (/^eyJ/.test(API_KEY)) {
+      console.error(
+        '  Estás usando el API Read Access Token (v4), no la API Key (v3).\n' +
+        '  En TMDB → Settings → API copia el campo "API Key", el de 32 caracteres.'
+      );
+    } else if (!/^[0-9a-f]{32}$/i.test(API_KEY)) {
+      console.error(
+        `  La clave no tiene la forma de una API Key v3 (32 caracteres hex);\n` +
+        `  recibí ${API_KEY.length} caracteres.`
+      );
+    }
+
+    /* Un tropiezo del sitemap no debe tumbar el despliegue del sitio.
+       Escribimos el sitemap mínimo y seguimos. */
+    await writeFile(join(OUT, 'sitemap.xml'), sitemap([], today), 'utf8');
+    console.error('  Escrito sitemap.xml solo con la home; el sitio se publica igual.');
+    return;
   }
 
   /* Un sitemap admite 50.000 URLs. Avisamos antes de pasarnos. */
