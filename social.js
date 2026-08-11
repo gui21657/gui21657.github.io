@@ -143,7 +143,16 @@
         returnIdpCredential: true
       })
     }).then(function (r) {
-      if (!r.ok) throw new Error('signInWithIdp ' + r.status);
+      if (!r.ok) {
+        /* Identity Toolkit manda el motivo real en el cuerpo. Sin leerlo,
+           todos los fallos de configuración se ven como un "400" mudo. */
+        return r.json().catch(function () { return null; }).then(function (body) {
+          var code = (body && body.error && body.error.message) || ('HTTP ' + r.status);
+          var err = new Error(code);
+          err.code = code;
+          throw err;
+        });
+      }
       return r.json();
     }).then(function (d) {
       saveSession({
@@ -156,10 +165,43 @@
       });
       return session;
     }).catch(function (e) {
-      if (window.console) console.warn('[social] sign-in failed', e);
+      var code = e && e.code ? e.code : String(e && e.message || e);
+      if (window.console) {
+        console.error('[social] Firebase rechazó el login:', code);
+        var hint = SIGNIN_HINTS[code];
+        if (hint) console.error('[social] ' + hint);
+      }
+      if (window.PoporopoToast) {
+        window.PoporopoToast(SIGNIN_TOASTS[code] || "Couldn't enable comments");
+      }
       return null;
     });
   }
+
+  /* Traducción de los errores de Identity Toolkit a la acción concreta que
+     hay que hacer en la consola de Firebase. Son todos de configuración:
+     el código del cliente está bien, falta autorizar algo. */
+  var SIGNIN_HINTS = {
+    OPERATION_NOT_ALLOWED:
+      'Firebase Console → Authentication → Sign-in method → habilita Google.',
+    INVALID_IDP_RESPONSE:
+      'El client ID de Google no está autorizado en Firebase. Console → ' +
+      'Authentication → Sign-in method → Google → Web SDK configuration → ' +
+      'agrega el client ID que usa el sitio.',
+    INVALID_REQUEST_URI:
+      'Firebase Console → Authentication → Settings → Authorized domains → ' +
+      'agrega ' + window.location.hostname + '.',
+    MISSING_OR_INVALID_NONCE:
+      'El token de Google trae un nonce que no se está reenviando a Firebase.',
+    INVALID_CUSTOM_TOKEN:
+      'La FIREBASE_API_KEY no corresponde al FIREBASE_PROJECT_ID configurado.'
+  };
+
+  var SIGNIN_TOASTS = {
+    OPERATION_NOT_ALLOWED: 'Comments are not enabled yet',
+    INVALID_IDP_RESPONSE:  'Sign-in is not configured for this site yet',
+    INVALID_REQUEST_URI:   'This domain is not authorized for sign-in'
+  };
 
   function refreshToken() {
     if (!session || !session.refreshToken) return Promise.resolve(null);
