@@ -10,8 +10,10 @@
   /* ============================================================
      ⚙️  CONFIG
      ============================================================ */
-  const GOOGLE_CLIENT_ID =
-    '810778080237-n4771dlmqes5h66jll7khffcf2vp1ntm.apps.googleusercontent.com';
+  /* Las claves ya no viven en el código: config.js las recibe del
+     workflow de deploy, que a su vez las lee de los GitHub Secrets. */
+  const CFG = window.POPOROPO_CONFIG || {};
+  const GOOGLE_CLIENT_ID = CFG.GOOGLE_CLIENT_ID || '';
 
   const PAYPAL_USERNAME = 'Wilfred026';
   const PAYPAL_BASE     = `https://www.paypal.me/${PAYPAL_USERNAME}`;
@@ -25,8 +27,25 @@
   /* ============================================================
      B. TMDB CLIENT
      ============================================================ */
-  const TMDB_API_KEY = '5f41e16316f1452122fe4d2c1234b068';
+  const TMDB_API_KEY = CFG.TMDB_API_KEY || '';
   const TMDB_API = 'https://api.themoviedb.org/3';
+
+  /* Si el deploy no sustituyó los placeholders, el catálogo no carga.
+     Mejor gritarlo que dejar la página en blanco sin explicación. */
+  if (!TMDB_API_KEY || TMDB_API_KEY.indexOf('__') === 0) {
+    console.error(
+      '[POPOROPO] Falta TMDB_API_KEY. GitHub Pages debe desplegarse con ' +
+      'GitHub Actions (Settings → Pages → Source: GitHub Actions) para que ' +
+      'el workflow inyecte los secrets en config.js. Ver README-SETUP.md.'
+    );
+    document.addEventListener('DOMContentLoaded', function () {
+      var b = document.createElement('p');
+      b.style.cssText = 'position:fixed;z-index:99999;left:0;right:0;bottom:0;margin:0;' +
+        'padding:12px 16px;background:#b20710;color:#fff;font:600 13px/1.4 sans-serif;text-align:center';
+      b.textContent = 'Configuration error: TMDB API key missing. Check the deploy workflow.';
+      document.body.appendChild(b);
+    });
+  }
   const TMDB_IMG = 'https://image.tmdb.org/t/p';
   const LANG = 'en-US';
   const REGION = 'US';
@@ -305,6 +324,12 @@
       applySettings();
       rebuildAfterAuthChange();
       showToast(`Welcome, ${user.given_name || user.name || 'friend'}`, 2000);
+
+      /* Canjea el mismo token de Google por una sesión de Firebase para
+         que las reglas de Firestore puedan verificar quién comenta. */
+      if (window.PoporopoSocial && PoporopoSocial.enabled) {
+        PoporopoSocial.signIn(response.credential);
+      }
     }
 
     function signOut() {
@@ -315,6 +340,7 @@
       updateAuthUI();
       applySettings();
       rebuildAfterAuthChange();
+      if (window.PoporopoSocial && PoporopoSocial.enabled) PoporopoSocial.signOut();
       showToast('Signed out', 1800);
     }
 
@@ -457,6 +483,11 @@
         showToast('Sign-in error', 2000);
       }
     }
+
+    /* Puentes que social.js usa para pedir login y avisar al usuario
+       sin tener que conocer los internos de este módulo. */
+    window.PoporopoRequestSignIn = triggerSignIn;
+    window.PoporopoToast = function (msg) { showToast(msg, 2400); };
 
     /* ── Profile menu ── */
     const profileBtn  = $('#profileBtn');
@@ -642,6 +673,10 @@
     const videoTitleEl    = $('#videoTitle');
     const videoInfoBtn    = $('#videoInfoBtn');
 
+    /* Panel de likes y comentarios bajo el reproductor. Si social.js
+       no está configurado, mount() no hace nada y el modal queda igual. */
+    if (window.PoporopoSocial) PoporopoSocial.mount($('#socialMount'));
+
     const infoModal       = $('#infoModal');
     const closeInfoBtn    = $('#closeInfoModal');
     const infoBack        = infoModal.querySelector('.modal-backdrop');
@@ -650,7 +685,6 @@
     const infoYearEl      = infoModal.querySelector('.info-year');
     const infoDurationEl  = infoModal.querySelector('.info-duration');
     const infoGenreEl     = infoModal.querySelector('.info-genre');
-    const infoRatingEl    = infoModal.querySelector('.info-rating');
     const infoDescEl      = infoModal.querySelector('.info-desc');
     const infoPlayBtn     = $('#infoPlayBtn');
     const infoQualityEl   = infoModal.querySelector('.info-meta .badge-hd');
@@ -679,6 +713,28 @@
       if (type === 'tv' && season !== undefined && episode !== undefined)
         return `https://vidsrc.pm/embed/tv/${id}/${season}/${episode}${sub}`;
       return `https://vidsrc.pm/embed/${type}/${id}${sub}`;
+    }
+
+    /* Identificador de contenido para likes y comentarios.
+       Las series se separan POR EPISODIO, no por serie completa:
+         movie_550
+         tv_1399_s1_e1                                            */
+    function socialContentId(id, type, season, episode) {
+      return type === 'tv' ? `tv_${id}_s${season}_e${episode}` : `movie_${id}`;
+    }
+
+    /* Se llama cada vez que cambia lo que se está reproduciendo. */
+    function syncSocialContent() {
+      if (!window.PoporopoSocial || !PoporopoSocial.enabled) return;
+      if (!currentMediaId) return;
+      const base = videoTitleEl.textContent || '';
+      const label = currentMediaType === 'tv'
+        ? `${base}${base ? ' · ' : ''}S${currentSeason} E${currentEpisode}`
+        : base;
+      PoporopoSocial.setContent(
+        socialContentId(currentMediaId, currentMediaType, currentSeason, currentEpisode),
+        label
+      );
     }
 
     function openVideoModal(mediaId, mediaType, opener) {
@@ -718,6 +774,7 @@
       tmdb(endpoint).then(data => {
         const title = data.title || data.name || '';
         videoTitleEl.textContent = title;
+        syncSocialContent();   // el título llega tarde: refresca la etiqueta
       }).catch(() => {});
 
       if (mediaType === 'tv') {
@@ -727,6 +784,7 @@
         seasonSelector.hidden = true;
         const subLang = getSettings().subtitleLang;
         videoPlayer.src = getEmbedUrl(mediaId, 'movie', undefined, undefined, subLang);
+        syncSocialContent();
       }
     }
 
@@ -743,6 +801,7 @@
       }
       if (playerSpin) playerSpin.classList.remove('is-hidden');
       currentMediaId = null;
+      if (window.PoporopoSocial && PoporopoSocial.enabled) PoporopoSocial.clear();
       closeModalEl(videoModal);
 
       if (IS_TV) {
@@ -808,12 +867,14 @@
         }
         const subLang = getSettings().subtitleLang;
         videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
+        syncSocialContent();
       } catch (err) {
         console.error('Episode load error:', err);
         episodeSelect.innerHTML = '<option value="1">Episode 1</option>';
         currentEpisode = 1;
         const subLang = getSettings().subtitleLang;
         videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
+        syncSocialContent();
       }
     }
 
@@ -825,6 +886,7 @@
       currentEpisode = Number(episodeSelect.value);
       const subLang = getSettings().subtitleLang;
       videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
+      syncSocialContent();
     });
 
     videoPlayer.addEventListener('load', () => {
@@ -925,8 +987,8 @@
 
         infoGenreEl.textContent = (data.genres && data.genres.length)
           ? `· ${data.genres.map(g => g.name).join(', ')}` : '';
-        infoRatingEl.textContent = data.vote_average
-          ? `· ★ ${data.vote_average.toFixed(1)}` : '';
+        /* La puntuación de TMDB se quitó a propósito: ahora la señal de
+           la comunidad son los likes y comentarios del propio sitio. */
         infoDescEl.textContent = data.overview || 'No description available.';
         if (data.backdrop_path) {
           infoBackdropEl.style.backgroundImage = `url('${backdropUrl(data.backdrop_path)}')`;
@@ -2176,7 +2238,6 @@
           <span class="badge badge-hd">${escapeHtml(quality)}</span>
           <span class="badge badge-cert" id="bannerCert" hidden></span>
           ${year ? `<span class="badge">${escapeHtml(year)}</span>` : ''}
-          ${item.vote_average ? `<span class="badge">★ ${item.vote_average.toFixed(1)}</span>` : ''}
           <span class="badge">Trending</span>
         `;
         fetchCertification(item.id, mediaType).then(cert => {
@@ -2560,8 +2621,19 @@
       }, 8000);
     }
 
+    /* Deep link ?watch=movie-550 / ?watch=tv-1399
+       Es la puerta de entrada desde las páginas por título que genera
+       scripts/generate-sitemap.mjs para el sitemap. */
+    (function handleWatchParam() {
+      const m = /[?&]watch=(movie|tv)-(\d+)/.exec(location.search || '');
+      if (!m) return;
+      const type = m[1], id = Number(m[2]);
+      // Deja que el catálogo pinte primero para que el modal tenga a dónde volver.
+      setTimeout(() => { try { openVideoModal(id, type, null); } catch (e) {} }, 300);
+    })();
+
     window.__POPOROPO__ = {
-      version: '2.1.1',
+      version: '2.2.0',
       isDonor, getCurrentUser, getSettings, getFavorites
     };
   });

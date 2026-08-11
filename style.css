@@ -2048,3 +2048,230 @@ select {
   background-position: right 10px center;
   padding-right: 30px;
 }
+
+/* ============================================================
+   18. PANEL SOCIAL — LIKES Y COMENTARIOS
+   Vive bajo el reproductor dentro del modal fullscreen.
+   ============================================================ */
+
+/* El reproductor conserva su alto: el panel se apila debajo y el
+   modal (que ya es overflow-y:auto) hace scroll. */
+.fullscreen-modal .player-wrapper { flex: 0 0 auto; }
+
+.social-panel {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 18px 16px 48px;
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+/* ── Barra de acciones ── */
+.social-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background var(--transition), transform var(--transition);
+}
+.like-btn:hover { background: rgba(255,255,255,0.16); }
+.like-btn:active { transform: scale(0.96); }
+.like-btn .like-icon { transition: transform var(--transition); }
+
+.like-btn.is-liked { background: var(--red); color: #fff; }
+.like-btn.is-liked:hover { background: var(--red-dark); }
+.like-btn.is-liked .like-icon { fill: currentColor; transform: scale(1.06); }
+
+.like-count { min-width: 1ch; font-variant-numeric: tabular-nums; }
+
+/* Sin sesión el botón sigue siendo pulsable: el click abre el login. */
+.like-btn.is-locked { opacity: 0.65; }
+
+.social-hint { font-size: 13px; color: var(--text-muted); }
+
+/* ── Bloque de comentarios ── */
+.comments-block { padding-top: 20px; }
+
+.comments-heading {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.comments-context {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ── Formulario ── */
+.comment-form { margin-bottom: 26px; }
+
+.comment-input {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-med);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 8px 2px;
+  transition: border-color var(--transition);
+}
+.comment-input::placeholder { color: var(--text-muted); }
+.comment-input:focus {
+  outline: none;
+  border-bottom: 2px solid var(--red);
+}
+.comment-input:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.comment-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+.comment-counter {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.btn-ghost, .btn-comment {
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  transition: background var(--transition), opacity var(--transition);
+}
+.btn-ghost { background: transparent; color: var(--text-muted); }
+.btn-ghost:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+.btn-comment { background: var(--red); color: #fff; }
+.btn-comment:hover:not(:disabled) { background: var(--red-dark); }
+.btn-comment:disabled { background: rgba(255,255,255,0.10); color: var(--text-muted); cursor: not-allowed; }
+
+.comment-form.is-locked .comment-form-actions { display: none; }
+
+/* ── Lista ── */
+.comments-empty {
+  font-size: 14px;
+  color: var(--text-muted);
+  padding: 10px 0 20px;
+}
+
+.comments-list { display: flex; flex-direction: column; gap: 20px; }
+
+.comment { display: flex; align-items: flex-start; gap: 14px; }
+
+.cmt-avatar {
+  width: 40px; height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-card);
+}
+.cmt-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--red);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.comment-body { flex: 1 1 auto; min-width: 0; }
+
+.comment-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.comment-author { font-size: 13px; font-weight: 700; }
+.comment-time   { font-size: 12px; color: var(--text-muted); }
+
+.comment-text {
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-delete {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  opacity: 0;
+  transition: opacity var(--transition), background var(--transition);
+}
+.comment:hover .comment-delete,
+.comment-delete:focus-visible { opacity: 1; }
+.comment-delete:hover { background: rgba(229,9,20,0.16); color: var(--red); }
+
+/* ── Móvil ── */
+@media (max-width: 768px) {
+  .social-panel { padding: 14px 14px 40px; }
+  .comments-heading { font-size: 16px; }
+  .cmt-avatar { width: 34px; height: 34px; }
+  .comment { gap: 11px; }
+  .comment-text { font-size: 13.5px; }
+  /* En táctil no hay hover: el botón de borrar siempre visible. */
+  .comment-delete { opacity: 1; }
+  .like-btn, .btn-comment, .btn-ghost { padding: 11px 20px; }
+}
+
+/* ── Smart TV: texto y objetivos más grandes, foco muy visible ── */
+html.tv-mode .social-panel { max-width: 1500px; padding: 28px 40px 70px; }
+html.tv-mode .comments-heading { font-size: 26px; }
+html.tv-mode .comments-context { font-size: 18px; }
+html.tv-mode .like-btn { font-size: 20px; padding: 14px 28px; }
+html.tv-mode .comment-input { font-size: 20px; padding: 14px 6px; }
+html.tv-mode .btn-comment,
+html.tv-mode .btn-ghost { font-size: 18px; padding: 13px 26px; }
+html.tv-mode .comment-author { font-size: 18px; }
+html.tv-mode .comment-time { font-size: 16px; }
+html.tv-mode .comment-text { font-size: 19px; }
+html.tv-mode .comments-empty { font-size: 18px; }
+html.tv-mode .social-hint { font-size: 18px; }
+html.tv-mode .cmt-avatar { width: 52px; height: 52px; }
+html.tv-mode .comment-delete { opacity: 1; font-size: 16px; padding: 8px 14px; }
+
+/* Sin :focus-visible en TVs viejas: se marca también con :focus. */
+html.tv-mode .like-btn:focus,
+html.tv-mode .comment-input:focus,
+html.tv-mode .btn-comment:focus,
+html.tv-mode .btn-ghost:focus,
+html.tv-mode .comment-delete:focus {
+  outline: 4px solid #fff;
+  outline-offset: 3px;
+}
