@@ -456,7 +456,14 @@
           } catch (e) {}
         }
 
-        if (!getCurrentUser()) {
+        /* Pide credencial también cuando la sesión de la app ya existe
+           pero la de Firebase no. Es el caso de quien inició sesión antes
+           de que existieran los comentarios: sin esto, el panel le pide
+           iniciar sesión a alguien que ya la tiene. */
+        const needsFirebase = window.PoporopoSocial &&
+                              PoporopoSocial.enabled &&
+                              !PoporopoSocial.isSignedIn();
+        if (!getCurrentUser() || needsFirebase) {
           try { google.accounts.id.prompt(() => {}); } catch (e) {}
         }
 
@@ -488,6 +495,37 @@
        sin tener que conocer los internos de este módulo. */
     window.PoporopoRequestSignIn = triggerSignIn;
     window.PoporopoToast = function (msg) { showToast(msg, 2400); };
+    window.PoporopoAppUser = getCurrentUser;
+
+    /* social.js pinta su propio botón de Google cuando le falta la sesión
+       de Firebase. Hace falta un botón real y no solo prompt(): One Tap
+       entra en enfriamiento tras unos descartes y deja de aparecer, así
+       que por sí solo no es un camino fiable. */
+    window.PoporopoRenderSignInButton = function (container, attempts) {
+      attempts = attempts || 0;
+      if (!container || !clientIdConfigured()) return false;
+      if (!gisInitialized) initGoogleAuth();
+
+      /* El script de GSI carga async: si todavía no está, reintenta en vez
+         de dejar el hueco vacío para siempre. */
+      if (!(window.google && google.accounts && google.accounts.id)) {
+        if (attempts < 25) {
+          setTimeout(function () {
+            window.PoporopoRenderSignInButton(container, attempts + 1);
+          }, 250);
+        }
+        return false;
+      }
+      try {
+        container.innerHTML = '';
+        google.accounts.id.renderButton(container, {
+          type: 'standard', theme: 'filled_black',
+          size: IS_TV ? 'large' : 'medium',
+          text: 'signin_with', shape: 'pill'
+        });
+        return true;
+      } catch (e) { return false; }
+    };
 
     /* ── Profile menu ── */
     const profileBtn  = $('#profileBtn');

@@ -2104,6 +2104,10 @@ select {
 
 .social-hint { font-size: 13px; color: var(--text-muted); }
 
+/* Contenedor del botón de Google que renderiza GSI. Altura mínima para
+   que la fila no salte cuando el iframe del botón termina de cargar. */
+.social-signin { display: flex; align-items: center; min-height: 40px; }
+
 /* ── Bloque de comentarios ── */
 .comments-block { padding-top: 20px; }
 

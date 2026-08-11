@@ -359,6 +359,7 @@
       '    <span class="like-count" id="likeCount">0</span>',
       '  </button>',
       '  <p class="social-hint" id="socialHint" hidden>Sign in to like and comment</p>',
+      '  <div class="social-signin" id="socialSignIn" hidden></div>',
       '</div>',
       '<div class="comments-block">',
       '  <h3 class="comments-heading">',
@@ -417,12 +418,27 @@
   function refreshAuthUI() {
     if (!root) return;
     var signedIn = isSignedIn();
-    var form  = $('#commentForm', root);
-    var input = $('#commentInput', root);
-    var hint  = $('#socialHint', root);
-    var like  = $('#likeBtn', root);
+    var form   = $('#commentForm', root);
+    var input  = $('#commentInput', root);
+    var hint   = $('#socialHint', root);
+    var like   = $('#likeBtn', root);
+    var signin = $('#socialSignIn', root);
 
-    if (hint)  hint.hidden = signedIn;
+    if (hint) {
+      hint.hidden = signedIn;
+      /* Si ya entró a la app pero no a Firestore, decirle "inicia sesión"
+         es desconcertante: para él ya la inició. */
+      hint.textContent = (!signedIn && window.PoporopoAppUser && window.PoporopoAppUser())
+        ? 'Confirm your Google account to like and comment'
+        : 'Sign in to like and comment';
+    }
+
+    if (signin) {
+      signin.hidden = signedIn;
+      if (!signedIn && window.PoporopoRenderSignInButton) {
+        window.PoporopoRenderSignInButton(signin);
+      }
+    }
     if (form)  form.classList.toggle('is-locked', !signedIn);
     if (input) {
       input.disabled = !signedIn;
