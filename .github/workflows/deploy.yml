@@ -1,0 +1,92 @@
+name: Build and deploy to GitHub Pages
+
+# Requiere: Settings → Pages → Build and deployment → Source: "GitHub Actions"
+# Mientras esté en "Deploy from a branch", este workflow no publica nada
+# y config.js se sirve con los placeholders sin sustituir.
+
+on:
+  push:
+    branches: [main]
+  # Refresca el sitemap y las páginas por título cada día a las 05:00 UTC,
+  # para que los estrenos aparezcan sin tener que tocar el repo.
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un deploy a la vez; no cancelamos el que ya está corriendo.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Inject configuration from secrets
+        env:
+          TMDB_API_KEY:        ${{ secrets.TMDB_API_KEY }}
+          GOOGLE_CLIENT_ID:    ${{ secrets.GOOGLE_CLIENT_ID }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_API_KEY:    ${{ secrets.FIREBASE_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${TMDB_API_KEY}" ]; then
+            echo "::error::Falta el secret TMDB_API_KEY. Sin él el catálogo no carga."
+            exit 1
+          fi
+
+          # python3 en vez de sed: así las claves nunca pasan por la línea de
+          # comandos (donde podrían acabar en logs o en el listado de procesos).
+          python3 - <<'PY'
+          import os, pathlib
+          p = pathlib.Path('config.js')
+          s = p.read_text(encoding='utf-8')
+          for key in ('TMDB_API_KEY', 'GOOGLE_CLIENT_ID',
+                      'FIREBASE_PROJECT_ID', 'FIREBASE_API_KEY'):
+              s = s.replace(f'__{key}__', os.environ.get(key, ''))
+          p.write_text(s, encoding='utf-8')
+          PY
+
+          if grep -q '__TMDB_API_KEY__' config.js; then
+            echo "::error::La sustitución de config.js falló."
+            exit 1
+          fi
+          echo "config.js listo."
+
+      - name: Generate per-title pages and sitemap
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          SITE_URL: https://cinepoporopo.com
+          PAGES_PER_LIST: '25'
+        run: node scripts/generate-sitemap.mjs
+
+      - name: Remove files that should not ship
+        run: |
+          rm -rf .github scripts firestore.rules README-SETUP.md
+          rm -f PreviewCinepoporopo.png
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

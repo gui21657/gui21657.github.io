@@ -1,0 +1,9 @@
+# Config con claves reales para pruebas locales — nunca commitear
+config.local.js
+
+# Salida del generador: se construye en cada deploy, no se versiona
+/movie/
+/tv/
+
+node_modules/
+.DS_Store

@@ -1,0 +1,71 @@
+rules_version = '2';
+
+/* ============================================================
+   POPOROPO — REGLAS DE SEGURIDAD DE FIRESTORE
+
+   Pegar en:  Firebase Console → Firestore Database → Rules → Publish
+
+   Aquí es donde de verdad se aplica "solo los que iniciaron sesión
+   pueden comentar". El cliente puede mentir; estas reglas no.
+   ============================================================ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ---------- LIKES ----------
+       /likes/{contentId}/users/{uid}
+       Un documento por usuario. El conteo se obtiene con una
+       aggregation query, así que no existe un contador editable.
+       contentId es "movie_550" o "tv_1399_s1_e1".                */
+    match /likes/{contentId}/users/{uid} {
+
+      // Cualquiera puede leer y contar los likes.
+      allow read: if true;
+
+      // Solo puedes crear tu propio like, y solo autenticado.
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.uid == uid
+                    && request.resource.data.keys().hasOnly(['uid']);
+
+      // Nadie edita un like; solo se crea o se borra.
+      allow update: if false;
+
+      // Solo puedes quitar tu propio like.
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    /* ---------- COMENTARIOS ----------
+       /comments/{contentId}/items/{commentId}                    */
+    match /comments/{contentId}/items/{commentId} {
+
+      // Los comentarios son públicos: se ven aunque no hayas entrado.
+      allow read: if true;
+
+      // Comentar exige sesión iniciada y que el uid sea el tuyo.
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 1000
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() <= 100
+                    && request.resource.data.picture is string
+                    && request.resource.data.picture.size() <= 500
+                    && request.resource.data.keys()
+                         .hasOnly(['uid', 'name', 'picture', 'text', 'createdAt']);
+
+      // Sin edición: evita el truco de publicar algo inocuo y cambiarlo después.
+      allow update: if false;
+
+      // Cada quien borra lo suyo.
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
+    }
+
+    /* Todo lo demás queda cerrado. */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
