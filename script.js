@@ -2096,6 +2096,11 @@
       } catch (err) {
         console.error('TMDB carousel error:', err);
         catalogLoadFailures++;
+        /* CRÍTICO: sin esto, updateUI() ve la lista vacía (scrollWidth 0),
+           entra en `remaining < 800` y reintenta TMDB en un bucle infinito.
+           La página nunca llega a network-idle y Lighthouse/PageSpeed
+           abortan el run con NO_LCP ("page stopped responding"). */
+        state.exhausted = true;
         maybeShowLoadError();
       } finally {
         state.loading = false;
