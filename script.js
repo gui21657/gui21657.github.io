@@ -21,6 +21,26 @@
     };
   }
 
+  /* scrollTo/scrollBy/scrollIntoView con opciones (objeto) requieren
+     Chromium 61+; en webOS 4 (Chromium 53) se ignoran en silencio y la
+     navegacion con mando se quedaria sin scroll. Se detecta soporte y
+     se cae a asignacion directa de scrollLeft/scrollTop. */
+  var SCROLL_OPTS_SUPPORTED = 'scrollBehavior' in document.documentElement.style;
+  function scrollToOpts(el, opts) {
+    if (SCROLL_OPTS_SUPPORTED) { try { el.scrollTo(opts); return; } catch (e) {} }
+    if (typeof opts.left === 'number') el.scrollLeft = opts.left;
+    if (typeof opts.top === 'number') el.scrollTop = opts.top;
+  }
+  function scrollByOpts(el, opts) {
+    if (SCROLL_OPTS_SUPPORTED) { try { el.scrollBy(opts); return; } catch (e) {} }
+    if (typeof opts.left === 'number') el.scrollLeft += opts.left;
+    if (typeof opts.top === 'number') el.scrollTop += opts.top;
+  }
+  function scrollIntoViewOpts(el, opts) {
+    if (SCROLL_OPTS_SUPPORTED) { try { el.scrollIntoView(opts); return; } catch (e) {} }
+    el.scrollIntoView(true);
+  }
+
   /* ============================================================
      ⚙️  CONFIG
      ============================================================ */
@@ -1700,7 +1720,7 @@
         e.preventDefault();
         if (target === searchBar) {
           searchBar.focus();
-          window.scrollTo({ top: 0, behavior: IS_TV ? 'auto' : 'smooth' });
+          scrollToOpts(window, { top: 0 });
         } else {
           focusCard(target);
         }
@@ -2172,10 +2192,10 @@
       };
 
       btnLeft.addEventListener('click', () =>
-        list.scrollBy({ left: -getScrollAmount(), behavior: IS_TV ? 'auto' : 'smooth' })
+        scrollByOpts(list, { left: -getScrollAmount() })
       );
       btnRight.addEventListener('click', () => {
-        list.scrollBy({ left: getScrollAmount(), behavior: IS_TV ? 'auto' : 'smooth' });
+        scrollByOpts(list, { left: getScrollAmount() });
         if (!state.exhausted) loadFn(state).then(updateUI);
       });
 
@@ -2441,7 +2461,7 @@
       searchArea.hidden = false;
       emptyMsg.hidden = true;
       searchGrid.innerHTML = '<div class="search-loading"><div class="spinner-ring"></div></div>';
-      window.scrollTo({ top: 0, behavior: IS_TV ? 'auto' : 'smooth' });
+      scrollToOpts(window, { top: 0 });
 
       const includeAdult = getSettings().adultContent ? 'true' : 'false';
       try {
@@ -2612,7 +2632,7 @@
       if (!card) return;
       const carousel = card.parentElement;
       if (!carousel || !carousel.classList.contains('movies')) {
-        card.scrollIntoView({ behavior: IS_TV ? 'auto' : 'smooth', block: 'center', inline: 'nearest' });
+        scrollIntoViewOpts(card, { behavior: IS_TV ? 'auto' : 'smooth', block: 'center', inline: 'nearest' });
         return;
       }
       const cRect = carousel.getBoundingClientRect();
@@ -2626,12 +2646,12 @@
         targetScroll = carousel.scrollLeft + (rRect.right - (cRect.right - PAD));
       }
       if (targetScroll !== carousel.scrollLeft) {
-        carousel.scrollTo({ left: targetScroll, behavior: IS_TV ? 'auto' : 'smooth' });
+        scrollToOpts(carousel, { left: targetScroll });
       }
       const winH = window.innerHeight;
       if (rRect.top < 80 || rRect.bottom > winH - 60) {
         const y = window.scrollY + rRect.top - (winH * 0.35);
-        window.scrollTo({ top: Math.max(0, y), behavior: IS_TV ? 'auto' : 'smooth' });
+        scrollToOpts(window, { top: Math.max(0, y) });
       }
     }
 
@@ -2700,7 +2720,7 @@
       showCatalog();
       initBanner(view);
       buildCatalog(view);
-      window.scrollTo({ top: 0, behavior: IS_TV ? 'auto' : 'smooth' });
+      scrollToOpts(window, { top: 0 });
     }
     window.addEventListener('hashchange', () => setView(viewFromHash()));
 
