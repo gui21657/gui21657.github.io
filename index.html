@@ -184,8 +184,12 @@
         var qs = location.search || '';
         var forced = /[?&]tv=1/.test(qs);
         var disabled = /[?&]tv=0/.test(qs);
+        /* Deteccion amplia de Smart TV: LG webOS, Samsung Tizen, Android TV
+           (incluye cajas tipo Shield/Mi Box), Fire TV, Hisense/Vidaa,
+           Philips NetTV, Vizio, Roku, consolas, etc. Si una TV no se
+           detecta corre el modo desktop (pesado) y puede quedarse sin RAM. */
         var isTV = forced || (!disabled && (
-          /WebOS|Web0S|webOS|NetCast|SmartTV|SMART-TV|Smart-TV|Tizen|HbbTV|VIERA|BRAVIA|AQUOS|CrKey|GoogleTV|AppleTV|PlayStation|Nintendo|Xbox|DTV|InettvBrowser|HomeCenter/i.test(ua)
+          /WebOS|Web0S|webOS|NetCast|SmartTV|SMART-TV|Smart-TV|Tizen|HbbTV|VIERA|BRAVIA|AQUOS|CrKey|GoogleTV|Android TV|AFT|SHIELD|Hisense|Vidaa|Vestel|Vizio|NetTV|Roku|KODI|Opera TV|AppleTV|PlayStation|Nintendo|Xbox|DTV|InettvBrowser|HomeCenter/i.test(ua)
         ));
         if (isTV) {
           document.documentElement.className += ' tv-mode';
@@ -193,6 +197,12 @@
         } else {
           window.__IS_TV__ = false;
         }
+        /* Guard para navegadores de TV muy antiguos (WebOS 4 / Chromium < 55):
+           script.js usa async/await y no puede ejecutarse ahi. Mejor un
+           mensaje claro que una pagina en blanco. */
+        var supportsAsync = false;
+        try { new Function('async function f(){}'); supportsAsync = true; } catch (e) {}
+        if (!supportsAsync) document.documentElement.className += ' tv-too-old';
       } catch (e) {}
     })();
   </script>
@@ -219,6 +229,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <!-- Mensaje para navegadores de TV sin soporte de JavaScript moderno
+       (WebOS 4 / Chromium < 55). Se muestra via CSS con html.tv-too-old. -->
+  <div id="tooOldMsg" role="alert" hidden>
+    <strong>POPOROPO no funciona en este navegador de TV.</strong>
+    <span>Este dispositivo usa un navegador demasiado antiguo (sin soporte de JavaScript moderno). Actualiza el firmware de tu TV o usa una Smart TV de 2019 en adelante.</span>
+  </div>
 
   <!-- ============== HEADER ============== -->
   <header class="header" id="mainHeader">

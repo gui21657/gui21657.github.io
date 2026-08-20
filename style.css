@@ -2019,6 +2019,9 @@ html.tv-mode .movies { scroll-snap-type: none; }
 html.tv-mode .banner { transition: none; }
 html.tv-mode .section-title { font-size: 24px; }
 html.tv-mode .title-accent { font-size: 26px; }
+/* En TV el catálogo tiene 6 filas (~2.100px), no 16: la altura reservada
+   del modo móvil dejaría un hueco negro enorme antes del footer. */
+html.tv-mode .content-area { min-height: auto; }
 html.tv-mode .banner-overlay {
   background: linear-gradient(
     105deg,
@@ -2300,3 +2303,20 @@ html.tv-mode .comment-delete:focus {
   outline: 4px solid #fff;
   outline-offset: 3px;
 }
+
+/* =====================
+   NAVEGADOR DE TV DEMASIADO ANTIGUO
+   (sin soporte de async/await: WebOS 4 / Chromium < 55)
+   ===================== */
+#tooOldMsg {
+  position: fixed; inset: 0; z-index: 999999;
+  display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px;
+  background: #141414; color: #e5e5e5;
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  text-align: center; padding: 40px;
+}
+#tooOldMsg strong { font-size: 22px; color: #fff; max-width: 640px; }
+#tooOldMsg span { max-width: 560px; color: var(--text-muted); }
+html.tv-too-old #tooOldMsg { display: flex; }

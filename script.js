@@ -58,7 +58,7 @@
   };
 
   const POSTER_SIZE   = IS_TV ? 'w154' : 'w342';
-  const BACKDROP_SIZE = IS_TV ? 'w780' : 'w1280';
+  const BACKDROP_SIZE = IS_TV ? 'w500' : 'w1280';
 
   const MAX_PAGES_PER_GENRE = IS_TV ? 1 : 99;
   const MAX_GENRES_VISIBLE  = IS_TV ? 6  : 16;
@@ -2095,8 +2095,18 @@
         catalogLoadOK = true;
       } catch (err) {
         console.error('TMDB carousel error:', err);
+        /* Reintento transitorio con backoff (1s, 2s): en Smart TV el WiFi
+           suele ser debil y un fallo momentaneo no debe dejar la fila
+           vacia. Acotado a 3 intentos: nada de bucles infinitos. */
+        state.failures = (state.failures || 0) + 1;
+        if (state.failures < 3) {
+          state.loading = false;
+          await new Promise(r => setTimeout(r, 1000 * state.failures));
+          try { await loadMoreCarousel(state, isFirst); } catch (e2) {}
+          return;
+        }
         catalogLoadFailures++;
-        /* CRÍTICO: sin esto, updateUI() ve la lista vacía (scrollWidth 0),
+        /* CRÍTICO: sin exhausted, updateUI() ve la lista vacía (scrollWidth 0),
            entra en `remaining < 800` y reintenta TMDB en un bucle infinito.
            La página nunca llega a network-idle y Lighthouse/PageSpeed
            abortan el run con NO_LCP ("page stopped responding"). */
