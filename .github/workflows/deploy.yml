@@ -65,6 +65,13 @@ jobs:
           fi
           echo "config.js listo."
 
+      - name: Install build tooling (esbuild)
+        run: |
+          npm ci --no-audit --no-fund
+
+      - name: Build (transpile para Smart TV antiguas + minify)
+        run: node scripts/build.mjs
+
       - name: Generate per-title pages and sitemap
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -74,8 +81,8 @@ jobs:
 
       - name: Remove files that should not ship
         run: |
-          rm -rf .github scripts firestore.rules README-SETUP.md
-          rm -f PreviewCinepoporopo.png
+          rm -rf .github scripts node_modules firestore.rules README-SETUP.md
+          rm -f package.json package-lock.json PreviewCinepoporopo.png
 
       - uses: actions/upload-pages-artifact@v3
         with:

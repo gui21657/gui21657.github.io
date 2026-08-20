@@ -7,6 +7,20 @@
 (function () {
   'use strict';
 
+  /* Polyfill para Smart TV antiguas (LG webOS 4 = Chromium 53 no tiene
+     String.prototype.padStart). El resto del codigo se transpila a ES5
+     compatible en el deploy con esbuild (target chrome53). */
+  if (typeof String.prototype.padStart !== 'function') {
+    String.prototype.padStart = function (targetLength, padString) {
+      targetLength = targetLength >> 0;
+      padString = String(typeof padString !== 'undefined' ? padString : ' ');
+      if (this.length >= targetLength) return String(this);
+      targetLength -= this.length;
+      if (targetLength > padString.length) padString = padString.repeat(Math.ceil(targetLength / padString.length));
+      return padString.slice(0, targetLength) + String(this);
+    };
+  }
+
   /* ============================================================
      ⚙️  CONFIG
      ============================================================ */

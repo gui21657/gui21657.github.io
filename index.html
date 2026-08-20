@@ -197,12 +197,12 @@
         } else {
           window.__IS_TV__ = false;
         }
-        /* Guard para navegadores de TV muy antiguos (WebOS 4 / Chromium < 55):
-           script.js usa async/await y no puede ejecutarse ahi. Mejor un
-           mensaje claro que una pagina en blanco. */
-        var supportsAsync = false;
-        try { new Function('async function f(){}'); supportsAsync = true; } catch (e) {}
-        if (!supportsAsync) document.documentElement.className += ' tv-too-old';
+        /* Guard para navegadores de TV prehistóricos (webOS 3 / Chromium < 39,
+           sin generadores): el script.js transpilado necesita function*. Las
+           webOS 4+ ya funcionan gracias al build con esbuild en el deploy. */
+        var supportsGenerators = false;
+        try { new Function('function* f(){}'); supportsGenerators = true; } catch (e) {}
+        if (!supportsGenerators) document.documentElement.className += ' tv-too-old';
       } catch (e) {}
     })();
   </script>
@@ -234,7 +234,7 @@
        (WebOS 4 / Chromium < 55). Se muestra via CSS con html.tv-too-old. -->
   <div id="tooOldMsg" role="alert" hidden>
     <strong>POPOROPO no funciona en este navegador de TV.</strong>
-    <span>Este dispositivo usa un navegador demasiado antiguo (sin soporte de JavaScript moderno). Actualiza el firmware de tu TV o usa una Smart TV de 2019 en adelante.</span>
+    <span>Este navegador es demasiado antiguo para ejecutar la aplicación (le faltan funciones básicas de JavaScript). Actualiza el firmware de tu TV si es posible.</span>
   </div>
 
   <!-- ============== HEADER ============== -->
