@@ -402,7 +402,8 @@ ul { list-style: none; }
   background-color: #0a0a0a;
   background-size: cover; background-position: center 20%;
   display: flex; align-items: flex-end;
-  transition: background-image 0.6s ease;
+  /* Sin transición de background-image: no es interpolable y una transición
+     en un ancestro del LCP puede disparar el NO_LCP de Lighthouse. */
 }
 
 .banner-overlay {
@@ -430,7 +431,9 @@ ul { list-style: none; }
   min-height: 260px;
   padding: 0 4% 150px;
   padding-left: max(4%, var(--safe-left));
-  animation: fadeUp 0.8s ease both;
+  /* SIN animacion de opacidad/transform aqui: este contenedor es el ancestro
+     del elemento LCP (el h1). Chrome/Lighthouse falla con NO_LCP cuando el
+     ancestro del LCP tiene una animacion (issues #10869 / #16203). */
 }
 .banner-content[hidden] { display: none !important; }
 
