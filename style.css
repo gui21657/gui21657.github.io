@@ -513,6 +513,10 @@ ul { list-style: none; }
   position: relative; z-index: 2;
   padding: 0 0 60px;
   transition: padding-top 0.3s ease;
+  /* Altura reservada del catálogo: el contenido lo construye JS tras el
+     primer paint, y sin esto el footer se desplaza ~4.000px al insertarse
+     las secciones (causa principal del CLS en PageSpeed). */
+  min-height: 4300px;
 }
 
 .carousel-section {

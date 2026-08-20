@@ -53,8 +53,9 @@
   <link rel="apple-touch-icon" href="android-chrome-192x192.png">
 
   <!-- Claves inyectadas en deploy desde GitHub Secrets. Debe cargar
-       antes que social.js y script.js. -->
-  <script src="config.js"></script>
+       antes que social.js y script.js. Con defer se ejecuta en orden
+       (config → social → script) sin bloquear el render. -->
+  <script src="config.js" defer></script>
 
   <!-- =========================================================
        STRUCTURED DATA — for Google Search & AI crawlers
@@ -201,13 +202,19 @@
        ========================================================= -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://api.themoviedb.org">
+  <link rel="preconnect" href="https://api.themoviedb.org" crossorigin>
   <link rel="preconnect" href="https://image.tmdb.org">
-  <link rel="preconnect" href="https://accounts.google.com">
   <link rel="dns-prefetch" href="https://vidsrc.pm">
   <link rel="dns-prefetch" href="https://vidsrc.me">
   <link rel="dns-prefetch" href="https://www.paypal.com">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Fuentes sin bloquear el render: el CSS se precarga y se aplica al
+       terminar de descargarse (ahorro ~750 ms de render-blocking en 4G). -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap"></noscript>
+  <!-- Bebas Neue precargada (9 KB): es la fuente del título del banner
+       (LCP). Al estar lista antes del primer paint, el h1 se pinta
+       directamente con ella y el LCP no espera al swap de fuente. -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/bebasneue/v16/JTUSjIg69CK48gW7PXoo9Wdhyzbi.woff2">
 
   <link rel="stylesheet" href="style.css">
 </head>
