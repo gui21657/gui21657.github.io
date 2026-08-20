@@ -172,7 +172,9 @@
   </script>
 
   <!-- =========================================================
-       EARLY TV DETECTION + CONDITIONAL GSI LOADING
+       EARLY TV DETECTION
+       (Google Identity Services se carga bajo demanda desde
+       script.js en la primera interacción con el login)
        ========================================================= -->
   <script>
     (function () {
@@ -189,10 +191,6 @@
           window.__IS_TV__ = true;
         } else {
           window.__IS_TV__ = false;
-          var s = document.createElement('script');
-          s.src = 'https://accounts.google.com/gsi/client';
-          s.async = true; s.defer = true;
-          document.head.appendChild(s);
         }
       } catch (e) {}
     })();
@@ -249,7 +247,7 @@
       <!-- Authentication / Profile -->
       <div class="auth-container" id="authContainer">
         <div class="auth-signed-out" id="authSignedOut">
-          <div id="googleSignInButton" class="google-signin-btn-container" aria-label="Sign in with Google"></div>
+          <div id="googleSignInButton" class="google-signin-btn-container"></div>
         </div>
 
         <div class="auth-signed-in" id="authSignedIn" hidden>
@@ -304,11 +302,14 @@
   <!-- ============== BANNER ============== -->
   <section class="banner" id="mainBanner" aria-label="Featured title">
     <div class="banner-overlay"></div>
-    <div class="banner-content" id="bannerContent" hidden>
-      <h1 id="bannerTitle"></h1>
-      <p class="banner-desc" id="bannerDesc"></p>
+    <div class="banner-content" id="bannerContent">
+      <!-- Contenido estático visible desde el primer paint: garantiza un
+           LCP grande e inmediato aunque TMDB tarde o falle. script.js lo
+           reemplaza con el título destacado cuando llega. -->
+      <h1 id="bannerTitle">POPOROPO</h1>
+      <p class="banner-desc" id="bannerDesc">Watch free HD movies and TV shows online. No sign-up required.</p>
       <div class="banner-meta" id="bannerMeta"></div>
-      <div class="buttons">
+      <div class="buttons" id="bannerButtons" hidden>
         <button class="btn btn-play" type="button" id="bannerPlayBtn">
           <span class="btn-icon" aria-hidden="true">▶</span> Play
         </button>

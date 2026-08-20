@@ -425,6 +425,9 @@ ul { list-style: none; }
 .banner-content {
   position: relative; z-index: 2;
   max-width: 720px;
+  /* Altura reservada: el texto estático y el destacado de TMDB no cambian
+     la caja, evitando el layout shift cuando llega el título real. */
+  min-height: 260px;
   padding: 0 4% 150px;
   padding-left: max(4%, var(--safe-left));
   animation: fadeUp 0.8s ease both;
@@ -480,6 +483,9 @@ ul { list-style: none; }
 .badge-rating[hidden] { display: none; }
 
 .buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+/* Los botones del banner solo aparecen cuando script.js tiene datos
+   (el atributo hidden de un flex se anularía sin esta regla). */
+#bannerButtons[hidden] { display: none; }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -608,16 +614,24 @@ ul { list-style: none; }
 }
 
 .movie-skeleton {
+  position: relative; overflow: hidden;
   flex-shrink: 0; width: var(--card-w); height: var(--card-h);
   border-radius: var(--radius);
-  background: linear-gradient(110deg, #1a1a1a 8%, #2a2a2a 18%, #1a1a1a 33%);
-  background-size: 200% 100%;
+  background: #1a1a1a;
+}
+/* Shimmer con transform (componible): la animación de background-position
+   fuerza repaints y es lo que PageSpeed marca como animación no compuesta. */
+.movie-skeleton::after {
+  content: '';
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
   animation: shimmer 1.4s linear infinite;
 }
 @keyframes shimmer {
-  0%   { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
+  100% { transform: translateX(100%); }
 }
+html.tv-mode .movie-skeleton::after { animation: none; }
 
 /* =====================
    6. MOVIE CARDS
@@ -1330,7 +1344,7 @@ ul { list-style: none; }
 }
 .donate-fine-print {
   font-size: 11.5px;
-  color: rgba(255,255,255,0.45);
+  color: var(--text-muted);
   line-height: 1.5;
 }
 .claim-form {
@@ -1355,7 +1369,7 @@ ul { list-style: none; }
 .claim-optional {
   font-size: 11px;
   font-weight: 500;
-  color: rgba(255,255,255,0.4);
+  color: var(--text-muted);
   text-transform: none;
   letter-spacing: 0;
 }
@@ -1686,7 +1700,7 @@ footer {
 }
 .footer-logo {
   font-family: var(--font-title); font-size: 22px;
-  color: var(--red); letter-spacing: 2px; margin-bottom: 8px;
+  font-weight: 700; color: var(--red); letter-spacing: 2px; margin-bottom: 8px;
 }
 .footer-copy { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
 .footer-thanks {
@@ -1699,7 +1713,7 @@ footer {
 .footer-thanks[hidden] { display: none; }
 .footer-disclaimer {
   font-size: 11px;
-  color: rgba(255,255,255,0.4);
+  color: var(--text-muted);
   max-width: 720px;
   margin: 14px auto 0;
   line-height: 1.55;

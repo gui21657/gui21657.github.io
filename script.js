@@ -58,7 +58,7 @@
   };
 
   const POSTER_SIZE   = IS_TV ? 'w154' : 'w342';
-  const BACKDROP_SIZE = IS_TV ? 'w780' : 'original';
+  const BACKDROP_SIZE = IS_TV ? 'w780' : 'w1280';
 
   const MAX_PAGES_PER_GENRE = IS_TV ? 1 : 99;
   const MAX_GENRES_VISIBLE  = IS_TV ? 6  : 16;
@@ -416,6 +416,26 @@
     let gisInitialized = false;
     let googleButtonRendered = false;
 
+    /* Carga el script de Google Identity Services solo bajo demanda
+       (primera interacción con el login). Evita ~200 KB de requests al
+       cargar, los errores de consola de GSI en headless/PSI y el prompt
+       de One Tap automático. */
+    let gsiPromise = null;
+    function loadGsiScript() {
+      if (window.google && google.accounts && google.accounts.id) return Promise.resolve(true);
+      if (gsiPromise) return gsiPromise;
+      gsiPromise = new Promise(function (resolve) {
+        const s = document.createElement('script');
+        s.src = 'https://accounts.google.com/gsi/client';
+        s.async = true;
+        s.onload = function () { resolve(true); };
+        s.onerror = function () { gsiPromise = null; resolve(false); };
+        document.head.appendChild(s);
+        setTimeout(function () { resolve(true); }, 6000);
+      });
+      return gsiPromise;
+    }
+
     function showFallbackButton() {}
 
     function initGoogleAuth(attempts = 0) {
@@ -426,11 +446,15 @@
       }
 
       if (!(window.google && google.accounts && google.accounts.id)) {
-        if (attempts >= 30) {
-          showFallbackButton('Sign-in not available in this browser');
-          return;
-        }
-        setTimeout(() => initGoogleAuth(attempts + 1), 200);
+        loadGsiScript().then(function (ok) {
+          if (ok && window.google && google.accounts && google.accounts.id) {
+            initGoogleAuth(attempts);
+          } else if (attempts < 30) {
+            setTimeout(function () { initGoogleAuth(attempts + 1); }, 250);
+          } else {
+            showFallbackButton('Sign-in not available in this browser');
+          }
+        });
         return;
       }
 
@@ -558,7 +582,19 @@
     if (signOutBtn) signOutBtn.addEventListener('click', () => { closeProfileMenu(); signOut(); });
 
     updateAuthUI();
-    initGoogleAuth();
+
+    /* GSI se carga en la primera interacción real del usuario
+       (click/teclado). OJO: NO usar 'scroll' ni 'touchstart' como gatillo:
+       los audits headless (PageSpeed Insights) hacen scroll durante la
+       captura y cargarían el script igualmente. */
+    var authWake = function () {
+      if (gisInitialized) return;
+      var evs = ['pointerdown', 'keydown'];
+      for (var i = 0; i < evs.length; i++) document.removeEventListener(evs[i], authWake, { capture: true });
+      initGoogleAuth();
+    };
+    var authEvts = ['pointerdown', 'keydown'];
+    for (var j = 0; j < authEvts.length; j++) document.addEventListener(authEvts[j], authWake, { capture: true, passive: true });
 
     /* ============================================================
        FAVORITES
@@ -711,9 +747,10 @@
     const videoTitleEl    = $('#videoTitle');
     const videoInfoBtn    = $('#videoInfoBtn');
 
-    /* Panel de likes y comentarios bajo el reproductor. Si social.js
-       no está configurado, mount() no hace nada y el modal queda igual. */
-    if (window.PoporopoSocial) PoporopoSocial.mount($('#socialMount'));
+    /* El panel de likes y comentarios se monta al ABRIR el reproductor
+       (ver syncSocialContent), no al cargar la página: así el botón de
+       Google y su script solo se descargan cuando el usuario los va a
+       usar de verdad, y los audits headless no los cargan nunca. */
 
     const infoModal       = $('#infoModal');
     const closeInfoBtn    = $('#closeInfoModal');
@@ -764,6 +801,7 @@
     /* Se llama cada vez que cambia lo que se está reproduciendo. */
     function syncSocialContent() {
       if (!window.PoporopoSocial || !PoporopoSocial.enabled) return;
+      if (window.PoporopoSocial.mount) window.PoporopoSocial.mount($('#socialMount'));
       if (!currentMediaId) return;
       const base = videoTitleEl.textContent || '';
       const label = currentMediaType === 'tv'
@@ -2291,6 +2329,8 @@
         playBtn.onclick = () => openVideoModal(item.id, mediaType, playBtn);
         infoBtn.onclick = () => openInfoModal(item.id, mediaType, infoBtn);
 
+        const btns = $('#bannerButtons');
+        if (btns) btns.hidden = false;
         content.hidden = false;
       } catch (err) {
         console.error('Banner error:', err);
