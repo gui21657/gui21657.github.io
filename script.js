@@ -172,13 +172,8 @@
       'audio.kindCast': 'Castilian',
       'audio.countryLabel': '({country})',
       'audio.noneLegal': 'No Spanish audio for this title, according to legal platforms.',
-      'audio.langAuto': 'Auto',
-      'audio.langEs': 'Spanish',
-      'audio.langEn': 'English',
-      'audio.langOrig': 'Original',
-      'toast.audioUpdated': 'Player language set to Spanish. If the audio is still in another language, open the \u2699\uFE0F menu inside the player and pick the audio track.',
       'toast.sourceUpdated': 'Video source changed. If the audio is still not in Spanish, try another source or pick the track in the player\u2019s \u2699\uFE0F menu.',
-      'player.selectAudio': 'Audio language',
+      'toast.noImdb': 'This title has no IMDb ID, which this server requires. Try another source.',
       'player.selectSource': 'Video source',
       'info.play': 'Play', 'info.morelikethis': 'More Like This', 'info.close': 'Close info',
       'info.episodes': 'Episodes',
@@ -305,13 +300,8 @@
       'audio.kindCast': 'Castellano',
       'audio.countryLabel': '({country})',
       'audio.noneLegal': 'Seg\u00FAn las plataformas legales, este t\u00EDtulo no tiene audio en espa\u00F1ol.',
-      'audio.langAuto': 'Auto',
-      'audio.langEs': 'Espa\u00F1ol',
-      'audio.langEn': 'Ingl\u00E9s',
-      'audio.langOrig': 'Original',
-      'toast.audioUpdated': 'Idioma del reproductor en espa\u00F1ol. Si el audio sigue en otro idioma, abre el men\u00FA \u2699\uFE0F del reproductor y elige la pista de audio.',
       'toast.sourceUpdated': 'Fuente cambiada. Si el audio sigue sin estar en espa\u00F1ol, prueba otra fuente o elige la pista en el men\u00FA \u2699\uFE0F del reproductor.',
-      'player.selectAudio': 'Idioma de audio',
+      'toast.noImdb': 'Este t\u00EDtulo no tiene ID de IMDb, que este servidor necesita. Prueba otra fuente.',
       'player.selectSource': 'Fuente del video',
       'info.play': 'Reproducir', 'info.morelikethis': 'M\u00E1s como esto', 'info.close': 'Cerrar informaci\u00F3n',
       'info.episodes': 'Episodios',
@@ -1272,8 +1262,6 @@
     const seasonSelector  = $('#seasonEpisodeSelector');
     const seasonSelect    = $('#seasonSelect');
     const episodeSelect   = $('#episodeSelect');
-    const audioLangSelector = $('#audioLangSelector');
-    const audioLangSelect = $('#audioLangSelect');
     const embedSourceSelector = $('#embedSourceSelector');
     const embedSourceSelect = $('#embedSourceSelect');
     const videoTitleEl    = $('#videoTitle');
@@ -1328,20 +1316,98 @@
     /* ============================================================
        VIDEO PLAYER (fullscreen) with compact bottom bar
        ============================================================ */
-    /* Proveedores de embed disponibles (todos no oficiales; vidsrc.pm es el
-       principal). Ninguno garantiza la pista de audio: ds_lang pone el idioma
-       por defecto (subtítulos y, según la fuente, audio). El menú interno del
-       reproductor sigue mandando en la pista exacta. */
+    /* ---- Catálogo de servidores de embed (todos no oficiales) ----
+       El usuario los está probando uno a uno y al final dirá cuáles
+       dejar. Cada entrada: { id, label, url(id, type, season, episode,
+       sub), imdb? } — los marcados con `imdb: true` necesitan el IMDb ID
+       (se resuelve vía TMDB) en vez del ID de TMDB. */
+    const tvPath = (type, s, e) => (type === 'tv' && s !== undefined && e !== undefined ? `/tv/${s}/${e}` : '');
+
+    /* Familia clásica vidsrc/2embed: /embed/movie/{id} y /embed/tv/{id}/{s}/{e}.
+       ds_lang: idioma por defecto del reproductor (subtítulos y, según la
+       fuente, también la pista de audio). */
+    function mkEmbed(base, subKey) {
+      const host = base.split('/')[2];
+      return {
+        id: host,
+        label: host,
+        url: (id, type, s, e, sub) => {
+          const kind = type === 'tv' && s !== undefined && e !== undefined ? 'tv' : 'movie';
+          const path = kind === 'tv' ? `/tv/${id}/${s}/${e}` : `/movie/${id}`;
+          return base + path + (sub && subKey ? `?${subKey}=${sub}` : '');
+        }
+      };
+    }
+
     const EMBED_SOURCES = [
-      { id: 'vidsrc', label: 'VidSrc',
-        movie: (id, sub) => `https://vidsrc.pm/embed/movie/${id}${sub ? '?ds_lang=' + sub : ''}`,
-        tv: (id, s, e, sub) => `https://vidsrc.pm/embed/tv/${id}/${s}/${e}${sub ? '?ds_lang=' + sub : ''}` },
-      { id: '2embed', label: '2Embed',
-        movie: (id, sub) => `https://2embed.skin/embed/movie/${id}${sub ? '?ds_lang=' + sub : ''}`,
-        tv: (id, s, e, sub) => `https://2embed.skin/embed/tv/${id}/${s}/${e}${sub ? '?ds_lang=' + sub : ''}` },
-      { id: 'embedder', label: 'Embedder',
-        movie: (id) => `https://embedder.net/e/movie/${id}`,
-        tv: (id, s, e) => `https://embedder.net/e/tv/${id}/${s}/${e}` }
+      /* --- Familia VidSrc (ds_lang) --- */
+      ...['vidsrc.pm', 'vidsrc.to', 'vidsrc.xyz', 'vidsrc.me', 'vidsrc.cc', 'vidsrc.net',
+          'vidsrc.dev', 'vidsrc.icu', 'vidsrc.site', 'vidsrc.stream', 'vidsrc.rip',
+          'vidsrc.nl', 'vidsrc.su', 'vidsrc.info', 'vidsrc.vip', 'vidsrc.biz',
+          'vidsrc.work', 'vidsrc.top', 'vidsrc.link', 'vidsrc.zone',
+          'vidsrc.us', 'vidsrc.io', 'vidsrc.in', 'vidsrc.ru', 'vidsrc.eu',
+          'vidsrc.co', 'vidsrc.org']
+        .map(h => mkEmbed(`https://${h}/embed`, 'ds_lang')),
+
+      /* --- Familia 2Embed (ds_lang) --- */
+      ...['2embed.skin', '2embed.cc', '2embed.to', '2embed.org', '2embed.uk',
+          '2embed.su', '2embed.wiki', '2embed.best', '2embed.pro', 'embedsb.com',
+          '2embed.me', '2embed.ru']
+        .map(h => mkEmbed(`https://${h}/embed`, 'ds_lang')),
+
+      /* --- Familia Embedder (/e/movie) --- */
+      ...['embedder.net', 'embedder.cc', 'embedder.pro', 'embedder.org']
+        .map(h => mkEmbed(`https://${h}/e`, 'ds_lang')),
+
+      /* --- Especiales por ID de TMDB --- */
+      { id: 'multiembed.mov', label: 'MultiEmbed',
+        url: (id, type, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
+      { id: 'superembed.stream', label: 'SuperEmbed',
+        url: (id, type, s, e) => `https://superembed.stream/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
+      { id: 'superembed.to', label: 'SuperEmbed.to',
+        url: (id, type, s, e) => `https://superembed.to/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
+      { id: 'embedstream.me', label: 'EmbedStream',
+        url: (id, type, s, e) => `https://embedstream.me/embed/play/${id}?type=${type === 'tv' ? 'tv' : 'movie'}${type === 'tv' && s !== undefined && e !== undefined ? `&season=${s}&episode=${e}` : ''}` },
+      { id: 'vidbinge.com', label: 'VidBinge',
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://vidbinge.com/api/tmdb/tv/${id}/${s}/${e}`
+          : `https://vidbinge.com/api/tmdb/movie/${id}`) },
+      { id: 'player.vixcloud.co', label: 'VixCloud',
+        url: (id, type, s, e) => `https://player.vixcloud.co/embed/play/${id}?type=${type === 'tv' ? 'tv' : 'movie'}${type === 'tv' && s !== undefined && e !== undefined ? `&season=${s}&episode=${e}` : ''}` },
+      { id: 'embed.warezcdn.link', label: 'WarezCDN',
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://embed.warezcdn.link/serie/${id}/${s}/${e}`
+          : `https://embed.warezcdn.link/film/${id}`) },
+      { id: '4stream.gg', label: '4Stream',
+        url: (id, type, s, e) => `https://4stream.gg/play/${type === 'tv' ? 'tv' : 'movie'}/${id}${tvPath(type, s, e)}` },
+      { id: 'moviesapi.club', label: 'MoviesAPI',
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://moviesapi.club/tv/${id}/${s}/${e}`
+          : `https://moviesapi.club/movie/${id}`) },
+      { id: 'vidlink.pro', label: 'VidLink',
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://vidlink.pro/api/tmdb/tv/${id}/${s}/${e}?subtitle=es`
+          : `https://vidlink.pro/api/tmdb/movie/${id}?subtitle=es`) },
+      { id: 'embed.nu', label: 'Embed.nu',
+        url: (id, type, s, e) => `https://embed.nu/${type === 'tv' ? 'tv' : 'movie'}/${id}${tvPath(type, s, e)}` },
+
+      /* --- Por ID de IMDb (se resuelve desde TMDB) --- */
+      { id: 'autoembed.cc', label: 'AutoEmbed', imdb: true,
+        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://autoembed.cc/tv/imdb/${imdb}/${s}/${e}`
+          : `https://autoembed.cc/movie/imdb/${imdb}`) },
+      { id: 'autoembed.pro', label: 'AutoEmbed.pro', imdb: true,
+        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://autoembed.pro/tv/imdb/${imdb}/${s}/${e}`
+          : `https://autoembed.pro/movie/imdb/${imdb}`) },
+      { id: 'vidembed.io', label: 'VidEmbed', imdb: true,
+        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://vidembed.io/tv/${imdb}/${s}/${e}`
+          : `https://vidembed.io/movie/${imdb}`) },
+      { id: 'gomoplayer.com', label: 'GomoPlayer', imdb: true,
+        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://gomoplayer.com/?id=${imdb}&type=tv&season=${s}&episode=${e}`
+          : `https://gomoplayer.com/?id=${imdb}&type=movie`) }
     ];
 
     function currentSource() {
@@ -1349,11 +1415,30 @@
       return EMBED_SOURCES.find(s => s.id === id) || EMBED_SOURCES[0];
     }
 
-    function getEmbedUrl(id, type, season, episode, subLang) {
+    /* Carga el reproductor con la fuente activa. Las fuentes IMDb-keyed
+       necesitan el IMDb ID (una llamada extra a TMDB, con caché). */
+    const imdbCache = {};
+    function imdbIdFor(id, type) {
+      const k = type + '_' + id;
+      if (imdbCache[k] !== undefined) return Promise.resolve(imdbCache[k]);
+      return resolveImdbId(id, type).then(v => { imdbCache[k] = v || ''; return imdbCache[k]; });
+    }
+
+    function loadPlayer(id, type, season, episode, subLang) {
       const src = currentSource();
-      if (type === 'tv' && season !== undefined && episode !== undefined)
-        return src.tv(id, season, episode, subLang);
-      return src.movie(id, subLang);
+      if (playerSpin) playerSpin.classList.remove('is-hidden');
+      if (!src.imdb) {
+        videoPlayer.src = src.url(id, type, season, episode, subLang || '');
+        return;
+      }
+      imdbIdFor(id, type).then(imdb => {
+        if (!imdb) {
+          showToast(t('toast.noImdb'), 2000);
+          if (playerSpin) playerSpin.classList.add('is-hidden');
+          return;
+        }
+        videoPlayer.src = src.url(imdb, type, season, episode, subLang || '');
+      });
     }
 
     /* Idioma efectivo que se pasa al embed: si el usuario eligió audio
@@ -1770,6 +1855,11 @@
 
       if (mediaType === 'movie') {
         seasonSelector.hidden = true;
+        const subLang = effectiveSubLang();
+        loadPlayer(mediaId, 'movie', undefined, undefined, subLang);
+      } else {
+        seasonSelector.hidden = false;
+        loadSeasonData(mediaId);   // populateEpisodes carga el reproductor
       }
 
       const endpoint = mediaType === 'movie' ? `/movie/${mediaId}` : `/tv/${mediaId}`;
@@ -1785,16 +1875,6 @@
            el título de la tarjeta sean los correctos. */
         recordWatched({ ...data, id: mediaId, _type: mediaType });
       }).catch(() => {});
-
-      if (mediaType === 'tv') {
-        seasonSelector.hidden = false;
-        loadSeasonData(mediaId);
-      } else {
-        seasonSelector.hidden = true;
-        const subLang = effectiveSubLang();
-        videoPlayer.src = getEmbedUrl(mediaId, 'movie', undefined, undefined, subLang);
-        syncSocialContent();
-      }
     }
 
     videoInfoBtn.addEventListener('click', () => {
@@ -1884,7 +1964,7 @@
         updateVideoDescription();
         updateSEOTags();
         const subLang = effectiveSubLang();
-        videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
+        loadPlayer(seriesId, 'tv', currentSeason, currentEpisode, subLang);
         syncSocialContent();
         touchWatched(seriesId, 'tv', currentSeason, currentEpisode);
       } catch (err) {
@@ -1896,7 +1976,7 @@
         updateVideoDescription();
         updateSEOTags();
         const subLang = effectiveSubLang();
-        videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
+        loadPlayer(seriesId, 'tv', currentSeason, currentEpisode, subLang);
         syncSocialContent();
         touchWatched(seriesId, 'tv', currentSeason, currentEpisode);
       }
@@ -1912,7 +1992,7 @@
       updateVideoDescription();
       updateSEOTags();
       const subLang = effectiveSubLang();
-      videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
+      loadPlayer(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
       syncSocialContent();
       touchWatched(currentMediaId, 'tv', currentSeason, currentEpisode);
     });
@@ -2054,44 +2134,9 @@
 
     initChipSelect(seasonSelect);
     initChipSelect(episodeSelect);
-    initChipSelect(audioLangSelect);
     initChipSelect(embedSourceSelect);
 
-    /* Opciones del selector de audio (Auto / Español / English / Original). */
-    function populateAudioOptions() {
-      if (!audioLangSelect) return;
-      audioLangSelect.innerHTML = [
-        ['auto', t('audio.langAuto')],
-        ['es', t('audio.langEs')],
-        ['en', t('audio.langEn')],
-        ['orig', t('audio.langOrig')]
-      ].map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
-      audioLangSelect.value = getSettings().audioLang || 'auto';
-    }
-    populateAudioOptions();
-
-    /* Cambiar el audio: guarda la preferencia y recarga el reproductor con
-       el idioma elegido (ds_lang: en fuentes que lo respetan, cambia la
-       pista de audio además de los subtítulos). */
-    if (audioLangSelect) {
-      audioLangSelect.addEventListener('change', () => {
-        const s = getSettings();
-        s.audioLang = audioLangSelect.value;
-        saveSettings(s);
-        if (currentMediaId && videoModal.classList.contains('active')) {
-          const subLang = effectiveSubLang();
-          if (currentMediaType === 'movie') {
-            videoPlayer.src = getEmbedUrl(currentMediaId, 'movie', undefined, undefined, subLang);
-          } else {
-            videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
-          }
-          if (playerSpin) playerSpin.classList.remove('is-hidden');
-          showToast(t('toast.audioUpdated'), 1600);
-        }
-      });
-    }
-
-    /* Opciones del selector de fuente (VidSrc / 2Embed / Embedder). */
+    /* Opciones del selector de fuente (todos los servidores). */
     function populateSourceOptions() {
       if (!embedSourceSelect) return;
       embedSourceSelect.innerHTML = EMBED_SOURCES
@@ -2110,12 +2155,7 @@
         saveSettings(s);
         if (currentMediaId && videoModal.classList.contains('active')) {
           const subLang = effectiveSubLang();
-          if (currentMediaType === 'movie') {
-            videoPlayer.src = getEmbedUrl(currentMediaId, 'movie', undefined, undefined, subLang);
-          } else {
-            videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
-          }
-          if (playerSpin) playerSpin.classList.remove('is-hidden');
+          loadPlayer(currentMediaId, currentMediaType, currentSeason, currentEpisode, subLang);
           showToast(t('toast.sourceUpdated'), 1600);
         }
       });
@@ -2338,7 +2378,7 @@
                 seasonSelect.value = s;
                 episodeSelect.value = e;
                 const subLang = effectiveSubLang();
-                videoPlayer.src = getEmbedUrl(seriesId, 'tv', s, e, subLang);
+                loadPlayer(seriesId, 'tv', s, e, subLang);
                 touchWatched(seriesId, 'tv', s, e);
               }, 200);
             });
@@ -2688,11 +2728,7 @@
       saveSettings(s);
       if (currentMediaId && videoModal.classList.contains('active')) {
         const subLang = effectiveSubLang();
-        if (currentMediaType === 'movie') {
-          videoPlayer.src = getEmbedUrl(currentMediaId, 'movie', undefined, undefined, subLang);
-        } else {
-          videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
-        }
+        loadPlayer(currentMediaId, currentMediaType, currentSeason, currentEpisode, subLang);
         showToast(t('toast.subUpdated'), 1600);
       }
     });
@@ -2700,7 +2736,6 @@
     if (settingsSiteLang) {
       settingsSiteLang.addEventListener('change', () => {
         setSiteLang(settingsSiteLang.value);
-        if (typeof populateAudioOptions === 'function') populateAudioOptions();
         showToast(siteLang === 'es' ? 'Idioma cambiado a español' : 'Language changed to English', 1600);
       });
     }
@@ -3957,7 +3992,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.5',
+      version: '2.7.6',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
