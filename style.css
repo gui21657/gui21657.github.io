@@ -2568,3 +2568,30 @@ html.tv-too-old #tooOldMsg { display: flex; }
   color: var(--text-muted);
   opacity: 0.9;
 }
+
+/* =====================
+   AUDIO EN ESPAÑOL (Streaming Availability API)
+   ===================== */
+.video-audio-avail {
+  margin: 12px 0 2px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+.video-avail-title {
+  font-weight: 600;
+  color: var(--text-strong, #fff);
+  margin-right: 2px;
+}
+.video-avail-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: var(--text-muted);
+  white-space: nowrap;
+}

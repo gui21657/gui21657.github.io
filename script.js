@@ -65,6 +65,13 @@
   const TMDB_API_KEY = CFG.TMDB_API_KEY || '';
   const TMDB_API = 'https://api.themoviedb.org/3';
 
+  /* Streaming Availability API (Movie of the Night): metadatos de audio
+     (doblaje) por país. Clave inyectada por el workflow; si no está
+     configurada, la sección de audio simplemente no aparece. */
+  const STREAM_KEY = CFG.STREAMING_AVAILABILITY_API_KEY || '';
+  const STREAM_API = 'https://api.movieofthenight.com/v4';
+  const STREAM_ENABLED = !!(STREAM_KEY && STREAM_KEY.indexOf('__') !== 0);
+
   /* Si el deploy no sustituyó los placeholders, el catálogo no carga.
      Mejor gritarlo que dejar la página en blanco sin explicación. */
   if (!TMDB_API_KEY || TMDB_API_KEY.indexOf('__') === 0) {
@@ -157,6 +164,10 @@
       'audio.hint': '\uD83C\uDF9A\uFE0F Audio: pick the language track (dubbing/subtitles) inside the player menu.',
       'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
       'audio.hintEs': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el castellano.',
+      'audio.availTitle': 'Audio in Spanish',
+      'audio.kindLatam': 'Latino',
+      'audio.kindCast': 'Castilian',
+      'audio.countryLabel': '({country})',
       'info.play': 'Play', 'info.morelikethis': 'More Like This', 'info.close': 'Close info',
       'info.episodes': 'Episodes',
       'donate.title': 'Support POPOROPO',
@@ -277,6 +288,10 @@
       'audio.hint': '\uD83C\uDF9A\uFE0F Audio: elige la pista de idioma en el men\u00FA del reproductor.',
       'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
       'audio.hintEs': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el castellano.',
+      'audio.availTitle': 'Audio en espa\u00F1ol',
+      'audio.kindLatam': 'Latino',
+      'audio.kindCast': 'Castellano',
+      'audio.countryLabel': '({country})',
       'info.play': 'Reproducir', 'info.morelikethis': 'M\u00E1s como esto', 'info.close': 'Cerrar informaci\u00F3n',
       'info.episodes': 'Episodios',
       'donate.title': 'Apoya a POPOROPO',
@@ -1327,6 +1342,7 @@
     const videoDescMetaEl = $('#videoDescMeta');
     const videoDescTextEl = $('#videoDescText');
     const videoAudioHint  = $('#videoAudioHint');
+    const videoAudioAvail = $('#videoAudioAvail');
     const videoEpisodeEl  = $('#videoEpisodeInfo');
 
     const escText = (s) => String(s ?? '')
@@ -1347,6 +1363,95 @@
     const mediaYear = (info) => (info.release_date || info.first_air_date || '').slice(0, 4);
 
     const mediaGenres = (info) => (info.genres || []).map(g => g.name);
+
+    /* ---- Audio en español (Streaming Availability API, Movie of the Night) ----
+       Metadatos legales: qué servicios tienen el título con doblaje en
+       español, por país (spa/MEX, spa/419 = latino; spa/ESP = castellano).
+       NO cambia el audio del reproductor (las fuentes embed no lo permiten):
+       es información para el usuario + el menú interno del reproductor.
+       Caché local de 7 días por título (plan free: 1000 req/mes). */
+    const AUDIO_CACHE_PREFIX = 'poporopo_audio_v1_';
+    const AUDIO_CACHE_TTL    = 7 * 24 * 3600 * 1000;
+
+    function audioCacheGet(key) {
+      try {
+        const raw = localStorage.getItem(AUDIO_CACHE_PREFIX + key);
+        if (!raw) return null;
+        const entry = JSON.parse(raw);
+        if (!entry || !entry.t || Date.now() - entry.t > AUDIO_CACHE_TTL) return null;
+        return entry.data;
+      } catch (e) { return null; }
+    }
+    function audioCacheSet(key, data) {
+      try {
+        localStorage.setItem(AUDIO_CACHE_PREFIX + key, JSON.stringify({ t: Date.now(), data }));
+      } catch (e) {}
+    }
+
+    function isSpaAudio(a) {
+      return a && String(a.language || '').toLowerCase() === 'spa';
+    }
+    /* Región del doblaje: ESP → castellano; MEX/ARG/419/… → latino. */
+    function audioKind(region) {
+      const r = String(region || '').toUpperCase();
+      return r === 'ESP' ? 'cast' : 'latam';
+    }
+
+    function resolveImdbId(id, type) {
+      if (currentMediaInfo && currentMediaInfo.imdb_id) return Promise.resolve(currentMediaInfo.imdb_id);
+      const p = type === 'tv' ? `/tv/${id}/external_ids` : `/movie/${id}/external_ids`;
+      return tmdb(p).then(d => (d && d.imdb_id) || '').catch(() => '');
+    }
+
+    /* Devuelve [{ country, service, kind }] con audio en español, o null. */
+    function fetchSpanishAudio(id, type) {
+      const key = type + '_' + id;
+      const cached = audioCacheGet(key);
+      if (cached) return Promise.resolve(cached);
+      if (!STREAM_ENABLED) return Promise.resolve(null);
+      return resolveImdbId(id, type).then(imdb => {
+        if (!imdb) return null;
+        return fetch(`${STREAM_API}/shows/${imdb}`, {
+          headers: { 'X-API-Key': STREAM_KEY }
+        }).then(res => (res.ok ? res.json() : null)).then(data => {
+          if (!data || !data.streamingOptions) return null;
+          const seen = {};
+          Object.keys(data.streamingOptions || {}).forEach(cc => {
+            (data.streamingOptions[cc] || []).forEach(off => {
+              (off.audios || []).filter(isSpaAudio).forEach(a => {
+                const kind = audioKind(a.region);
+                const name = (off.service && off.service.name) || '?';
+                const k = cc + '|' + name + '|' + kind;
+                if (!seen[k]) seen[k] = { country: cc, service: name, kind: kind };
+              });
+            });
+          });
+          const list = Object.keys(seen).map(x => seen[x]);
+          if (!list.length) return null;
+          audioCacheSet(key, list);
+          return list;
+        }).catch(() => null);
+      }).catch(() => null);
+    }
+
+    function renderAudioAvail(el, list, country) {
+      /* Prioriza el país del visitante; si no hay datos, muestra otros. */
+      let rows = country ? list.filter(x => x.country === country) : [];
+      if (!rows.length) rows = list;
+      /* Dedupe por servicio+idioma y limita a 6 chips. */
+      const seen = {};
+      rows = rows.filter(x => (seen[x.service + '|' + x.kind] ? false : (seen[x.service + '|' + x.kind] = true)))
+                 .slice(0, 6);
+      if (!rows.length) { el.hidden = true; return; }
+      const title = t('audio.availTitle');
+      const chips = rows.map(r => {
+        const label = (r.kind === 'cast' ? t('audio.kindCast') : t('audio.kindLatam'));
+        const cc = t('audio.countryLabel', { country: r.country });
+        return `<span class="video-avail-chip">${escText(r.service)} ${escText(cc)} &middot; ${escText(label)}</span>`;
+      }).join('');
+      el.innerHTML = `<span class="video-avail-title">${escText(title)}</span> ${chips}`;
+      el.hidden = false;
+    }
 
     function updateVideoDescription() {
       const info = currentMediaInfo;
@@ -1395,6 +1500,16 @@
           videoAudioHint.textContent = t('audio.hint');
         }
         videoAudioHint.hidden = false;
+      }
+
+      /* Audio en español disponible (datos legales por país, con caché). */
+      if (videoAudioAvail) {
+        videoAudioAvail.hidden = true;
+        const country = (SPANISH_REGION && SPANISH_REGION.country) || '';
+        fetchSpanishAudio(currentMediaId, currentMediaType).then(list => {
+          if (!list || !list.length) return;
+          renderAudioAvail(videoAudioAvail, list, country);
+        });
       }
 
       /* Series: bloque del capítulo actual (S1 E3 · nombre — sinopsis). */
@@ -3697,7 +3812,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.6.1',
+      version: '2.7.0',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };

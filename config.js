@@ -20,6 +20,12 @@ window.POPOROPO_CONFIG = {
   TMDB_API_KEY:        '__TMDB_API_KEY__',
   GOOGLE_CLIENT_ID:    '__GOOGLE_CLIENT_ID__',
 
+  /* Streaming Availability API (Movie of the Night) — metadatos de
+     audio/doblaje por país. Misma política que TMDB: el secret se
+     inyecta en el build, pero al ser sitio estático la clave es
+     visible en el navegador (plan free por cuota, con caché local). */
+  STREAMING_AVAILABILITY_API_KEY: '__STREAMING_AVAILABILITY_API_KEY__',
+
   /* Firebase — necesarios para likes y comentarios.
      Ambos son identificadores públicos por diseño: la seguridad real
      vive en firestore.rules, no en ocultar estos valores. */
