@@ -800,6 +800,15 @@ html.tv-mode .movie-skeleton::after { animation: none; }
 }
 .favorites-section[hidden] { display: none; }
 
+/* Recently Watched — primer carrusel tras iniciar sesión */
+.watched-section .title-accent { color: var(--red); }
+.watched-section .section-title::after {
+  content: "▶"; margin-left: 8px;
+  color: var(--red); font-size: 0.75em;
+  vertical-align: middle;
+}
+.watched-section[hidden] { display: none; }
+
 @media (hover: none) {
   .movie-info-btn, .movie-fav-btn {
     opacity: 0.9; transform: none; pointer-events: auto;

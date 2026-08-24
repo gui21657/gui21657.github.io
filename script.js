@@ -292,6 +292,9 @@
     const USER_KEY        = 'poporopo_user_v1';
     const FAV_KEY_PREFIX  = 'poporopo_favorites_v1';
     const FAV_KEY_GUEST   = `${FAV_KEY_PREFIX}__guest`;
+    const WATCHED_KEY_PREFIX = 'poporopo_watched_v1';
+    const WATCHED_KEY_GUEST  = `${WATCHED_KEY_PREFIX}__guest`;
+    const WATCHED_MAX     = 30;   // tope de títulos en "Recently Watched"
     const DONOR_KEY_PREFIX = 'poporopo_donor_v1';
     const DONOR_KEY_GUEST  = `${DONOR_KEY_PREFIX}__guest`;
 
@@ -338,6 +341,7 @@
       const newFavKey   = `${FAV_KEY_PREFIX}__${user.sub}`;
       const newSetKey   = `${SETTINGS_KEY_PREFIX}__${user.sub}`;
       const newDonorKey = `${DONOR_KEY_PREFIX}__${user.sub}`;
+      const newWatchKey = `${WATCHED_KEY_PREFIX}__${user.sub}`;
       try {
         if (!localStorage.getItem(newFavKey)) {
           const g = localStorage.getItem(FAV_KEY_GUEST);
@@ -350,6 +354,13 @@
         if (!localStorage.getItem(newDonorKey)) {
           const g = localStorage.getItem(DONOR_KEY_GUEST);
           if (g) { localStorage.setItem(newDonorKey, g); localStorage.removeItem(DONOR_KEY_GUEST); }
+        }
+        /* El historial de "Recently Watched" también viaja del invitado
+           al usuario: así lo que viste antes de iniciar sesión aparece
+           nada más entrar. */
+        if (!localStorage.getItem(newWatchKey)) {
+          const g = localStorage.getItem(WATCHED_KEY_GUEST);
+          if (g) { localStorage.setItem(newWatchKey, g); localStorage.removeItem(WATCHED_KEY_GUEST); }
         }
       } catch (e) {}
 
@@ -436,6 +447,7 @@
 
     function rebuildAfterAuthChange() {
       updateFavoritesSection();
+      updateWatchedSection();
       document.querySelectorAll('.movie[data-media-id]').forEach(card => {
         syncFavoriteButtons(card.dataset.mediaId, card.dataset.mediaType);
       });
@@ -723,11 +735,82 @@
           syncFavoriteButtons(card.dataset.mediaId, card.dataset.mediaType);
         });
       }
+      if (e.key && e.key.startsWith(WATCHED_KEY_PREFIX) && e.key === watchedKey()) {
+        updateWatchedSection();
+      }
       if (e.key && e.key.startsWith(DONOR_KEY_PREFIX) && e.key === donorKey()) {
         updateAuthUI();
         updateSettingsUI();
       }
     });
+
+    /* ============================================================
+       WATCHED (Recently Watched)
+       Mismo patrón que FAVORITES: lista en localStorage, una por
+       usuario (o __guest). Un título aparece una sola vez y se mueve
+       al principio cada vez que se reproduce.
+       ============================================================ */
+    function watchedKey() {
+      const user = getCurrentUser();
+      return user ? `${WATCHED_KEY_PREFIX}__${user.sub}` : WATCHED_KEY_GUEST;
+    }
+
+    function getWatched() {
+      try {
+        const raw = localStorage.getItem(watchedKey());
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      } catch (e) { return []; }
+    }
+
+    function saveWatched(arr) {
+      try { localStorage.setItem(watchedKey(), JSON.stringify(arr)); }
+      catch (e) {}
+    }
+
+    /* Registra el título que se está reproduciendo. Se llama cuando la
+       respuesta de TMDB ya trajo título y poster, para que la tarjeta
+       del carrusel salga bien formada. */
+    function recordWatched(item) {
+      if (!item || item.id == null) return;
+      const list = getWatched();
+      const idx = list.findIndex(w => String(w.id) === String(item.id) && w._type === item._type);
+      const entry = {
+        id: item.id,
+        _type: item._type,
+        title: item.title,
+        name: item.name,
+        original_title: item.original_title,
+        original_name: item.original_name,
+        release_date: item.release_date,
+        first_air_date: item.first_air_date,
+        poster_path: item.poster_path,
+        season: item.season,
+        episode: item.episode,
+        watchedAt: Date.now()
+      };
+      if (idx >= 0) list.splice(idx, 1);
+      list.unshift(entry);
+      saveWatched(list.slice(0, WATCHED_MAX));
+      updateWatchedSection();
+    }
+
+    /* Mueve al principio el título que ya está registrado (p. ej. al
+       cambiar de episodio) sin duplicarlo. Si la entrada todavía no
+       existe (la respuesta de TMDB aún no llegó), no hace nada:
+       recordWatched la creará cuando llegue. */
+    function touchWatched(mediaId, mediaType, season, episode) {
+      const list = getWatched();
+      const idx = list.findIndex(w => String(w.id) === String(mediaId) && w._type === mediaType);
+      if (idx === -1) return;
+      const entry = list.splice(idx, 1)[0];
+      entry.watchedAt = Date.now();
+      if (season != null) entry.season = season;
+      if (episode != null) entry.episode = episode;
+      list.unshift(entry);
+      saveWatched(list.slice(0, WATCHED_MAX));
+      updateWatchedSection();
+    }
 
     /* ============================================================
        DONOR STATUS
@@ -885,6 +968,10 @@
         const title = data.title || data.name || '';
         videoTitleEl.textContent = title;
         syncSocialContent();   // el título llega tarde: refresca la etiqueta
+        /* Recently Watched: registra lo que se está reproduciendo. Se hace
+           aquí (cuando ya llegó el detalle de TMDB) para que el poster y
+           el título de la tarjeta sean los correctos. */
+        recordWatched({ ...data, id: mediaId, _type: mediaType });
       }).catch(() => {});
 
       if (mediaType === 'tv') {
@@ -978,6 +1065,7 @@
         const subLang = getSettings().subtitleLang;
         videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
         syncSocialContent();
+        touchWatched(seriesId, 'tv', currentSeason, currentEpisode);
       } catch (err) {
         console.error('Episode load error:', err);
         episodeSelect.innerHTML = '<option value="1">Episode 1</option>';
@@ -985,6 +1073,7 @@
         const subLang = getSettings().subtitleLang;
         videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
         syncSocialContent();
+        touchWatched(seriesId, 'tv', currentSeason, currentEpisode);
       }
     }
 
@@ -997,6 +1086,7 @@
       const subLang = getSettings().subtitleLang;
       videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
       syncSocialContent();
+      touchWatched(currentMediaId, 'tv', currentSeason, currentEpisode);
     });
 
     videoPlayer.addEventListener('load', () => {
@@ -1218,6 +1308,7 @@
                 episodeSelect.value = e;
                 const subLang = getSettings().subtitleLang;
                 videoPlayer.src = getEmbedUrl(seriesId, 'tv', s, e, subLang);
+                touchWatched(seriesId, 'tv', s, e);
               }, 200);
             });
           });
@@ -2212,17 +2303,20 @@
       updateUI();
     }
 
-    function createFavoritesSection(kind, title) {
-      kind = kind || 'all';
+    /* Cáscara común de los carruseles alimentados desde localStorage
+       (favoritos / recientes): misma estructura que los carruseles de
+       géneros, pero sin paginación (exhausted siempre) y con los datos
+       en el propio estado. La sección nace oculta; la función update
+       correspondiente decide cuándo mostrarla. */
+    function createLocalCarouselShell(sectionClass, sectionId, title) {
       const section = document.createElement('section');
-      section.className = 'carousel-section favorites-section';
-      section.id = 'favoritesSection_' + kind;
-      section.dataset.favKind = kind;
+      section.className = 'carousel-section ' + sectionClass;
+      section.id = sectionId;
       section.hidden = true;
       section.innerHTML = `
         <div class="section-header">
           <h2 class="section-title">
-            <span class="title-accent" aria-hidden="true">|</span> ${title || 'Favorites'}
+            <span class="title-accent" aria-hidden="true">|</span> ${title || ''}
           </h2>
         </div>
         <div class="carousel-wrapper">
@@ -2250,7 +2344,22 @@
         seen: new Set(),
       };
       initCarouselUI(state);
-      section._favState = state;
+      section._localState = state;
+      return { section, state };
+    }
+
+    function createFavoritesSection(kind, title) {
+      kind = kind || 'all';
+      const { section, state } = createLocalCarouselShell('favorites-section', 'favoritesSection_' + kind, title || 'Favorites');
+      section.dataset.favKind = kind;
+      section._favState = state; /* compat: updateFavoritesSection usa _favState */
+      return section;
+    }
+
+    /* "Recently Watched" va SIEMPRE primero en el catálogo, pero solo es
+       visible tras iniciar sesión (updateWatchedSection lo decide). */
+    function createWatchedSection(title) {
+      const { section } = createLocalCarouselShell('watched-section', 'watchedSection', title || 'Recently Watched');
       return section;
     }
 
@@ -2281,10 +2390,43 @@
       });
     }
 
+    function updateWatchedSection() {
+      const sections = document.querySelectorAll('.watched-section');
+      if (!sections.length) return;
+      /* Requisito: la fila solo existe DESPUÉS de iniciar sesión. Los
+         invitados no la ven aunque tengan historial local (su historial
+         se migra a la cuenta al entrar). */
+      const user = getCurrentUser();
+      const items = user ? getWatched() : [];
+      sections.forEach(section => {
+        const list = section.querySelector('.movies');
+        if (items.length === 0) {
+          section.hidden = true;
+          list.innerHTML = '';
+          if (section._localState) section._localState.seen = new Set();
+          return;
+        }
+        section.hidden = false;
+        const state = section._localState;
+        list.innerHTML = '';
+        if (state) state.seen = new Set();
+        items.forEach(item => {
+          const card = createCard(item);
+          list.appendChild(card);
+          if (state) state.seen.add(`${item.id}|${item._type}`);
+        });
+        list.dispatchEvent(new Event('scroll'));
+      });
+    }
+
     function buildCatalog(view) {
       view = view || currentView;
       const catalog = $('#catalog');
       catalog.innerHTML = '';
+      /* Recently Watched es el PRIMER carrusel, incluso antes que los
+         favoritos. Nace oculto y updateWatchedSection lo muestra solo
+         cuando hay sesión iniciada y hay historial. */
+      catalog.appendChild(createWatchedSection('Recently Watched'));
       if (view === 'movie') {
         catalog.appendChild(createFavoritesSection('movie', 'Favorite Movies'));
       } else if (view === 'tv') {
@@ -2304,6 +2446,7 @@
         catalog.appendChild(createCarouselSection(g, mode));
       });
       updateFavoritesSection();
+      updateWatchedSection();
     }
 
     let catalogLoadOK = false;
@@ -2760,8 +2903,8 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.2.0',
-      isDonor, getCurrentUser, getSettings, getFavorites
+      version: '2.2.1',
+      isDonor, getCurrentUser, getSettings, getFavorites, getWatched
     };
   });
 
