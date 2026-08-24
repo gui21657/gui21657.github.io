@@ -1358,7 +1358,15 @@
       { id: 'vixsrc.to', label: 'VixSrc',
         url: (id, type, s, e) => `https://vixsrc.to/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
       { id: 'player.videasy.net', label: 'Videasy',
-        url: (id, type, s, e) => `https://player.videasy.net/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` }
+        url: (id, type, s, e) => `https://player.videasy.net/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
+
+      /* --- Más clones del reproductor vidsrc (el mismo que vixsrc: rueda ⚙️
+           con pista de audio). Dominios oficiales vigentes según
+           vidsrc.domains, todos verificados en vivo (película y serie). --- */
+      ...['vidsrc2.ru', 'vidsrc.ir', 'vidsrc.bz', 'vidsrc.gd', 'vidsrc.do', 'vidsrc.tw',
+          'vidsrc.ph', 'vidsrcme.ru', 'vidsrc-me.ru', 'vidsrc-embed.ru', 'vidsrcme.su',
+          'vidsrc-embed.su']
+        .map(h => mkEmbed(`https://${h}/embed`, 'ds_lang'))
     ];
 
     function currentSource() {
@@ -3943,7 +3951,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.9',
+      version: '2.8.0',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
