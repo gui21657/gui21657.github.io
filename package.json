@@ -1,7 +1,7 @@
 {
   "name": "cinepoporopo",
   "private": true,
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "POPOROPO — free HD streaming site (static, GitHub Pages)",
   "scripts": {
     "build": "node scripts/build.mjs"
