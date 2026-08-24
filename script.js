@@ -161,8 +161,8 @@
       'player.title': 'Video player', 'player.selectSeason': 'Select season',
       'player.selectEpisode': 'Select episode', 'player.moreinfo': 'More info',
       'player.description': 'Description',
-      'audio.hint': '\uD83C\uDF9A\uFE0F Audio: pick the language track (dubbing/subtitles) inside the player menu.',
-      'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
+      'audio.hint': '\uD83C\uDF9A\uFE0F Audio: pick the language track (dubbing/subtitles) inside the player menu (\u2699\uFE0F).',
+      'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor (\u2699\uFE0F). En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
       'audio.hintEs': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el castellano.',
       'audio.availTitle': 'Audio in Spanish',
       'audio.kindLatam': 'Latino',
@@ -172,7 +172,7 @@
       'audio.langEs': 'Spanish',
       'audio.langEn': 'English',
       'audio.langOrig': 'Original',
-      'toast.audioUpdated': 'Audio language updated',
+      'toast.audioUpdated': 'Player language set to Spanish. If the audio is still in another language, open the \u2699\uFE0F menu inside the player and pick the audio track.',
       'player.selectAudio': 'Audio language',
       'info.play': 'Play', 'info.morelikethis': 'More Like This', 'info.close': 'Close info',
       'info.episodes': 'Episodes',
@@ -291,8 +291,8 @@
       'player.title': 'Reproductor de video', 'player.selectSeason': 'Seleccionar temporada',
       'player.selectEpisode': 'Seleccionar episodio', 'player.moreinfo': 'M\u00E1s informaci\u00F3n',
       'player.description': 'Descripci\u00F3n',
-      'audio.hint': '\uD83C\uDF9A\uFE0F Audio: elige la pista de idioma en el men\u00FA del reproductor.',
-      'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
+      'audio.hint': '\uD83C\uDF9A\uFE0F Audio: elige la pista de idioma en el men\u00FA del reproductor (\u2699\uFE0F).',
+      'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor (\u2699\uFE0F). En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
       'audio.hintEs': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el castellano.',
       'audio.availTitle': 'Audio en espa\u00F1ol',
       'audio.kindLatam': 'Latino',
@@ -302,7 +302,7 @@
       'audio.langEs': 'Espa\u00F1ol',
       'audio.langEn': 'Ingl\u00E9s',
       'audio.langOrig': 'Original',
-      'toast.audioUpdated': 'Idioma de audio actualizado',
+      'toast.audioUpdated': 'Idioma del reproductor en espa\u00F1ol. Si el audio sigue en otro idioma, abre el men\u00FA \u2699\uFE0F del reproductor y elige la pista de audio.',
       'player.selectAudio': 'Idioma de audio',
       'info.play': 'Reproducir', 'info.morelikethis': 'M\u00E1s como esto', 'info.close': 'Cerrar informaci\u00F3n',
       'info.episodes': 'Episodios',
@@ -3876,7 +3876,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.2',
+      version: '2.7.3',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
