@@ -897,6 +897,22 @@
       openVideoModal(id, type, opener);
     }
 
+    /* Abre la página independiente del título (p. ej. /movie/550/), que
+       genera el sitemap en cada deploy. Si esa página todavía no existe
+       (títulos fuera del catálogo popular/top-rated), cae al modal clásico
+       para no dejar al usuario en un 404. Las rutas que no existen se
+       recuerdan en esta sesión para no repetir la comprobación. */
+    const missingTitlePages = new Set();
+
+    function openTitlePage(id, type) {
+      const path = `/${type}/${id}/`;
+      if (missingTitlePages.has(path)) { openVideoModal(id, type, null); return; }
+      fetch(path, { method: 'HEAD' }).then(r => {
+        if (r.ok) { location.href = path; }
+        else { missingTitlePages.add(path); openVideoModal(id, type, null); }
+      }).catch(() => { openVideoModal(id, type, null); });
+    }
+
     /* ============================================================
        VIDEO PLAYER (fullscreen) with compact bottom bar
        ============================================================ */
@@ -1150,7 +1166,6 @@
       infoYearEl.textContent = '';
       infoDurationEl.textContent = '';
       infoGenreEl.textContent = '';
-      infoRatingEl.textContent = '';
       infoDescEl.textContent = '';
       infoBackdropEl.style.backgroundImage = '';
       if (infoQualityEl) infoQualityEl.textContent = 'HD';
@@ -1402,6 +1417,10 @@
           if (state.page === 1 && items.length === 0) {
             moreLikeThisGrid.innerHTML = '<p style="color:var(--text-muted);padding:8px 0;">No recommendations found.</p>';
             infoMoreLikeThis.style.display = '';
+            /* Sin recomendaciones: cerrar el carrusel para que updateUI
+               (initCarouselUI) no vuelva a pedir páginas en un bucle. */
+            state.exhausted = true;
+            state.loading = false;
             return;
           }
 
@@ -1955,10 +1974,13 @@
       const year  = (item.release_date || item.first_air_date || '').slice(0, 4);
       const type  = item._type;
 
-      const card = document.createElement('div');
+      /* La tarjeta es un ENLACE REAL a la página independiente del título
+         (p. ej. /movie/550/): enlaces internos para el SEO y URL propia
+         para compartir/anuncios. El clic pasa por openTitlePage, que
+         verifica que la página exista y, si no, cae al modal clásico. */
+      const card = document.createElement('a');
       card.className = 'movie';
-      card.setAttribute('role', 'button');
-      card.tabIndex = 0;
+      card.href = `/${type}/${item.id}/`;
       card.dataset.mediaId   = item.id;
       card.dataset.mediaType = type;
       card.dataset.title     = title;
@@ -2046,12 +2068,15 @@
         card.addEventListener('focus', loadRating, true);
       }
 
-      // Activation: open video (close modals if inside a modal)
-      const activate = () => {
+      // Activation: ir a la página independiente del título (o al modal
+      // clásico si la página no existe, o si ya estamos dentro de un
+      // modal, p. ej. "More Like This")
+      const activate = (e) => {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
         if (opts.inModal) {
           closeAllModalsAndOpenVideo(item.id, type, card);
         } else {
-          openVideoModal(item.id, type, card);
+          openTitlePage(item.id, type);
         }
       };
       const showInfo = (opener) => openInfoModal(item.id, type, opener || card);
@@ -2518,7 +2543,7 @@
         infoBtn.dataset.mediaId   = item.id;
         infoBtn.dataset.mediaType = mediaType;
 
-        playBtn.onclick = () => openVideoModal(item.id, mediaType, playBtn);
+        playBtn.onclick = () => openTitlePage(item.id, mediaType);
         infoBtn.onclick = () => openInfoModal(item.id, mediaType, infoBtn);
 
         const btns = $('#bannerButtons');

@@ -31,10 +31,9 @@ const OUT     = process.env.OUT_DIR || '.';
 const PAGES_PER_LIST = Number(process.env.PAGES_PER_LIST || 25);
 const CONCURRENCY    = 8;
 
-if (!API_KEY) {
-  console.error('Falta TMDB_API_KEY en el entorno.');
-  process.exit(1);
-}
+/* La comprobación de API_KEY vive dentro de main() (no a nivel de
+   módulo): así este archivo se puede importar para testear titlePage
+   sin que mate el proceso. */
 
 const TMDB = 'https://api.themoviedb.org/3';
 const IMG  = 'https://image.tmdb.org/t/p';
@@ -146,6 +145,11 @@ function titlePage(item) {
                : item.poster   ? `${IMG}/w780${item.poster}`
                : `${SITE}/og-image.jpg`;
   const poster = item.poster ? `${IMG}/w342${item.poster}` : '';
+  /* Mismo proveedor y formato que usa la app (getEmbedUrl en script.js):
+     así el reproductor funciona igual dentro de la página del título. */
+  const embed  = item.type === 'movie'
+               ? `https://vidsrc.pm/embed/movie/${item.id}`
+               : `https://vidsrc.pm/embed/tv/${item.id}/1/1`;
 
   const desc = clip(
     item.overview
@@ -162,12 +166,24 @@ function titlePage(item) {
     ...(poster ? { image: poster } : {}),
     ...(item.overview ? { description: item.overview } : {}),
     ...(year ? { datePublished: year } : {}),
-    inLanguage: 'en-US'
+    inLanguage: 'en-US',
+    /* La página permite ver el título en el propio dominio: lo marcamos
+       para que Google entienda que aquí se puede reproducir. */
+    potentialAction: { '@type': 'WatchAction', target: `${url}#player` },
+    video: {
+      '@type': 'VideoObject',
+      name,
+      description: item.overview || desc,
+      thumbnailUrl: img,
+      embedUrl: embed,
+      contentUrl: url
+    }
   };
 
   /* Nada de redirección automática: una página que se auto-redirige a
      la home es exactamente lo que Google clasifica como doorway page.
-     Esta tiene contenido propio y un enlace explícito al reproductor. */
+     Esta tiene contenido propio, un reproductor incrustado y un enlace
+     explícito al reproductor. */
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -202,9 +218,15 @@ a{color:inherit}
 h1{font-size:30px;line-height:1.25;margin-bottom:10px}
 .meta{color:#b0b0b0;font-size:14px;margin-bottom:18px}
 .overview{margin-bottom:26px}
+.watch-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
 .play{display:inline-block;background:#E50914;color:#fff;text-decoration:none;font-weight:700;
       padding:14px 30px;border-radius:999px;font-size:16px}
 .play:hover{background:#b20710}
+.app-link{color:#b0b0b0;font-size:14px}
+.player{margin-top:30px}
+.player-frame{position:relative;padding-top:56.25%;background:#000;border-radius:10px;overflow:hidden}
+.player-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.note{color:#8a8a8a;font-size:13px;margin-top:10px}
 .back{display:inline-block;margin-top:22px;color:#b0b0b0;font-size:14px}
 footer{margin-top:56px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);color:#8a8a8a;font-size:12.5px}
 @media(max-width:600px){.card img{width:150px}h1{font-size:23px}}
@@ -219,16 +241,65 @@ footer{margin-top:56px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1
       <h1>Watch ${esc(name)} Free Online</h1>
       <p class="meta">${esc(label)}${year ? ` · ${esc(year)}` : ''} · HD · English subtitles · No sign-up</p>
       ${item.overview ? `<p class="overview">${esc(item.overview)}</p>` : ''}
-      <a class="play" href="${SITE}/?watch=${item.type}-${item.id}">▶ Watch now</a>
-      <a class="back" href="${SITE}/">← Browse the full catalog</a>
+      <div class="watch-row">
+        <a class="play" href="#player">▶ Watch now</a>
+        <a class="app-link" href="${SITE}/?watch=${item.type}-${item.id}">Open in the full app (subtitles &amp; episodes)</a>
+      </div>
     </div>
   </article>
+
+  <!-- Reproductor incrustado: se ve en esta misma página, sin salir del dominio -->
+  <section class="player" id="player" aria-label="Player for ${esc(name)}">
+    <div class="player-frame">
+      <iframe src="${embed}" title="Watch ${esc(name)}" loading="lazy"
+        allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+    ${item.type === 'tv'
+      ? '<p class="note">This page plays Season 1 Episode 1. Use the full app for every season, episode, subtitles and the community panel.</p>'
+      : ''}
+  </section>
+
+  <a class="back" href="${SITE}/">← Browse the full catalog</a>
+
+  <!-- Espacio reservado para anuncios por título (por poblar en el futuro):
+       <div class="ad-slot" data-ad-slot="${item.type}-${item.id}" hidden></div> -->
+
   <footer>
     POPOROPO does not host any content. All titles are streamed from third-party
     sources. Catalog metadata provided by
     <a href="https://www.themoviedb.org" rel="noopener nofollow">The Movie Database</a>.
   </footer>
 </div>
+<script>
+/* Marca este título como "Recently Watched" en el MISMO localStorage que
+   usa la app (mismo origen): al pulsar Watch now o al cargar el
+   reproductor. Así la fila de recientes de la app también lo recoge. */
+(function () {
+  try {
+    var TYPE = '${item.type}', ID = ${item.id};
+    var TITLE = ${JSON.stringify(item.title)};
+    var POSTER = ${JSON.stringify(item.poster)};
+    var MAX = 30;
+    var key = 'poporopo_watched_v1__guest';
+    try {
+      var u = JSON.parse(localStorage.getItem('poporopo_user_v1') || 'null');
+      if (u && u.sub) key = 'poporopo_watched_v1__' + u.sub;
+    } catch (e) {}
+    var mark = function () {
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]') || []; } catch (e) {}
+      list = list.filter(function (w) { return !(String(w.id) === String(ID) && w._type === TYPE); });
+      list.unshift({ id: ID, _type: TYPE, title: TITLE, poster_path: POSTER, watchedAt: Date.now() });
+      try { localStorage.setItem(key, JSON.stringify(list.slice(0, MAX))); } catch (e) {}
+    };
+    var btn = document.querySelector('.play');
+    var frame = document.querySelector('.player-frame iframe');
+    if (btn) btn.addEventListener('click', mark);
+    if (frame) frame.addEventListener('load', mark);
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
 `;
@@ -265,6 +336,11 @@ ${urls.join('\n')}
 /* ---------- main ---------- */
 
 async function main() {
+  if (!API_KEY) {
+    console.error('Falta TMDB_API_KEY en el entorno.');
+    process.exit(1);
+  }
+
   const today = new Date().toISOString().slice(0, 10);
 
   console.log(`Recolectando hasta ${PAGES_PER_LIST} páginas por listado…`);
@@ -317,4 +393,18 @@ async function main() {
   console.log(`sitemap.xml con ${items.length + 1} URLs.`);
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+/* Solo arranca el generador cuando se ejecuta directamente
+   (node scripts/generate-sitemap.mjs); al importarlo desde otro
+   script (p. ej. para testear titlePage) no hace nada. */
+import { pathToFileURL } from 'node:url';
+
+const isEntry = process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isEntry) {
+  main().catch((err) => { console.error(err); process.exit(1); });
+}
+
+/* Exportado para poder testear/regenerar páginas sin ejecutar el
+   generador completo (scripts que importen esto no disparan main()). */
+export { titlePage, sitemap };
