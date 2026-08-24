@@ -112,6 +112,29 @@
   let siteLang = detectSiteLang();
   let LANG = TMDB_LANG_MAP[siteLang] || 'en-US';
 
+  /* Región de español (para el doblaje y el SEO local): es-MX / es-AR / es-CL…
+     se consideran "latino" (es-419); solo es-ES es castellano. */
+  function detectRegion() {
+    try {
+      const sources = [];
+      if (navigator.language) sources.push(navigator.language);
+      if (navigator.languages) sources.push.apply(sources, navigator.languages);
+      for (var i = 0; i < sources.length; i++) {
+        var s = sources[i];
+        if (!s) continue;
+        var t = String(s).trim();
+        var m = /^es[-_]([a-z]{2})$/i.exec(t);
+        if (m) {
+          var country = m[1].toUpperCase();
+          return { lang: 'es', country: country, latam: country !== 'ES' };
+        }
+        if (/^es$/i.test(t)) return { lang: 'es', country: '', latam: true };
+      }
+    } catch (e) {}
+    return null;
+  }
+  const SPANISH_REGION = detectRegion();
+
   const I18N = {
     en: {
       'nav.home': 'Home', 'nav.movies': 'Movies', 'nav.series': 'Series',
@@ -131,6 +154,9 @@
       'player.title': 'Video player', 'player.selectSeason': 'Select season',
       'player.selectEpisode': 'Select episode', 'player.moreinfo': 'More info',
       'player.description': 'Description',
+      'audio.hint': '\uD83C\uDF9A\uFE0F Audio: pick the language track (dubbing/subtitles) inside the player menu.',
+      'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
+      'audio.hintEs': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el castellano.',
       'info.play': 'Play', 'info.morelikethis': 'More Like This', 'info.close': 'Close info',
       'info.episodes': 'Episodes',
       'donate.title': 'Support POPOROPO',
@@ -248,6 +274,9 @@
       'player.title': 'Reproductor de video', 'player.selectSeason': 'Seleccionar temporada',
       'player.selectEpisode': 'Seleccionar episodio', 'player.moreinfo': 'M\u00E1s informaci\u00F3n',
       'player.description': 'Descripci\u00F3n',
+      'audio.hint': '\uD83C\uDF9A\uFE0F Audio: elige la pista de idioma en el men\u00FA del reproductor.',
+      'audio.hintLatam': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el espa\u00F1ol latino.',
+      'audio.hintEs': '\uD83C\uDF9A\uFE0F Doblaje: elige la pista de audio en el men\u00FA del reproductor. En muchos t\u00EDtulos est\u00E1 disponible el castellano.',
       'info.play': 'Reproducir', 'info.morelikethis': 'M\u00E1s como esto', 'info.close': 'Cerrar informaci\u00F3n',
       'info.episodes': 'Episodios',
       'donate.title': 'Apoya a POPOROPO',
@@ -483,7 +512,10 @@
     function applyUiStrings() {
       try {
         document.documentElement.lang = siteLang === 'es' ? 'es' : 'en';
-        setMeta('property', 'og:locale', siteLang === 'es' ? 'es_ES' : 'en_US');
+        const ogLocale = siteLang === 'es'
+          ? (SPANISH_REGION && SPANISH_REGION.country === 'ES' ? 'es_ES' : 'es_419')
+          : 'en_US';
+        setMeta('property', 'og:locale', ogLocale);
         document.querySelectorAll('[data-i18n]').forEach(el => {
           const key = el.getAttribute('data-i18n');
           if (key && I18N[siteLang] && I18N[siteLang][key] !== undefined) el.textContent = I18N[siteLang][key];
@@ -1294,6 +1326,7 @@
     const videoDescEl     = $('#videoDescription');
     const videoDescMetaEl = $('#videoDescMeta');
     const videoDescTextEl = $('#videoDescText');
+    const videoAudioHint  = $('#videoAudioHint');
     const videoEpisodeEl  = $('#videoEpisodeInfo');
 
     const escText = (s) => String(s ?? '')
@@ -1351,6 +1384,18 @@
       /* Descripción: la sinopsis de la película o de la serie. */
       videoDescTextEl.textContent = info.overview || t('noDesc');
       videoDescEl.hidden = false;
+
+      /* Aviso de audio/doblaje: la pista se elige en el menú interno del
+         reproductor (ninguna fuente expone parámetro público de audio).
+         Texto regional: latino para es-419, castellano para es-ES. */
+      if (videoAudioHint) {
+        if (siteLang === 'es') {
+          videoAudioHint.textContent = (SPANISH_REGION && SPANISH_REGION.latam) ? t('audio.hintLatam') : t('audio.hintEs');
+        } else {
+          videoAudioHint.textContent = t('audio.hint');
+        }
+        videoAudioHint.hidden = false;
+      }
 
       /* Series: bloque del capítulo actual (S1 E3 · nombre — sinopsis). */
       if (type === 'tv' && currentEpisodeInfo) {
@@ -3652,7 +3697,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.6.0',
+      version: '2.6.1',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
