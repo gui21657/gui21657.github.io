@@ -1,7 +1,8 @@
 /* ============================================================
    POPOROPO — SCRIPT.JS
-   English UI · Google sign-in · Favorites · Donations · Settings
-   Optimized for desktop, mobile, and Smart TV (LG WebOS, Tizen, etc.)
+   POPOROPO — SCRIPT.JS
+   English/Spanish UI (i18n por región) · Google sign-in · Favorites ·
+   Donations · Settings. Optimizado para desktop, móvil y Smart TV.
    ============================================================ */
 
 (function () {
@@ -81,8 +82,296 @@
     });
   }
   const TMDB_IMG = 'https://image.tmdb.org/t/p';
-  const LANG = 'en-US';
   const REGION = 'US';
+
+  /* ============================================================
+     I18N — Idioma del sitio (en/es) dinámico por región.
+     Detección: preferencia guardada en Ajustes > navegador en
+     español > inglés. Cambia interfaz, textos, TMDB (títulos y
+     sinopsis), SEO y el idioma del embed de subtítulos.
+     ============================================================ */
+  const SITE_LANG_KEY = 'poporopo_siteLang_v1';
+  const TMDB_LANG_MAP = { en: 'en-US', es: 'es-ES' };
+
+  function detectSiteLang() {
+    try {
+      const saved = localStorage.getItem(SITE_LANG_KEY);
+      if (saved === 'en' || saved === 'es') return saved;
+      const sources = [];
+      if (navigator.language) sources.push(navigator.language);
+      if (navigator.languages) sources.push.apply(sources, navigator.languages);
+      for (var i = 0; i < sources.length; i++) {
+        var l = sources[i];
+        if (!l) continue;
+        if (String(l).toLowerCase().indexOf('es') === 0) return 'es';
+      }
+    } catch (e) {}
+    return 'en';
+  }
+
+  let siteLang = detectSiteLang();
+  let LANG = TMDB_LANG_MAP[siteLang] || 'en-US';
+
+  const I18N = {
+    en: {
+      'nav.home': 'Home', 'nav.movies': 'Movies', 'nav.series': 'Series',
+      'nav.aria': 'Main navigation', 'donate.ctaAria': 'Support POPOROPO', 'banner.aria': 'Featured title',
+      'donate': 'Donate', 'search.label': 'Search movies and TV shows',
+      'search.placeholder': 'Search movies, TV shows...', 'search.clear': 'Clear search',
+      'profile.settings': 'Settings', 'profile.donate': 'Donate', 'profile.signout': 'Sign out',
+      'profile.supporter': 'Supporter', 'profile.menu': 'My profile',
+      'banner.play': 'Play', 'banner.moreinfo': 'More info',
+      'banner.desc': 'Watch free HD movies and TV shows online. No sign-up required.',
+      'banner.trending': 'Trending', 'banner.fallback': 'Free HD movies and TV shows.',
+      'search.results': 'Search results',
+      'footer.copy': '\u00A9 2026 POPOROPO \u00B7 Free HD streaming \u00B7 Data by TMDB',
+      'footer.thanks': '\u2665 Powered by our supporters. Thank you.',
+      'footer.disclaimer': 'POPOROPO does not host any content. All titles are streamed from third-party sources. Catalog metadata provided by The Movie Database.',
+      'player.loading': 'Loading\u2026', 'player.close': 'Close player',
+      'player.title': 'Video player', 'player.selectSeason': 'Select season',
+      'player.selectEpisode': 'Select episode', 'player.moreinfo': 'More info',
+      'player.description': 'Description',
+      'info.play': 'Play', 'info.morelikethis': 'More Like This', 'info.close': 'Close info',
+      'info.episodes': 'Episodes',
+      'donate.title': 'Support POPOROPO',
+      'donate.subtitle': 'Keep the lights on. No ads, no subscription, no tracking. Just a tip if you like what we built.',
+      'donate.perks': 'Supporters get',
+      'donate.perk1': 'Gold Supporter tag and crown on your profile',
+      'donate.perk2': 'Custom display name (override your Google name)',
+      'donate.perk3': 'Priority voice on new feature suggestions and site improvements',
+      'donate.perk4': 'Our genuine thanks \u2014 your name in the footer',
+      'donate.custom': 'Custom', 'donate.customAria': 'Custom donation amount',
+      'donate.paypal': 'Donate via PayPal',
+      'donate.honor1': 'After donating, click', 'donate.claim': 'I donated',
+      'donate.honor2': 'to claim your supporter perks.',
+      'donate.fine': '100% optional. POPOROPO stays free for everyone, whether you donate or not.',
+      'donate.close': 'Close',
+      'claim.title': 'Claim your Supporter status',
+      'claim.subtitle': 'Honor system \u2014 paste your PayPal transaction ID below. Your perks unlock immediately on this device.',
+      'claim.txLabel': 'PayPal transaction ID', 'claim.txPlaceholder': 'e.g. 5AB12345CD678901E',
+      'claim.nameLabel': 'Display name on supporter list', 'claim.optional': '(optional)',
+      'claim.namePlaceholder': 'How should we credit you?',
+      'claim.submit': 'Activate supporter perks',
+      'claim.fine': 'Your data stays on this device. No server collects this information.',
+      'settings.title': 'Account & Settings', 'settings.close': 'Close settings',
+      'settings.profile': 'Profile',
+      'settings.displayname.title': 'Display name',
+      'settings.displayname.desc': 'Supporter perk \u2014 show a custom name instead of your Google name.',
+      'settings.displayname.placeholder': 'Your display name',
+      'settings.playback': 'Playback',
+      'settings.sublang.title': 'Subtitle language',
+      'settings.sublang.desc': 'Preferred subtitle language when available.',
+      'settings.sitelang.title': 'Site language',
+      'settings.sitelang.desc': 'Language of the interface, titles, subtitles and SEO.',
+      'settings.appearance': 'Appearance',
+      'settings.reduce.title': 'Reduce animations',
+      'settings.reduce.desc': 'Disable transitions and shimmers for a calmer experience.',
+      'settings.banner.title': 'Show featured banner',
+      'settings.banner.desc': 'Hide the large hero banner on the home page.',
+      'settings.gold.title': 'Gold supporter accents',
+      'settings.gold.desc': 'Subtle gold highlights on your profile. Supporter exclusive.',
+      'settings.content': 'Content',
+      'settings.adult.title': 'Explicit content filter',
+      'settings.adult.desc': 'Hides explicit / adult-only movies and shows from browsing and search. On by default.',
+      'settings.data': 'Data & Privacy',
+      'settings.favs.title': 'Favorites stored',
+      'settings.favs.desc': '{n} titles on this device.',
+      'settings.clearFavs': 'Clear favorites',
+      'settings.clearAll.title': 'Clear all local data',
+      'settings.clearAll.desc': 'Removes settings, favorites, and supporter status from this device. Cannot be undone.',
+      'settings.clearAll': 'Clear everything',
+      'settings.account': 'Account', 'settings.signout': 'Sign out',
+      'settings.about': 'About',
+      'settings.about1': '\u00B7 Free HD streaming. Catalog by The Movie Database.',
+      'settings.about2': 'Made with \u2665 for movie lovers everywhere.',
+      'settings.about3': 'Support POPOROPO \u2192',
+      'settings.notSignedIn': 'Not signed in',
+      'guest': 'Guest',
+      'search.empty': 'No results for "<span id="searchTerm">{q}</span>"',
+      'search.error': 'Search error. Please try again.',
+      'season': 'Season {n}', 'episode': 'Episode {n}', 'episodeShort': 'E{n}: {name}',
+      'countSeason': 'season', 'countSeasons': 'seasons',
+      'untitled': 'Untitled',
+      'loading': 'Loading\u2026', 'errorLoading': 'Error loading',
+      'noDesc': 'No description available.', 'comingSoon': 'Coming soon',
+      'noEpisodes': 'No episode data available.', 'noEpisodesFound': 'No episodes found.',
+      'couldNotLoadEpisodes': 'Could not load episodes.',
+      'noRecs': 'No recommendations found.', 'couldNotLoadRecs': 'Could not load recommendations.',
+      'watched': 'Recently Watched', 'favMovies': 'Favorite Movies', 'favSeries': 'Favorite Series',
+      'favorites': 'Favorites', 'moreLikeThis': 'More Like This',
+      'catalogErrorTitle': 'We couldn\u2019t load the catalog',
+      'catalogErrorDesc': 'Check your internet connection and try again. On older Smart TVs, please make sure your browser is up to date.',
+      'reload': 'Reload',
+      'since': '\u00B7 since {date}',
+      'toast.signedOut': 'Signed out',
+      'toast.signinNotConfigured': 'Sign-in not configured',
+      'toast.signinNotAvailable': 'Sign-in not available in this browser',
+      'toast.signinError': 'Sign-in error',
+      'toast.txShort': 'Transaction ID looks too short',
+      'toast.supporter': '\uD83C\uDF89 Welcome, Supporter! Perks unlocked.',
+      'toast.accountError': 'Couldn\u2019t read your account',
+      'toast.welcome': 'Welcome, {name}',
+      'friend': 'friend',
+      'info.error': 'Couldn\u2019t fetch info. Please try again.',
+      'toast.subUpdated': 'Subtitle language updated',
+      'toast.favsCleared': 'Favorites cleared',
+      'toast.localCleared': 'Local data cleared',
+      'toast.favAdded': 'Added to Favorites',
+      'toast.favRemoved': 'Removed from Favorites',
+      'seo.baseTitle': 'POPOROPO \u00B7 Watch Free HD Movies & TV Shows Online \u2014 No Sign-Up Required',
+      'seo.baseDesc': 'Stream thousands of free HD movies and TV shows online instantly. No sign-up needed, English subtitles, mobile and Smart TV friendly.',
+      'seo.h2': 'Watch Free HD Movies and TV Shows Online \u2014 Best Free Streaming Site',
+      'seo.p1': 'POPOROPO is a free streaming platform offering thousands of HD movies and TV shows online without subscription or sign-up. With English subtitles, 16+ genre categories, and a fast, ad-light interface, POPOROPO is a strong free alternative to paid services like Netflix, Disney+, HBO Max, and Hulu for casual viewers and discovery-driven binge-watchers.',
+      'seo.p2': 'Browse by genre \u2014 Action, Adventure, Animation, Comedy, Crime, Documentary, Drama, Family, Fantasy, Horror, Mystery, Romance, Science Fiction, Thriller, War, and History \u2014 or use the search bar to find any title instantly. Catalog data is provided by The Movie Database (TMDB), so every release is up to date.',
+      'seo.p3': 'POPOROPO works on phones, tablets, laptops, and Smart TVs including LG WebOS, Samsung Tizen, Android TV, and Apple TV. No app store, no installation \u2014 just open the site in any browser. Optional Google sign-in lets you save your favorites; everything else works as a guest.',
+      'seo.watchTitle': 'Watch {title}{year} Online Free in HD \u2014 POPOROPO',
+      'seo.watchEpisode': 'Watch {title} {ep} Online Free in HD \u2014 POPOROPO',
+      'seo.watchFallback': 'Watch {title} online free in HD.',
+      'seo.watchMovieFallback': 'Watch {title} free in HD.',
+      'seo.watchTvFallback': 'Watch {title} free online in HD.'
+    },
+    es: {
+      'nav.home': 'Inicio', 'nav.movies': 'Pel\u00EDculas', 'nav.series': 'Series',
+      'nav.aria': 'Navegaci\u00F3n principal', 'donate.ctaAria': 'Apoya a POPOROPO', 'banner.aria': 'T\u00EDtulo destacado',
+      'donate': 'Donar', 'search.label': 'Buscar pel\u00EDculas y series',
+      'search.placeholder': 'Buscar pel\u00EDculas, series...', 'search.clear': 'Borrar b\u00FAsqueda',
+      'profile.settings': 'Ajustes', 'profile.donate': 'Donar', 'profile.signout': 'Cerrar sesi\u00F3n',
+      'profile.supporter': 'Colaborador', 'profile.menu': 'Mi perfil',
+      'banner.play': 'Reproducir', 'banner.moreinfo': 'M\u00E1s informaci\u00F3n',
+      'banner.desc': 'Mira pel\u00EDculas y series HD gratis online. Sin registro.',
+      'banner.trending': 'Tendencias', 'banner.fallback': 'Pel\u00EDculas y series HD gratis.',
+      'search.results': 'Resultados de b\u00FAsqueda',
+      'footer.copy': '\u00A9 2026 POPOROPO \u00B7 Streaming HD gratis \u00B7 Datos de TMDB',
+      'footer.thanks': '\u2665 Impulsado por nuestros colaboradores. \u00A1Gracias!',
+      'footer.disclaimer': 'POPOROPO no aloja ning\u00FAn contenido. Todos los t\u00EDtulos se reproducen desde fuentes de terceros. Metadatos del cat\u00E1logo proporcionados por The Movie Database.',
+      'player.loading': 'Cargando\u2026', 'player.close': 'Cerrar reproductor',
+      'player.title': 'Reproductor de video', 'player.selectSeason': 'Seleccionar temporada',
+      'player.selectEpisode': 'Seleccionar episodio', 'player.moreinfo': 'M\u00E1s informaci\u00F3n',
+      'player.description': 'Descripci\u00F3n',
+      'info.play': 'Reproducir', 'info.morelikethis': 'M\u00E1s como esto', 'info.close': 'Cerrar informaci\u00F3n',
+      'info.episodes': 'Episodios',
+      'donate.title': 'Apoya a POPOROPO',
+      'donate.subtitle': 'Mant\u00E9n la web viva. Sin anuncios, sin suscripci\u00F3n, sin rastreo. Solo una propina si te gusta lo que construimos.',
+      'donate.perks': 'Los colaboradores obtienen',
+      'donate.perk1': 'Etiqueta dorada de Colaborador y corona en tu perfil',
+      'donate.perk2': 'Nombre visible personalizado (sustituye a tu nombre de Google)',
+      'donate.perk3': 'Voz prioritaria en nuevas funciones y mejoras del sitio',
+      'donate.perk4': 'Nuestro agradecimiento sincero \u2014 tu nombre en el pie de p\u00E1gina',
+      'donate.custom': 'Personalizado', 'donate.customAria': 'Cantidad de donaci\u00F3n personalizada',
+      'donate.paypal': 'Donar con PayPal',
+      'donate.honor1': 'Despu\u00E9s de donar, pulsa', 'donate.claim': 'He donado',
+      'donate.honor2': 'para reclamar tus ventajas de colaborador.',
+      'donate.fine': '100% opcional. POPOROPO seguir\u00E1 siendo gratis para todos, dones o no.',
+      'donate.close': 'Cerrar',
+      'claim.title': 'Reclama tu estado de Colaborador',
+      'claim.subtitle': 'Sistema de confianza \u2014 pega el ID de tu transacci\u00F3n de PayPal abajo. Tus ventajas se desbloquean al instante en este dispositivo.',
+      'claim.txLabel': 'ID de transacci\u00F3n de PayPal', 'claim.txPlaceholder': 'p. ej. 5AB12345CD678901E',
+      'claim.nameLabel': 'Nombre visible en la lista de colaboradores', 'claim.optional': '(opcional)',
+      'claim.namePlaceholder': '\u00BFC\u00F3mo te acreditamos?',
+      'claim.submit': 'Activar ventajas de colaborador',
+      'claim.fine': 'Tus datos quedan en este dispositivo. Ning\u00FAn servidor recoge esta informaci\u00F3n.',
+      'settings.title': 'Cuenta y ajustes', 'settings.close': 'Cerrar ajustes',
+      'settings.profile': 'Perfil',
+      'settings.displayname.title': 'Nombre visible',
+      'settings.displayname.desc': 'Ventaja de colaborador \u2014 muestra un nombre personalizado en lugar de tu nombre de Google.',
+      'settings.displayname.placeholder': 'Tu nombre visible',
+      'settings.playback': 'Reproducci\u00F3n',
+      'settings.sublang.title': 'Idioma de subt\u00EDtulos',
+      'settings.sublang.desc': 'Idioma de subt\u00EDtulos preferido cuando est\u00E9 disponible.',
+      'settings.sitelang.title': 'Idioma del sitio',
+      'settings.sitelang.desc': 'Idioma de la interfaz, los t\u00EDtulos, los subt\u00EDtulos y el SEO.',
+      'settings.appearance': 'Apariencia',
+      'settings.reduce.title': 'Reducir animaciones',
+      'settings.reduce.desc': 'Desactiva transiciones y brillos para una experiencia m\u00E1s tranquila.',
+      'settings.banner.title': 'Mostrar banner destacado',
+      'settings.banner.desc': 'Oculta el banner grande de la portada.',
+      'settings.gold.title': 'Acentos dorados de colaborador',
+      'settings.gold.desc': 'Destellos dorados sutiles en tu perfil. Exclusivo de colaboradores.',
+      'settings.content': 'Contenido',
+      'settings.adult.title': 'Filtro de contenido expl\u00EDcito',
+      'settings.adult.desc': 'Oculta pel\u00EDculas y series expl\u00EDcitas / solo adultos de la navegaci\u00F3n y la b\u00FAsqueda. Activado por defecto.',
+      'settings.data': 'Datos y privacidad',
+      'settings.favs.title': 'Favoritos guardados',
+      'settings.favs.desc': '{n} t\u00EDtulos en este dispositivo.',
+      'settings.clearFavs': 'Borrar favoritos',
+      'settings.clearAll.title': 'Borrar todos los datos locales',
+      'settings.clearAll.desc': 'Elimina ajustes, favoritos y estado de colaborador de este dispositivo. No se puede deshacer.',
+      'settings.clearAll': 'Borrar todo',
+      'settings.account': 'Cuenta', 'settings.signout': 'Cerrar sesi\u00F3n',
+      'settings.about': 'Acerca de',
+      'settings.about1': '\u00B7 Streaming HD gratis. Cat\u00E1logo de The Movie Database.',
+      'settings.about2': 'Hecho con \u2665 para los amantes del cine.',
+      'settings.about3': 'Apoya a POPOROPO \u2192',
+      'settings.notSignedIn': 'Sin sesi\u00F3n iniciada',
+      'guest': 'Invitado',
+      'search.empty': 'Sin resultados para "<span id="searchTerm">{q}</span>"',
+      'search.error': 'Error de b\u00FAsqueda. Int\u00E9ntalo de nuevo.',
+      'season': 'Temporada {n}', 'episode': 'Episodio {n}', 'episodeShort': 'E{n}: {name}',
+      'countSeason': 'temporada', 'countSeasons': 'temporadas',
+      'untitled': 'Sin t\u00EDtulo',
+      'loading': 'Cargando\u2026', 'errorLoading': 'Error al cargar',
+      'noDesc': 'No hay descripci\u00F3n disponible.', 'comingSoon': 'Pr\u00F3ximamente',
+      'noEpisodes': 'No hay datos de episodios.', 'noEpisodesFound': 'No se encontraron episodios.',
+      'couldNotLoadEpisodes': 'No se pudieron cargar los episodios.',
+      'noRecs': 'No se encontraron recomendaciones.', 'couldNotLoadRecs': 'No se pudieron cargar las recomendaciones.',
+      'watched': 'Recientemente vistas', 'favMovies': 'Pel\u00EDculas favoritas', 'favSeries': 'Series favoritas',
+      'favorites': 'Favoritos', 'moreLikeThis': 'M\u00E1s como esto',
+      'catalogErrorTitle': 'No pudimos cargar el cat\u00E1logo',
+      'catalogErrorDesc': 'Comprueba tu conexi\u00F3n a internet e int\u00E9ntalo de nuevo. En Smart TV antiguas, aseg\u00FArate de que el navegador est\u00E9 actualizado.',
+      'reload': 'Recargar',
+      'since': '\u00B7 desde {date}',
+      'toast.signedOut': 'Sesi\u00F3n cerrada',
+      'toast.signinNotConfigured': 'Inicio de sesi\u00F3n no configurado',
+      'toast.signinNotAvailable': 'Inicio de sesi\u00F3n no disponible en este navegador',
+      'toast.signinError': 'Error al iniciar sesi\u00F3n',
+      'toast.txShort': 'El ID de transacci\u00F3n parece demasiado corto',
+      'toast.supporter': '\uD83C\uDF89 \u00A1Bienvenido, colaborador! Ventajas desbloqueadas.',
+      'toast.accountError': 'No se pudo leer tu cuenta',
+      'toast.welcome': 'Bienvenido, {name}',
+      'friend': 'amigo',
+      'info.error': 'No se pudo obtener la informaci\u00F3n. Int\u00E9ntalo de nuevo.',
+      'toast.subUpdated': 'Idioma de subt\u00EDtulos actualizado',
+      'toast.favsCleared': 'Favoritos borrados',
+      'toast.localCleared': 'Datos locales borrados',
+      'toast.favAdded': 'A\u00F1adido a favoritos',
+      'toast.favRemoved': 'Eliminado de favoritos',
+      'seo.baseTitle': 'POPOROPO \u00B7 Mira pel\u00EDculas y series HD gratis online \u2014 Sin registro',
+      'seo.baseDesc': 'Mira miles de pel\u00EDculas y series HD gratis online al instante. Sin registro, subt\u00EDtulos en espa\u00F1ol, compatible con m\u00F3vil y Smart TV.',
+      'seo.h2': 'Mira pel\u00EDculas y series HD gratis online \u2014 La mejor web de streaming gratis',
+      'seo.p1': 'POPOROPO es una plataforma de streaming gratis con miles de pel\u00EDculas y series HD online, sin suscripci\u00F3n ni registro. Con subt\u00EDtulos en espa\u00F1ol, m\u00E1s de 16 categor\u00EDas de g\u00E9nero y una interfaz r\u00E1pida y sin apenas anuncios, POPOROPO es una alternativa gratis a servicios de pago como Netflix, Disney+, HBO Max o Hulu para espectadores casuales y amantes del descubrimiento.',
+      'seo.p2': 'Navega por g\u00E9nero \u2014 Acci\u00F3n, Aventura, Animaci\u00F3n, Comedia, Crimen, Documental, Drama, Familia, Fantas\u00EDa, Terror, Misterio, Romance, Ciencia ficci\u00F3n, Suspense, B\u00E9lica e Historia \u2014 o usa la barra de b\u00FAsqueda para encontrar cualquier t\u00EDtulo al instante. Los datos del cat\u00E1logo los proporciona The Movie Database (TMDB), as\u00ED que cada estreno est\u00E1 siempre actualizado.',
+      'seo.p3': 'POPOROPO funciona en m\u00F3viles, tablets, port\u00E1tiles y Smart TV, incluidas LG WebOS, Samsung Tizen, Android TV y Apple TV. Sin tienda de apps ni instalaci\u00F3n \u2014 solo abre la web en cualquier navegador. El inicio de sesi\u00F3n opcional con Google te permite guardar tus favoritos; todo lo dem\u00E1s funciona como invitado.',
+      'seo.watchTitle': 'Ver {title}{year} online gratis en HD \u2014 POPOROPO',
+      'seo.watchEpisode': 'Ver {title} {ep} online gratis en HD \u2014 POPOROPO',
+      'seo.watchFallback': 'Ver {title} online gratis en HD.',
+      'seo.watchMovieFallback': 'Ver {title} gratis en HD.',
+      'seo.watchTvFallback': 'Ver {title} gratis online en HD.'
+    }
+  };
+
+  function t(key, vars) {
+    var str = (I18N[siteLang] && I18N[siteLang][key] !== undefined)
+      ? I18N[siteLang][key]
+      : ((I18N.en && I18N.en[key] !== undefined) ? I18N.en[key] : key);
+    if (vars) {
+      str = String(str).replace(/\{(\w+)\}/g, function (m, k) {
+        return vars[k] !== undefined ? vars[k] : m;
+      });
+    }
+    return str;
+  }
+
+  /* Nombres de géneros localizados para los encabezados de carrusel. */
+  const GENRE_NAMES = {
+    en: { 28:'Action', 12:'Adventure', 16:'Animation', 35:'Comedy', 80:'Crime', 99:'Documentary', 18:'Drama', 10751:'Family', 14:'Fantasy', 36:'History', 27:'Horror', 10402:'Music', 9648:'Mystery', 10749:'Romance', 878:'Science Fiction', 53:'Thriller', 10752:'War', 37:'Western', 10759:'Action & Adventure', 10765:'Sci-Fi & Fantasy', 10768:'War & Politics', 10764:'Reality' },
+    es: { 28:'Acci\u00F3n', 12:'Aventura', 16:'Animaci\u00F3n', 35:'Comedia', 80:'Crimen', 99:'Documental', 18:'Drama', 10751:'Familia', 14:'Fantas\u00EDa', 36:'Historia', 27:'Terror', 10402:'M\u00FAsica', 9648:'Misterio', 10749:'Romance', 878:'Ciencia ficci\u00F3n', 53:'Suspense', 10752:'B\u00E9lica', 37:'Western', 10759:'Acci\u00F3n y aventura', 10765:'Ciencia ficci\u00F3n y fantas\u00EDa', 10768:'B\u00E9lica y pol\u00EDtica', 10764:'Reality' }
+  };
+
+  function genreName(g) {
+    if (!g) return '';
+    var m = GENRE_NAMES[siteLang] || {};
+    return m[g.id] !== undefined ? m[g.id] : (g.name || '');
+  }
 
   const SUPPORTS = {
     AbortController:       typeof AbortController !== 'undefined',
@@ -189,6 +478,56 @@
 
     const $  = (sel, root = document) => root.querySelector(sel);
     const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+    /* ---- i18n UI: textos estáticos (data-i18n*) + SEO base ---- */
+    function applyUiStrings() {
+      try {
+        document.documentElement.lang = siteLang === 'es' ? 'es' : 'en';
+        setMeta('property', 'og:locale', siteLang === 'es' ? 'es_ES' : 'en_US');
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (key && I18N[siteLang] && I18N[siteLang][key] !== undefined) el.textContent = I18N[siteLang][key];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          if (key && I18N[siteLang] && I18N[siteLang][key] !== undefined) el.setAttribute('placeholder', I18N[siteLang][key]);
+        });
+        document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+          const key = el.getAttribute('data-i18n-aria');
+          if (key && I18N[siteLang] && I18N[siteLang][key] !== undefined) el.setAttribute('aria-label', I18N[siteLang][key]);
+        });
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+          const key = el.getAttribute('data-i18n-title');
+          if (key && I18N[siteLang] && I18N[siteLang][key] !== undefined) el.setAttribute('title', I18N[siteLang][key]);
+        });
+      } catch (e) {}
+    }
+
+    function applySeoBase() {
+      document.title = t('seo.baseTitle');
+      const d = t('seo.baseDesc');
+      setMeta('name', 'description', d);
+      setMeta('property', 'og:description', d);
+      setMeta('name', 'twitter:description', d);
+    }
+
+    /* Cambia el idioma del sitio al vuelo: guarda la preferencia, aplica
+       textos, recarga catálogo/banner en TMDB del idioma nuevo y refresca
+       el SEO si hay un reproductor abierto. */
+    function setSiteLang(lang) {
+      if (lang !== 'en' && lang !== 'es') return;
+      siteLang = lang;
+      LANG = TMDB_LANG_MAP[lang];
+      try { localStorage.setItem(SITE_LANG_KEY, lang); } catch (e) {}
+      applyUiStrings();
+      applySeoBase();
+      const view = currentView || viewFromHash();
+      initBanner(view);
+      buildCatalog(view);
+      if (currentMediaId && videoModal && videoModal.classList.contains('active')) {
+        updateSEOTags();
+      }
+    }
 
     function escapeHtml(s) {
       return String(s == null ? '' : s).replace(/[&<>"']/g,
@@ -327,7 +666,7 @@
       if (!response || !response.credential) return;
       const payload = parseJwt(response.credential);
       if (!payload || !payload.sub) {
-        showToast("Couldn't read your account", 2000);
+        showToast(t('toast.accountError'), 2000);
         return;
       }
       const user = {
@@ -368,7 +707,7 @@
       updateAuthUI();
       applySettings();
       rebuildAfterAuthChange();
-      showToast(`Welcome, ${user.given_name || user.name || 'friend'}`, 2000);
+      showToast(t('toast.welcome', { name: user.given_name || user.name || t('friend') }), 2000);
 
       /* Canjea el mismo token de Google por una sesión de Firebase para
          que las reglas de Firestore puedan verificar quién comenta. */
@@ -386,7 +725,7 @@
       applySettings();
       rebuildAfterAuthChange();
       if (window.PoporopoSocial && PoporopoSocial.enabled) PoporopoSocial.signOut();
-      showToast('Signed out', 1800);
+      showToast(t('toast.signedOut'), 1800);
     }
 
     function makeInitialsAvatar(name) {
@@ -546,18 +885,18 @@
 
     function triggerSignIn() {
       if (!clientIdConfigured()) {
-        showToast('Sign-in not configured', 2500);
+        showToast(t('toast.signinNotConfigured'), 2500);
         return;
       }
       if (!gisInitialized) initGoogleAuth();
       if (!(window.google && google.accounts && google.accounts.id)) {
-        showToast('Sign-in not available in this browser', 2500);
+        showToast(t('toast.signinNotAvailable'), 2500);
         return;
       }
       try {
         google.accounts.id.prompt();
       } catch (e) {
-        showToast('Sign-in error', 2000);
+        showToast(t('toast.signinError'), 2000);
       }
     }
 
@@ -722,7 +1061,7 @@
         setTimeout(() => originBtn.classList.remove('just-added'), 500);
       }
 
-      showToast(wasFav ? 'Removed from Favorites' : 'Added to Favorites', 1400);
+      showToast(wasFav ? t('toast.favRemoved') : t('toast.favAdded'), 1400);
     }
 
     window.addEventListener('storage', (e) => {
@@ -990,7 +1329,8 @@
         const dur = fmtRuntime(info.runtime);
         if (dur) parts.push(dur);
       } else if (info.number_of_seasons) {
-        parts.push(`${info.number_of_seasons} season${info.number_of_seasons > 1 ? 's' : ''}`);
+        const ns = info.number_of_seasons;
+        parts.push(`${ns} ${ns > 1 ? t('countSeasons') : t('countSeason')}`);
       }
       if (genres.length) parts.push(genres.join(', '));
       videoDescMetaEl.innerHTML = parts
@@ -1009,7 +1349,7 @@
       });
 
       /* Descripción: la sinopsis de la película o de la serie. */
-      videoDescTextEl.textContent = info.overview || 'No description available.';
+      videoDescTextEl.textContent = info.overview || t('noDesc');
       videoDescEl.hidden = false;
 
       /* Series: bloque del capítulo actual (S1 E3 · nombre — sinopsis). */
@@ -1028,10 +1368,7 @@
       }
     }
 
-    /* ---- SEO dinámico ---- */
-    const BASE_TITLE = 'POPOROPO · Watch Free HD Movies & TV Shows Online — No Sign-Up Required';
-    const BASE_DESC  = 'Stream thousands of free HD movies and TV shows online instantly. No sign-up needed, English subtitles, mobile and Smart TV friendly.';
-
+    /* ---- SEO dinámico (textos localizados vía I18N) ---- */
     function setMeta(attr, name, content) {
       let el = document.head.querySelector(`meta[${attr}="${name}"]`);
       if (!el) {
@@ -1084,18 +1421,18 @@
       if (type === 'tv' && currentEpisodeInfo) {
         const ep = currentEpisodeInfo;
         videoName = `S${currentSeason} E${ep.episode_number}` + (ep.name ? ` · ${ep.name}` : '');
-        docTitle = `Watch ${title} ${videoName} Online Free in HD — POPOROPO`;
-        videoDesc = clipText(ep.overview || overview || `Watch ${title} online free in HD.`, 200);
+        docTitle = t('seo.watchEpisode', { title, ep: videoName });
+        videoDesc = clipText(ep.overview || overview || t('seo.watchFallback', { title }), 200);
         videoEmbed = `https://vidsrc.pm/embed/tv/${id}/${currentSeason}/${ep.episode_number}`;
         videoDate = ep.air_date || info.first_air_date || '';
         ogType = 'video.tv_show';
       } else {
         videoName = title;
-        docTitle = `Watch ${title}${year ? ' (' + year + ')' : ''} Online Free in HD — POPOROPO`;
+        docTitle = t('seo.watchTitle', { title, year: year ? ' (' + year + ')' : '' });
         videoDesc = clipText(
           overview || (type === 'movie'
-            ? `Watch ${title} free in HD.`
-            : `Watch ${title} free online in HD with English subtitles.`),
+            ? t('seo.watchMovieFallback', { title })
+            : t('seo.watchTvFallback', { title })),
           200
         );
         videoEmbed = `https://vidsrc.pm/embed/${type}/${id}`;
@@ -1145,16 +1482,17 @@
     }
 
     function resetSEOTags() {
-      document.title = BASE_TITLE;
-      setMeta('name', 'description', BASE_DESC);
+      document.title = t('seo.baseTitle');
+      const d = t('seo.baseDesc');
+      setMeta('name', 'description', d);
       setCanonical('https://cinepoporopo.com/');
       setMeta('property', 'og:type', 'website');
-      setMeta('property', 'og:title', 'POPOROPO — Watch Free HD Movies & TV Shows Online');
-      setMeta('property', 'og:description', BASE_DESC);
+      setMeta('property', 'og:title', t('seo.baseTitle'));
+      setMeta('property', 'og:description', d);
       setMeta('property', 'og:url', 'https://cinepoporopo.com/');
       setMeta('property', 'og:image', 'https://cinepoporopo.com/og-image.jpg');
-      setMeta('name', 'twitter:title', 'POPOROPO — Watch Free HD Movies & TV Shows');
-      setMeta('name', 'twitter:description', BASE_DESC);
+      setMeta('name', 'twitter:title', siteLang === 'es' ? 'POPOROPO — Mira películas y series HD gratis' : 'POPOROPO — Watch Free HD Movies & TV Shows');
+      setMeta('name', 'twitter:description', d);
       setMeta('name', 'twitter:image', 'https://cinepoporopo.com/og-image.jpg');
       const el = document.getElementById('poporopo-jsonld');
       if (el) el.textContent = '';
@@ -1261,7 +1599,7 @@
 
         seasonSelect.innerHTML = '';
         if (seasons.length === 0) {
-          seasonSelect.innerHTML = '<option value="1">Season 1</option>';
+          seasonSelect.innerHTML = `<option value="1">${t('season', { n: 1 })}</option>`;
           populateEpisodes(seriesId, 1);
           return;
         }
@@ -1269,7 +1607,7 @@
         seasons.forEach(season => {
           const option = document.createElement('option');
           option.value = season.season_number;
-          option.textContent = `Season ${season.season_number}`;
+          option.textContent = t('season', { n: season.season_number });
           seasonSelect.appendChild(option);
         });
 
@@ -1293,7 +1631,7 @@
         episodes.forEach(ep => {
           const option = document.createElement('option');
           option.value = ep.episode_number;
-          option.textContent = `E${ep.episode_number}: ${ep.name || 'Untitled'}`;
+          option.textContent = `E${ep.episode_number}: ${ep.name || t('untitled')}`;
           episodeSelect.appendChild(option);
         });
 
@@ -1313,7 +1651,7 @@
         touchWatched(seriesId, 'tv', currentSeason, currentEpisode);
       } catch (err) {
         console.error('Episode load error:', err);
-        episodeSelect.innerHTML = '<option value="1">Episode 1</option>';
+        episodeSelect.innerHTML = `<option value="1">${t('episode', { n: 1 })}</option>`;
         currentEpisode = 1;
         currentSeasonEpisodes = [];
         currentEpisodeInfo = null;
@@ -1536,7 +1874,7 @@
     async function openInfoModal(mediaId, mediaType, opener) {
       // If info modal is already open, reload content in place instead of pushing to stack
       const alreadyOpen = infoModal.classList.contains('active');
-      infoTitleEl.textContent = 'Loading…';
+      infoTitleEl.textContent = t('loading');
       infoYearEl.textContent = '';
       infoDurationEl.textContent = '';
       infoGenreEl.textContent = '';
@@ -1611,8 +1949,8 @@
 
       } catch (err) {
         console.error('Info error:', err);
-        infoTitleEl.textContent = 'Error loading';
-        infoDescEl.textContent = "Couldn't fetch info. Please try again.";
+        infoTitleEl.textContent = t('errorLoading');
+        infoDescEl.textContent = t('info.error');
       }
     }
 
@@ -1621,7 +1959,7 @@
     infoPlayBtn.addEventListener('click', () => {
       const id = infoPlayBtn.dataset.mediaId;
       const type = infoPlayBtn.dataset.mediaType;
-      if (!id) { showToast('Coming soon'); return; }
+      if (!id) { showToast(t('comingSoon')); return; }
       const topModal = modalStack[modalStack.length - 1];
       const opener = topModal ? topModal.opener : null;
       closeAllModalsAndOpenVideo(id, type, infoPlayBtn);
@@ -1633,7 +1971,7 @@
     function loadEpisodes(seriesId, seriesData) {
       const seasons = seriesData.seasons ? seriesData.seasons.filter(s => s.season_number > 0) : [];
       if (!seasons.length) {
-        infoEpisodesEl.innerHTML = '<p style="color:var(--text-muted);padding:12px 0;">No episode data available.</p>';
+        infoEpisodesEl.innerHTML = `<p style="color:var(--text-muted);padding:12px 0;">${t('noEpisodes')}</p>`;
         return;
       }
 
@@ -1645,7 +1983,7 @@
       header.style.alignItems = 'center';
       header.style.gap = '16px';
       header.style.marginBottom = '12px';
-      header.innerHTML = `<h3>Episodes</h3>`;
+      header.innerHTML = `<h3>${t('info.episodes')}</h3>`;
 
       const seasonSelectEl = document.createElement('select');
       seasonSelectEl.className = 'settings-input';
@@ -1654,7 +1992,7 @@
       seasons.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.season_number;
-        opt.textContent = `Season ${s.season_number}`;
+        opt.textContent = t('season', { n: s.season_number });
         seasonSelectEl.appendChild(opt);
       });
       header.appendChild(seasonSelectEl);
@@ -1669,7 +2007,7 @@
         tmdb(`/tv/${seriesId}/season/${seasonNumber}`).then(data => {
           const episodes = data.episodes || [];
           if (!episodes.length) {
-            listContainer.innerHTML = '<p style="color:var(--text-muted);padding:8px 0;">No episodes found.</p>';
+            listContainer.innerHTML = `<p style="color:var(--text-muted);padding:8px 0;">${t('noEpisodesFound')}</p>`;
             return;
           }
           episodes.forEach(ep => {
@@ -1702,7 +2040,7 @@
             });
           });
         }).catch(() => {
-          listContainer.innerHTML = '<p style="color:var(--text-muted);">Could not load episodes.</p>';
+          listContainer.innerHTML = `<p style="color:var(--text-muted);">${t('couldNotLoadEpisodes')}</p>`;
         });
       }
 
@@ -1789,7 +2127,7 @@
           items.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
           if (state.page === 1 && items.length === 0) {
-            moreLikeThisGrid.innerHTML = '<p style="color:var(--text-muted);padding:8px 0;">No recommendations found.</p>';
+            moreLikeThisGrid.innerHTML = `<p style="color:var(--text-muted);padding:8px 0;">${t('noRecs')}</p>`;
             infoMoreLikeThis.style.display = '';
             /* Sin recomendaciones: cerrar el carrusel para que updateUI
                (initCarouselUI) no vuelva a pedir páginas en un bucle. */
@@ -1825,7 +2163,7 @@
         } catch (err) {
           console.error('Recommendations error:', err);
           if (state.page === 1) {
-            moreLikeThisGrid.innerHTML = '<p style="color:var(--text-muted);padding:8px 0;">Could not load recommendations.</p>';
+            moreLikeThisGrid.innerHTML = `<p style="color:var(--text-muted);padding:8px 0;">${t('couldNotLoadRecs')}</p>`;
             infoMoreLikeThis.style.display = '';
           }
         } finally {
@@ -1932,7 +2270,7 @@
       e.preventDefault();
       const tx = claimTxId.value.trim();
       if (tx.length < 6) {
-        showToast('Transaction ID looks too short', 2200);
+        showToast(t('toast.txShort'), 2200);
         return;
       }
       const display = claimDisplayInp.value.trim();
@@ -1947,7 +2285,7 @@
       }
 
       closeModalEl(claimModal);
-      showToast('🎉 Welcome, Supporter! Perks unlocked.', 3200, { gold: true });
+      showToast(t('toast.supporter'), 3200, { gold: true });
       updateAuthUI();
     });
 
@@ -1970,6 +2308,8 @@
     const settingsGold    = $('#settingsGoldTheme');
     const settingsAdult    = $('#settingsAdultContent');
     const settingsFavCnt   = $('#settingsFavCount');
+    const settingsFavDesc  = $('#settingsFavDesc');
+    const settingsSiteLang = $('#settingsSiteLang');
     const settingsClearF  = $('#settingsClearFavs');
     const settingsClearA  = $('#settingsClearAll');
     const settingsSignOut = $('#settingsSignOut');
@@ -1988,9 +2328,9 @@
         settingsEmail.textContent = user.email || '';
         if (settingsSignOut) settingsSignOut.style.display = '';
       } else {
-        settingsAvatar.src = makeInitialsAvatar('Guest');
-        settingsName.textContent  = 'Guest';
-        settingsEmail.textContent = 'Not signed in';
+        settingsAvatar.src = makeInitialsAvatar(t('guest'));
+        settingsName.textContent  = t('guest');
+        settingsEmail.textContent = t('settings.notSignedIn');
         if (settingsSignOut) settingsSignOut.style.display = 'none';
       }
 
@@ -1999,7 +2339,8 @@
         const info = getDonorInfo();
         if (info && info.claimedAt) {
           const d = new Date(info.claimedAt);
-          settingsSince.textContent = `· since ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          const dateStr = d.toLocaleDateString(siteLang === 'es' ? 'es-ES' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          settingsSince.textContent = t('since', { date: dateStr });
         }
       }
 
@@ -2007,12 +2348,14 @@
       settingsDNInput.value = s.displayName || '';
 
       settingsSubLang.value = s.subtitleLang || 'en';
+      if (settingsSiteLang) settingsSiteLang.value = siteLang;
       settingsReduce.checked = !!s.reduceMotion;
       settingsBanner.checked = !!s.showBanner;
       settingsGoldRow.hidden = !donor;
       settingsGold.checked = !!s.goldTheme;
       settingsAdult.checked = !s.adultContent;
-      settingsFavCnt.textContent = getFavorites().length;
+      if (settingsFavCnt) settingsFavCnt.textContent = getFavorites().length;
+      if (settingsFavDesc) settingsFavDesc.textContent = t('settings.favs.desc', { n: getFavorites().length });
     }
 
     function openSettingsModal(opener) {
@@ -2046,9 +2389,16 @@
         } else {
           videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
         }
-        showToast('Subtitle language updated', 1600);
+        showToast(t('toast.subUpdated'), 1600);
       }
     });
+    /* Idioma del sitio (en/es): cambia interfaz, TMDB y SEO al vuelo. */
+    if (settingsSiteLang) {
+      settingsSiteLang.addEventListener('change', () => {
+        setSiteLang(settingsSiteLang.value);
+        showToast(siteLang === 'es' ? 'Idioma cambiado a español' : 'Language changed to English', 1600);
+      });
+    }
     settingsReduce.addEventListener('change', () => {
       const s = getSettings();
       s.reduceMotion = settingsReduce.checked;
@@ -2086,7 +2436,7 @@
       clearFavorites();
       updateSettingsUI();
       rebuildAfterAuthChange();
-      showToast('Favorites cleared', 1600);
+      showToast(t('toast.favsCleared'), 1600);
     });
     settingsClearA.addEventListener('click', () => {
       if (!confirm('This removes settings, favorites, and supporter status from this device. Continue?')) return;
@@ -2103,7 +2453,7 @@
       applySettings();
       updateAuthUI();
       rebuildAfterAuthChange();
-      showToast('Local data cleared', 1800);
+      showToast(t('toast.localCleared'), 1800);
     });
     settingsSignOut.addEventListener('click', () => {
       closeModalEl(settingsModal);
@@ -2478,7 +2828,7 @@
       section.innerHTML = `
         <div class="section-header">
           <h2 class="section-title">
-            <span class="title-accent" aria-hidden="true">|</span> ${escapeHtml(genre.name)}
+            <span class="title-accent" aria-hidden="true">|</span> ${escapeHtml(genreName(genre))}
           </h2>
         </div>
         <div class="carousel-wrapper">
@@ -2747,7 +3097,7 @@
 
     function createFavoritesSection(kind, title) {
       kind = kind || 'all';
-      const { section, state } = createLocalCarouselShell('favorites-section', 'favoritesSection_' + kind, title || 'Favorites');
+      const { section, state } = createLocalCarouselShell('favorites-section', 'favoritesSection_' + kind, title || t('favorites'));
       section.dataset.favKind = kind;
       section._favState = state; /* compat: updateFavoritesSection usa _favState */
       return section;
@@ -2756,7 +3106,7 @@
     /* "Recently Watched" va SIEMPRE primero en el catálogo, pero solo es
        visible tras iniciar sesión (updateWatchedSection lo decide). */
     function createWatchedSection(title) {
-      const { section } = createLocalCarouselShell('watched-section', 'watchedSection', title || 'Recently Watched');
+      const { section } = createLocalCarouselShell('watched-section', 'watchedSection', title || t('watched'));
       return section;
     }
 
@@ -2823,14 +3173,14 @@
       /* Recently Watched es el PRIMER carrusel, incluso antes que los
          favoritos. Nace oculto y updateWatchedSection lo muestra solo
          cuando hay sesión iniciada y hay historial. */
-      catalog.appendChild(createWatchedSection('Recently Watched'));
+      catalog.appendChild(createWatchedSection(t('watched')));
       if (view === 'movie') {
-        catalog.appendChild(createFavoritesSection('movie', 'Favorite Movies'));
+        catalog.appendChild(createFavoritesSection('movie', t('favMovies')));
       } else if (view === 'tv') {
-        catalog.appendChild(createFavoritesSection('tv', 'Favorite Series'));
+        catalog.appendChild(createFavoritesSection('tv', t('favSeries')));
       } else {
-        catalog.appendChild(createFavoritesSection('movie', 'Favorite Movies'));
-        catalog.appendChild(createFavoritesSection('tv', 'Favorite Series'));
+        catalog.appendChild(createFavoritesSection('movie', t('favMovies')));
+        catalog.appendChild(createFavoritesSection('tv', t('favSeries')));
       }
       const mode = view === 'movie' ? 'movie' : (view === 'tv' ? 'tv' : 'all');
       const genreList = view === 'tv' ? TV_GENRES_VISIBLE : GENRES;
@@ -2858,10 +3208,9 @@
       if (!catalog) return;
       catalog.innerHTML =
         '<div class="load-error">' +
-          '<h2>We couldn\u2019t load the catalog</h2>' +
-          '<p>Check your internet connection and try again. ' +
-          'On older Smart TVs, please make sure your browser is up to date.</p>' +
-          '<button type="button" class="btn btn-play" id="reloadBtn">Reload</button>' +
+          '<h2>' + t('catalogErrorTitle') + '</h2>' +
+          '<p>' + t('catalogErrorDesc') + '</p>' +
+          '<button type="button" class="btn btn-play" id="reloadBtn">' + t('reload') + '</button>' +
         '</div>';
       const rb = $('#reloadBtn');
       if (rb) rb.addEventListener('click', () => { location.reload(); });
@@ -2903,7 +3252,7 @@
           <span class="badge badge-hd">${escapeHtml(quality)}</span>
           <span class="badge badge-cert" id="bannerCert" hidden></span>
           ${year ? `<span class="badge">${escapeHtml(year)}</span>` : ''}
-          <span class="badge">Trending</span>
+          <span class="badge">${escapeHtml(t('banner.trending'))}</span>
         `;
         fetchCertification(item.id, mediaType).then(cert => {
           const cEl = $('#bannerCert');
@@ -2925,7 +3274,7 @@
         console.error('Banner error:', err);
         content.hidden = false;
         titleEl.textContent = 'POPOROPO';
-        descEl.textContent  = 'Free HD movies and TV shows.';
+        descEl.textContent  = t('banner.fallback');
       }
     }
 
@@ -3059,7 +3408,7 @@
         if (myToken !== searchToken) return;
         searchGrid.innerHTML = '';
         if (results.length === 0) {
-          searchTermEl.textContent = query;
+          emptyMsg.innerHTML = t('search.empty', { q: escapeHtml(query) });
           emptyMsg.hidden = false;
         } else {
           emptyMsg.hidden = true;
@@ -3071,7 +3420,7 @@
         console.error('Search error:', err);
         // Let the same query be retried after a failure.
         lastQuery = '';
-        searchGrid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">Search error. Please try again.</p>';
+        searchGrid.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px;">${t('search.error')}</p>`;
       }
     }
 
@@ -3268,6 +3617,8 @@
        BOOT
        ============================================================ */
     applySettings();
+    applyUiStrings();
+    applySeoBase();
     setupImageMemoryManagement();
     currentView = viewFromHash();
     setActiveNav(currentView);
@@ -3301,8 +3652,9 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.5.0',
-      isDonor, getCurrentUser, getSettings, getFavorites, getWatched
+      version: '2.6.0',
+      isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
+      setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
   });
 

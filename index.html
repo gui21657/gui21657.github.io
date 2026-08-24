@@ -239,31 +239,31 @@
 
   <!-- ============== HEADER ============== -->
   <header class="header" id="mainHeader">
-    <nav class="navbar" aria-label="Main navigation">
+    <nav class="navbar" aria-label="Main navigation" data-i18n-aria="nav.aria">
       <a href="#home" class="logo">POPOROPO</a>
       <ul class="menu">
-        <li><a href="#home" class="nav-link active" data-view="home">Home</a></li>
-        <li><a href="#movies" class="nav-link" data-view="movie">Movies</a></li>
-        <li><a href="#series" class="nav-link" data-view="tv">Series</a></li>
+        <li><a href="#home" class="nav-link active" data-view="home" data-i18n="nav.home">Home</a></li>
+        <li><a href="#movies" class="nav-link" data-view="movie" data-i18n="nav.movies">Movies</a></li>
+        <li><a href="#series" class="nav-link" data-view="tv" data-i18n="nav.series">Series</a></li>
       </ul>
     </nav>
 
     <div class="header-right">
       <!-- Donate CTA -->
-      <button type="button" class="donate-cta" id="openDonateBtn" aria-label="Support POPOROPO">
+      <button type="button" class="donate-cta" id="openDonateBtn" aria-label="Support POPOROPO" data-i18n-aria="donate.ctaAria">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
-        <span class="donate-cta-text">Donate</span>
+        <span class="donate-cta-text" data-i18n="donate">Donate</span>
       </button>
 
       <div class="search-container">
-        <label for="searchBar" class="sr-only">Search movies and TV shows</label>
+        <label for="searchBar" class="sr-only" data-i18n="search.label">Search movies and TV shows</label>
         <span class="search-icon" aria-hidden="true">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>
         </span>
-        <input type="text" id="searchBar" placeholder="Search movies, TV shows..." aria-label="Search movies and TV shows" autocomplete="off" enterkeyhint="search">
-        <button type="button" id="searchClear" class="search-clear" aria-label="Clear search" hidden>
+        <input type="text" id="searchBar" placeholder="Search movies, TV shows..." aria-label="Search movies and TV shows" autocomplete="off" enterkeyhint="search" data-i18n-placeholder="search.placeholder" data-i18n-aria="search.label">
+        <button type="button" id="searchClear" class="search-clear" aria-label="Clear search" data-i18n-aria="search.clear" hidden>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="6" y1="18" x2="18" y2="6"></line></svg>
         </button>
       </div>
@@ -275,7 +275,7 @@
         </div>
 
         <div class="auth-signed-in" id="authSignedIn" hidden>
-          <button type="button" class="profile-btn" id="profileBtn" aria-label="My profile" aria-expanded="false" aria-haspopup="true">
+          <button type="button" class="profile-btn" id="profileBtn" aria-label="My profile" aria-expanded="false" aria-haspopup="true" data-i18n-aria="profile.menu">
             <img class="profile-avatar" id="profileAvatar" alt="" referrerpolicy="no-referrer">
             <span class="donor-crown" id="profileDonorCrown" hidden aria-hidden="true">
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -289,7 +289,7 @@
               <div class="profile-menu-info">
                 <p class="profile-name" id="profileName">
                   <span id="profileNameText"></span>
-                  <span class="donor-tag" id="profileDonorTag" hidden>Supporter</span>
+                  <span class="donor-tag" id="profileDonorTag" hidden data-i18n="profile.supporter">Supporter</span>
                 </p>
                 <p class="profile-email" id="profileEmail"></p>
               </div>
@@ -300,13 +300,13 @@
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
               </svg>
-              Settings
+              <span data-i18n="profile.settings">Settings</span>
             </button>
             <button type="button" class="profile-menu-action" id="openDonateFromMenuBtn" role="menuitem">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
-              Donate
+              <span data-i18n="profile.donate">Donate</span>
             </button>
             <div class="profile-menu-divider" aria-hidden="true"></div>
             <button type="button" class="profile-menu-action" id="signOutBtn" role="menuitem">
@@ -315,7 +315,7 @@
                 <polyline points="16 17 21 12 16 7"/>
                 <line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
-              Sign out
+              <span data-i18n="profile.signout">Sign out</span>
             </button>
           </div>
         </div>
@@ -324,21 +324,21 @@
   </header>
 
   <!-- ============== BANNER ============== -->
-  <section class="banner" id="mainBanner" aria-label="Featured title">
+  <section class="banner" id="mainBanner" aria-label="Featured title" data-i18n-aria="banner.aria">
     <div class="banner-overlay"></div>
     <div class="banner-content" id="bannerContent">
       <!-- Contenido estático visible desde el primer paint: garantiza un
            LCP grande e inmediato aunque TMDB tarde o falle. script.js lo
            reemplaza con el título destacado cuando llega. -->
       <h1 id="bannerTitle">POPOROPO</h1>
-      <p class="banner-desc" id="bannerDesc">Watch free HD movies and TV shows online. No sign-up required.</p>
+      <p class="banner-desc" id="bannerDesc" data-i18n="banner.desc">Watch free HD movies and TV shows online. No sign-up required.</p>
       <div class="banner-meta" id="bannerMeta"></div>
       <div class="buttons" id="bannerButtons" hidden>
         <button class="btn btn-play" type="button" id="bannerPlayBtn">
-          <span class="btn-icon" aria-hidden="true">▶</span> Play
+          <span class="btn-icon" aria-hidden="true">▶</span> <span data-i18n="banner.play">Play</span>
         </button>
         <button class="btn btn-info" type="button" id="bannerInfoBtn">
-          <span class="btn-icon" aria-hidden="true">ⓘ</span> More info
+          <span class="btn-icon" aria-hidden="true">ⓘ</span> <span data-i18n="banner.moreinfo">More info</span>
         </button>
       </div>
     </div>
@@ -347,10 +347,10 @@
 
   <!-- ============== HIDDEN SEO COPY ============== -->
   <section class="seo-block" aria-hidden="true">
-    <h2>Watch Free HD Movies and TV Shows Online — Best Free Streaming Site</h2>
-    <p>POPOROPO is a free streaming platform offering thousands of HD movies and TV shows online without subscription or sign-up. With English subtitles, 16+ genre categories, and a fast, ad-light interface, POPOROPO is a strong free alternative to paid services like Netflix, Disney+, HBO Max, and Hulu for casual viewers and discovery-driven binge-watchers.</p>
-    <p>Browse by genre — Action, Adventure, Animation, Comedy, Crime, Documentary, Drama, Family, Fantasy, Horror, Mystery, Romance, Science Fiction, Thriller, War, and History — or use the search bar to find any title instantly. Catalog data is provided by The Movie Database (TMDB), so every release is up to date.</p>
-    <p>POPOROPO works on phones, tablets, laptops, and Smart TVs including LG WebOS, Samsung Tizen, Android TV, and Apple TV. No app store, no installation — just open the site in any browser. Optional Google sign-in lets you save your favorites; everything else works as a guest.</p>
+    <h2 data-i18n="seo.h2">Watch Free HD Movies and TV Shows Online — Best Free Streaming Site</h2>
+    <p data-i18n="seo.p1">POPOROPO is a free streaming platform offering thousands of HD movies and TV shows online without subscription or sign-up. With English subtitles, 16+ genre categories, and a fast, ad-light interface, POPOROPO is a strong free alternative to paid services like Netflix, Disney+, HBO Max, and Hulu for casual viewers and discovery-driven binge-watchers.</p>
+    <p data-i18n="seo.p2">Browse by genre — Action, Adventure, Animation, Comedy, Crime, Documentary, Drama, Family, Fantasy, Horror, Mystery, Romance, Science Fiction, Thriller, War, and History — or use the search bar to find any title instantly. Catalog data is provided by The Movie Database (TMDB), so every release is up to date.</p>
+    <p data-i18n="seo.p3">POPOROPO works on phones, tablets, laptops, and Smart TVs including LG WebOS, Samsung Tizen, Android TV, and Apple TV. No app store, no installation — just open the site in any browser. Optional Google sign-in lets you save your favorites; everything else works as a guest.</p>
   </section>
 
   <!-- ============== CATALOG ============== -->
@@ -359,7 +359,7 @@
   <!-- ============== SEARCH RESULTS ============== -->
   <div class="search-results-area" id="searchResults" hidden>
     <div class="section-header">
-      <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> Search results</h2>
+      <h2 class="section-title"><span class="title-accent" aria-hidden="true">|</span> <span data-i18n="search.results">Search results</span></h2>
     </div>
     <div class="search-grid" id="searchGrid"></div>
   </div>
@@ -367,25 +367,26 @@
   <!-- ============== FOOTER ============== -->
   <footer>
     <p class="footer-logo">POPOROPO</p>
-    <p class="footer-copy">&copy; 2026 POPOROPO · Free HD streaming · Data by TMDB</p>
-    <p class="footer-thanks" id="footerThanks" hidden>♥ Powered by our supporters. Thank you.</p>
-    <p class="footer-disclaimer">POPOROPO does not host any content. All titles are streamed from third-party sources. Catalog metadata provided by <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer">The Movie Database</a>.</p>
+    <p class="footer-copy" data-i18n="footer.copy">&copy; 2026 POPOROPO · Free HD streaming · Data by TMDB</p>
+    <p class="footer-thanks" id="footerThanks" hidden data-i18n="footer.thanks">♥ Powered by our supporters. Thank you.</p>
+    <p class="footer-disclaimer" data-i18n="footer.disclaimer">POPOROPO does not host any content. All titles are streamed from third-party sources. Catalog metadata provided by The Movie Database (TMDB).</p>
   </footer>
 
   <!-- ============== VIDEO MODAL (FULLSCREEN) ============== -->
   <div id="videoModal" class="modal fullscreen-modal" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle" aria-hidden="true">
     <div class="modal-content fullscreen-content" role="document">
-      <button type="button" class="close" id="closeModal" aria-label="Close player">×</button>
-      <h2 id="videoModalTitle" class="sr-only">Video player</h2>
+      <button type="button" class="close" id="closeModal" aria-label="Close player" data-i18n-aria="player.close">×</button>
+      <h2 id="videoModalTitle" class="sr-only" data-i18n="player.title">Video player</h2>
       <div class="player-wrapper">
         <div class="player-spinner" id="playerSpinner" aria-hidden="true">
           <div class="spinner-ring"></div>
-          <p>Loading…</p>
+          <p data-i18n="player.loading">Loading…</p>
         </div>
         <iframe
           id="videoPlayer"
           src=""
           title="Video player"
+          data-i18n-title="player.title"
           allowfullscreen
           allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
         <div id="adClickBlocker" aria-hidden="true">
@@ -398,10 +399,10 @@
       <div class="video-info-bar" id="videoInfoBar">
         <h2 id="videoTitle" class="video-bar-title"></h2>
         <div id="seasonEpisodeSelector" class="season-episode-selector" hidden>
-          <select id="seasonSelect" aria-label="Select season"></select>
-          <select id="episodeSelect" aria-label="Select episode"></select>
+          <select id="seasonSelect" aria-label="Select season" data-i18n-aria="player.selectSeason"></select>
+          <select id="episodeSelect" aria-label="Select episode" data-i18n-aria="player.selectEpisode"></select>
         </div>
-        <button type="button" class="video-info-btn" id="videoInfoBtn" aria-label="More info" title="More info">
+        <button type="button" class="video-info-btn" id="videoInfoBtn" aria-label="More info" title="More info" data-i18n-aria="player.moreinfo" data-i18n-title="player.moreinfo">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
         </button>
       </div>
@@ -409,7 +410,7 @@
       <div id="videoDescription" class="video-desc" hidden>
         <div class="video-desc-meta" id="videoDescMeta"></div>
         <details class="video-desc-block" id="videoDescDetails">
-          <summary class="video-desc-summary">Description</summary>
+          <summary class="video-desc-summary" data-i18n="player.description">Description</summary>
           <p class="video-desc-text" id="videoDescText"></p>
         </details>
         <div class="video-episode" id="videoEpisodeInfo" hidden></div>
@@ -427,7 +428,7 @@
   <div id="infoModal" class="modal info-modal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content info-modal-content" role="document">
-      <button type="button" class="close" id="closeInfoModal" aria-label="Close info">×</button>
+      <button type="button" class="close" id="closeInfoModal" aria-label="Close info" data-i18n-aria="info.close">×</button>
       <div class="info-backdrop" id="infoBackdrop"></div>
       <div class="info-body">
         <h2 id="infoModalTitle" class="info-title"></h2>
@@ -441,7 +442,7 @@
         <p class="info-desc"></p>
         <div class="info-actions">
           <button type="button" class="btn btn-play" id="infoPlayBtn">
-            <span class="btn-icon" aria-hidden="true">▶</span> Play
+            <span class="btn-icon" aria-hidden="true">▶</span> <span data-i18n="info.play">Play</span>
           </button>
         </div>
       </div>
@@ -451,7 +452,7 @@
 
       <!-- More Like This -->
       <div class="info-more-like-this" id="infoMoreLikeThis">
-        <h3>More Like This</h3>
+        <h3 data-i18n="info.morelikethis">More Like This</h3>
         <div class="movies more-like-this-grid" id="moreLikeThisGrid"></div>
       </div>
     </div>
@@ -461,23 +462,23 @@
   <div id="donateModal" class="modal donate-modal" role="dialog" aria-modal="true" aria-labelledby="donateModalTitle" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content donate-modal-content" role="document">
-      <button type="button" class="close" id="closeDonateModal" aria-label="Close">×</button>
+      <button type="button" class="close" id="closeDonateModal" aria-label="Close" data-i18n-aria="donate.close">×</button>
       <div class="donate-body">
         <div class="donate-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
         </div>
-        <h2 id="donateModalTitle" class="donate-title">Support POPOROPO</h2>
-        <p class="donate-subtitle">Keep the lights on. No ads, no subscription, no tracking. Just a tip if you like what we built.</p>
+        <h2 id="donateModalTitle" class="donate-title" data-i18n="donate.title">Support POPOROPO</h2>
+        <p class="donate-subtitle" data-i18n="donate.subtitle">Keep the lights on. No ads, no subscription, no tracking. Just a tip if you like what we built.</p>
 
         <div class="donate-perks">
-          <p class="donate-perks-heading">Supporters get</p>
+          <p class="donate-perks-heading" data-i18n="donate.perks">Supporters get</p>
           <ul class="donate-perks-list">
-            <li><span class="perk-icon">👑</span> <span>Gold <strong>Supporter</strong> tag and crown on your profile</span></li>
-            <li><span class="perk-icon">🎨</span> <span>Custom display name (override your Google name)</span></li>
-            <li><span class="perk-icon">⭐</span> <span>Priority voice on new feature suggestions and site improvements</span></li>
-            <li><span class="perk-icon">🙏</span> <span>Our genuine thanks — your name in the footer</span></li>
+            <li><span class="perk-icon">👑</span> <span data-i18n="donate.perk1">Gold Supporter tag and crown on your profile</span></li>
+            <li><span class="perk-icon">🎨</span> <span data-i18n="donate.perk2">Custom display name (override your Google name)</span></li>
+            <li><span class="perk-icon">⭐</span> <span data-i18n="donate.perk3">Priority voice on new feature suggestions and site improvements</span></li>
+            <li><span class="perk-icon">🙏</span> <span data-i18n="donate.perk4">Our genuine thanks — your name in the footer</span></li>
           </ul>
         </div>
 
@@ -489,17 +490,17 @@
           <button type="button" class="donate-amount-btn" data-amount="25">$25</button>
           <div class="donate-amount-custom">
             <span class="dollar-prefix">$</span>
-            <input type="number" id="donateCustomAmount" min="1" step="1" placeholder="Custom" aria-label="Custom donation amount">
+            <input type="number" id="donateCustomAmount" min="1" step="1" placeholder="Custom" aria-label="Custom donation amount" data-i18n-placeholder="donate.custom" data-i18n-aria="donate.customAria">
           </div>
         </fieldset>
 
         <a href="#" class="btn btn-play donate-paypal-btn" id="donatePaypalBtn" target="_blank" rel="noopener noreferrer">
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 1.186A.778.778 0 0 1 5.71.5h7.605c2.521 0 4.265 1.04 5.024 3.092.387 1.047.473 2.275.18 3.642-1.123 5.227-4.564 7.038-9.05 7.038H7.18a.806.806 0 0 0-.796.687l-1.054 6.69a.641.641 0 0 1-.254.688zm5.51-15.18c-.04.252-.18 1.142-.18 1.142H9.39l-.794 5.038h2.156c2.95 0 5.21-1.155 5.846-4.625.27-1.466.13-2.685-.626-3.541-.226-.255-.51-.466-.847-.624-.55-.258-1.232-.39-2.04-.39z"/></svg>
-          Donate via PayPal
+          <span data-i18n="donate.paypal">Donate via PayPal</span>
         </a>
 
-        <p class="donate-honor-note">After donating, click <button type="button" class="link-btn" id="claimDonorLinkBtn">I donated</button> to claim your supporter perks.</p>
-        <p class="donate-fine-print">100% optional. POPOROPO stays free for everyone, whether you donate or not.</p>
+        <p class="donate-honor-note"><span data-i18n="donate.honor1">After donating, click</span> <button type="button" class="link-btn" id="claimDonorLinkBtn" data-i18n="donate.claim">I donated</button> <span data-i18n="donate.honor2">to claim your supporter perks.</span></p>
+        <p class="donate-fine-print" data-i18n="donate.fine">100% optional. POPOROPO stays free for everyone, whether you donate or not.</p>
       </div>
     </div>
   </div>
@@ -508,29 +509,29 @@
   <div id="claimDonorModal" class="modal donate-modal" role="dialog" aria-modal="true" aria-labelledby="claimDonorTitle" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-content donate-modal-content claim-modal-content" role="document">
-      <button type="button" class="close" id="closeClaimDonor" aria-label="Close">×</button>
+      <button type="button" class="close" id="closeClaimDonor" aria-label="Close" data-i18n-aria="donate.close">×</button>
       <div class="donate-body">
         <div class="donate-icon donate-icon-gold" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor"><path d="M3 7l4 5 5-7 5 7 4-5v11H3V7z"/></svg>
         </div>
-        <h2 id="claimDonorTitle" class="donate-title">Claim your Supporter status</h2>
-        <p class="donate-subtitle">Honor system — paste your PayPal transaction ID below. Your perks unlock immediately on this device.</p>
+        <h2 id="claimDonorTitle" class="donate-title" data-i18n="claim.title">Claim your Supporter status</h2>
+        <p class="donate-subtitle" data-i18n="claim.subtitle">Honor system — paste your PayPal transaction ID below. Your perks unlock immediately on this device.</p>
 
         <form id="claimDonorForm" class="claim-form" autocomplete="off">
           <label class="claim-field">
-            <span class="claim-label">PayPal transaction ID</span>
-            <input type="text" id="claimTxId" required minlength="6" maxlength="64" placeholder="e.g. 5AB12345CD678901E">
+            <span class="claim-label" data-i18n="claim.txLabel">PayPal transaction ID</span>
+            <input type="text" id="claimTxId" required minlength="6" maxlength="64" placeholder="e.g. 5AB12345CD678901E" data-i18n-placeholder="claim.txPlaceholder">
           </label>
           <label class="claim-field">
-            <span class="claim-label">Display name on supporter list <span class="claim-optional">(optional)</span></span>
-            <input type="text" id="claimDisplayName" maxlength="40" placeholder="How should we credit you?">
+            <span class="claim-label" data-i18n="claim.nameLabel">Display name on supporter list <span class="claim-optional" data-i18n="claim.optional">(optional)</span></span>
+            <input type="text" id="claimDisplayName" maxlength="40" placeholder="How should we credit you?" data-i18n-placeholder="claim.namePlaceholder">
           </label>
-          <button type="submit" class="btn btn-play claim-submit-btn">
+          <button type="submit" class="btn btn-play claim-submit-btn" data-i18n="claim.submit">
             Activate supporter perks
           </button>
         </form>
 
-        <p class="donate-fine-print">Your data stays on this device. No server collects this information.</p>
+        <p class="donate-fine-print" data-i18n="claim.fine">Your data stays on this device. No server collects this information.</p>
       </div>
     </div>
   </div>
@@ -540,22 +541,22 @@
     <div class="modal-backdrop"></div>
     <div class="modal-content settings-modal-content" role="document">
       <header class="settings-header">
-        <h2 id="settingsModalTitle">Account &amp; Settings</h2>
-        <button type="button" class="close" id="closeSettingsModal" aria-label="Close settings">×</button>
+        <h2 id="settingsModalTitle" data-i18n="settings.title">Account &amp; Settings</h2>
+        <button type="button" class="close" id="closeSettingsModal" aria-label="Close settings" data-i18n-aria="settings.close">×</button>
       </header>
 
       <div class="settings-body">
 
         <!-- Profile -->
         <section class="settings-section">
-          <h3 class="settings-section-title">Profile</h3>
+          <h3 class="settings-section-title" data-i18n="settings.profile">Profile</h3>
           <div class="settings-profile-row">
             <img class="settings-avatar" id="settingsAvatar" alt="" referrerpolicy="no-referrer">
             <div class="settings-profile-info">
               <p class="settings-profile-name" id="settingsProfileName"></p>
               <p class="settings-profile-email" id="settingsProfileEmail"></p>
               <p class="settings-supporter-row" id="settingsSupporterRow" hidden>
-                <span class="donor-tag">Supporter</span>
+                <span class="donor-tag" data-i18n="profile.supporter">Supporter</span>
                 <span class="settings-since" id="settingsSupporterSince"></span>
               </p>
             </div>
@@ -563,20 +564,20 @@
 
           <div class="settings-row" id="settingsDisplayNameRow" hidden>
             <div class="settings-row-label">
-              <span class="settings-row-title">Display name</span>
-              <span class="settings-row-desc">Supporter perk — show a custom name instead of your Google name.</span>
+              <span class="settings-row-title" data-i18n="settings.displayname.title">Display name</span>
+              <span class="settings-row-desc" data-i18n="settings.displayname.desc">Supporter perk — show a custom name instead of your Google name.</span>
             </div>
-            <input type="text" id="settingsDisplayNameInput" class="settings-input" maxlength="40" placeholder="Your display name">
+            <input type="text" id="settingsDisplayNameInput" class="settings-input" maxlength="40" placeholder="Your display name" data-i18n-placeholder="settings.displayname.placeholder">
           </div>
         </section>
 
         <!-- Playback (removed server option) -->
         <section class="settings-section">
-          <h3 class="settings-section-title">Playback</h3>
+          <h3 class="settings-section-title" data-i18n="settings.playback">Playback</h3>
           <div class="settings-row">
             <div class="settings-row-label">
-              <span class="settings-row-title">Subtitle language</span>
-              <span class="settings-row-desc">Preferred subtitle language when available.</span>
+              <span class="settings-row-title" data-i18n="settings.sublang.title">Subtitle language</span>
+              <span class="settings-row-desc" data-i18n="settings.sublang.desc">Preferred subtitle language when available.</span>
             </div>
             <select id="settingsSubtitleLang" class="settings-input">
               <option value="en">English</option>
@@ -592,16 +593,27 @@
               <option value="ar">Arabic</option>
             </select>
           </div>
+
+          <div class="settings-row">
+            <div class="settings-row-label">
+              <span class="settings-row-title" data-i18n="settings.sitelang.title">Site language</span>
+              <span class="settings-row-desc" data-i18n="settings.sitelang.desc">Language of the interface, titles, subtitles and SEO.</span>
+            </div>
+            <select id="settingsSiteLang" class="settings-input">
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
         </section>
 
         <!-- Appearance -->
         <section class="settings-section">
-          <h3 class="settings-section-title">Appearance</h3>
+          <h3 class="settings-section-title" data-i18n="settings.appearance">Appearance</h3>
 
           <div class="settings-row">
             <div class="settings-row-label">
-              <span class="settings-row-title">Reduce animations</span>
-              <span class="settings-row-desc">Disable transitions and shimmers for a calmer experience.</span>
+              <span class="settings-row-title" data-i18n="settings.reduce.title">Reduce animations</span>
+              <span class="settings-row-desc" data-i18n="settings.reduce.desc">Disable transitions and shimmers for a calmer experience.</span>
             </div>
             <label class="settings-toggle">
               <input type="checkbox" id="settingsReduceMotion">
@@ -611,8 +623,8 @@
 
           <div class="settings-row">
             <div class="settings-row-label">
-              <span class="settings-row-title">Show featured banner</span>
-              <span class="settings-row-desc">Hide the large hero banner on the home page.</span>
+              <span class="settings-row-title" data-i18n="settings.banner.title">Show featured banner</span>
+              <span class="settings-row-desc" data-i18n="settings.banner.desc">Hide the large hero banner on the home page.</span>
             </div>
             <label class="settings-toggle">
               <input type="checkbox" id="settingsShowBanner" checked>
@@ -622,8 +634,8 @@
 
           <div class="settings-row" id="settingsGoldThemeRow" hidden>
             <div class="settings-row-label">
-              <span class="settings-row-title">Gold supporter accents</span>
-              <span class="settings-row-desc">Subtle gold highlights on your profile. Supporter exclusive.</span>
+              <span class="settings-row-title" data-i18n="settings.gold.title">Gold supporter accents</span>
+              <span class="settings-row-desc" data-i18n="settings.gold.desc">Subtle gold highlights on your profile. Supporter exclusive.</span>
             </div>
             <label class="settings-toggle">
               <input type="checkbox" id="settingsGoldTheme" checked>
@@ -634,12 +646,12 @@
 
         <!-- Content -->
         <section class="settings-section">
-          <h3 class="settings-section-title">Content</h3>
+          <h3 class="settings-section-title" data-i18n="settings.content">Content</h3>
 
           <div class="settings-row">
             <div class="settings-row-label">
-              <span class="settings-row-title">Explicit content filter <span class="settings-row-pill">18+</span></span>
-              <span class="settings-row-desc">Hides explicit / adult-only movies and shows from browsing and search. On by default.</span>
+              <span class="settings-row-title"><span data-i18n="settings.adult.title">Explicit content filter</span> <span class="settings-row-pill">18+</span></span>
+              <span class="settings-row-desc" data-i18n="settings.adult.desc">Hides explicit / adult-only movies and shows from browsing and search. On by default.</span>
             </div>
             <label class="settings-toggle">
               <input type="checkbox" id="settingsAdultContent" checked>
@@ -650,39 +662,39 @@
 
         <!-- Data -->
         <section class="settings-section">
-          <h3 class="settings-section-title">Data &amp; Privacy</h3>
+          <h3 class="settings-section-title" data-i18n="settings.data">Data &amp; Privacy</h3>
 
           <div class="settings-row">
             <div class="settings-row-label">
-              <span class="settings-row-title">Favorites stored</span>
-              <span class="settings-row-desc"><span id="settingsFavCount">0</span> titles on this device.</span>
+              <span class="settings-row-title" data-i18n="settings.favs.title">Favorites stored</span>
+              <span class="settings-row-desc" id="settingsFavDesc"></span>
             </div>
-            <button type="button" class="settings-btn settings-btn-ghost" id="settingsClearFavs">Clear favorites</button>
+            <button type="button" class="settings-btn settings-btn-ghost" id="settingsClearFavs" data-i18n="settings.clearFavs">Clear favorites</button>
           </div>
 
           <div class="settings-row">
             <div class="settings-row-label">
-              <span class="settings-row-title">Clear all local data</span>
-              <span class="settings-row-desc">Removes settings, favorites, and supporter status from this device. Cannot be undone.</span>
+              <span class="settings-row-title" data-i18n="settings.clearAll.title">Clear all local data</span>
+              <span class="settings-row-desc" data-i18n="settings.clearAll.desc">Removes settings, favorites, and supporter status from this device. Cannot be undone.</span>
             </div>
-            <button type="button" class="settings-btn settings-btn-danger" id="settingsClearAll">Clear everything</button>
+            <button type="button" class="settings-btn settings-btn-danger" id="settingsClearAll" data-i18n="settings.clearAll">Clear everything</button>
           </div>
         </section>
 
         <!-- Account -->
         <section class="settings-section">
-          <h3 class="settings-section-title">Account</h3>
+          <h3 class="settings-section-title" data-i18n="settings.account">Account</h3>
           <div class="settings-row settings-row-center">
-            <button type="button" class="settings-btn settings-btn-ghost" id="settingsSignOut">Sign out</button>
+            <button type="button" class="settings-btn settings-btn-ghost" id="settingsSignOut" data-i18n="settings.signout">Sign out</button>
           </div>
         </section>
 
         <!-- About -->
         <section class="settings-section settings-about">
-          <h3 class="settings-section-title">About</h3>
-          <p class="settings-about-text"><strong>POPOROPO</strong> · Free HD streaming. Catalog by The Movie Database.</p>
-          <p class="settings-about-text">Made with ♥ for movie lovers everywhere.</p>
-          <p class="settings-about-text"><button type="button" class="link-btn" id="settingsOpenDonate">Support POPOROPO →</button></p>
+          <h3 class="settings-section-title" data-i18n="settings.about">About</h3>
+          <p class="settings-about-text"><strong>POPOROPO</strong> <span data-i18n="settings.about1">· Free HD streaming. Catalog by The Movie Database.</span></p>
+          <p class="settings-about-text" data-i18n="settings.about2">Made with ♥ for movie lovers everywhere.</p>
+          <p class="settings-about-text"><button type="button" class="link-btn" id="settingsOpenDonate" data-i18n="settings.about3">Support POPOROPO →</button></p>
         </section>
 
       </div>
