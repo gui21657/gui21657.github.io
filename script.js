@@ -1323,7 +1323,7 @@
        (se resuelve vía TMDB) en vez del ID de TMDB. */
     const tvPath = (type, s, e) => (type === 'tv' && s !== undefined && e !== undefined ? `/tv/${s}/${e}` : '');
 
-    /* Familia clásica vidsrc/2embed: /embed/movie/{id} y /embed/tv/{id}/{s}/{e}.
+    /* Formato vidsrc: /embed/movie/{id} y /embed/tv/{id}/{s}/{e}.
        ds_lang: idioma por defecto del reproductor (subtítulos y, según la
        fuente, también la pista de audio). */
     function mkEmbed(base, subKey) {
@@ -1339,28 +1339,10 @@
       };
     }
 
-    /* Formato 2Embed: /embed/{id} (película) y /embedtv/{id}&s=&e= (serie).
-       Su reproductor tiene rueda de configuración con pista de audio. */
-    function mkEmbed2(base) {
-      const host = base.split('/')[2];
-      return {
-        id: host,
-        label: host,
-        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `${base}/embedtv/${id}&s=${s}&e=${e}`
-          : `${base}/embed/${id}`)
-      };
-    }
-
     const EMBED_SOURCES = [
-      /* --- Familia VidSrc (ds_lang) — las que el usuario confirmó.
-           El reproductor vidsrc tiene rueda de configuración con pista
-           de audio y subtítulos. --- */
-      ...['vidsrc.pm', 'vidsrc.to', 'vidsrc.me', 'vidsrc.link', 'vidsrc.io',
-          'vidsrc.in']
+      /* --- ORDEN DEFINIDO POR EL USUARIO (no cambiar) --- */
+      ...['vidsrc.pm', 'vidsrc.to', 'vidsrc.me', 'vidsrc.link', 'vidsrc.io', 'vidsrc.in']
         .map(h => mkEmbed(`https://${h}/embed`, 'ds_lang')),
-
-      /* --- Confirmadas por el usuario (con rueda de idioma/audio) --- */
       { id: 'multiembed.mov', label: 'MultiEmbed',
         url: (id, type, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
       { id: 'vidfast.pro', label: 'VidFast',
@@ -1373,24 +1355,10 @@
         url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
           ? `https://moviesapi.to/tv/${id}-${s}-${e}`
           : `https://moviesapi.to/movie/${id}`) },
-
-      /* --- Nuevas, verificadas en vivo: reproductores con rueda de
-           configuración para cambiar idioma / pista de audio --- */
       { id: 'vixsrc.to', label: 'VixSrc',
         url: (id, type, s, e) => `https://vixsrc.to/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
       { id: 'player.videasy.net', label: 'Videasy',
-        url: (id, type, s, e) => `https://player.videasy.net/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
-      { id: 'zxcstream.xyz', label: 'ZXCStream',
-        url: (id, type, s, e) => `https://zxcstream.xyz/embed/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
-      { id: 'onetouchtv.xyz', label: 'OneTouchTV',
-        url: (id, type, s, e) => `https://onetouchtv.xyz/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
-      { id: 'hdghartv.cc', label: 'HDGharTV',
-        url: (id, type, s, e) => `https://hdghartv.cc/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
-
-      /* --- Familia 2Embed (formato correcto /embed/{id}) — rueda con
-           pista de audio. Antes se usaba /embed/movie/{id} (mal). --- */
-      ...['www.2embed.skin', 'www.2embed.cc', 'embedsb.com']
-        .map(h => mkEmbed2(`https://${h}`))
+        url: (id, type, s, e) => `https://player.videasy.net/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` }
     ];
 
     function currentSource() {
@@ -3975,7 +3943,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.8',
+      version: '2.7.9',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
