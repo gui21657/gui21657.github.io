@@ -1339,27 +1339,32 @@
       };
     }
 
+    /* Formato 2Embed: /embed/{id} (película) y /embedtv/{id}&s=&e= (serie).
+       Su reproductor tiene rueda de configuración con pista de audio. */
+    function mkEmbed2(base) {
+      const host = base.split('/')[2];
+      return {
+        id: host,
+        label: host,
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `${base}/embedtv/${id}&s=${s}&e=${e}`
+          : `${base}/embed/${id}`)
+      };
+    }
+
     const EMBED_SOURCES = [
-      /* --- Familia VidSrc (ds_lang) — las que el usuario confirmó + vidsrc.bz --- */
+      /* --- Familia VidSrc (ds_lang) — las que el usuario confirmó.
+           El reproductor vidsrc tiene rueda de configuración con pista
+           de audio y subtítulos. --- */
       ...['vidsrc.pm', 'vidsrc.to', 'vidsrc.me', 'vidsrc.link', 'vidsrc.io',
-          'vidsrc.in', 'vidsrc.bz']
+          'vidsrc.in']
         .map(h => mkEmbed(`https://${h}/embed`, 'ds_lang')),
 
-      /* --- Verificadas en vivo (película y serie, probadas ahora) --- */
+      /* --- Confirmadas por el usuario (con rueda de idioma/audio) --- */
       { id: 'multiembed.mov', label: 'MultiEmbed',
         url: (id, type, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
       { id: 'vidfast.pro', label: 'VidFast',
         url: (id, type, s, e) => `https://vidfast.pro/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}?autoPlay=true` },
-      { id: 'vidlink.pro', label: 'VidLink',
-        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://vidlink.pro/tv/${id}/${s}/${e}`
-          : `https://vidlink.pro/movie/${id}`) },
-      { id: 'www.nontongo.win', label: 'Nontongo',
-        url: (id, type, s, e) => `https://www.nontongo.win/embed/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
-      { id: 'frembed.icu', label: 'FREmbed',
-        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://frembed.icu/api/serie.php?id=${id}&sa=${s}&epi=${e}`
-          : `https://frembed.icu/api/film.php?id=${id}`) },
       { id: 'autoembed.co', label: 'AutoEmbed',
         url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
           ? `https://autoembed.co/tv/tmdb/${id}-${s}-${e}`
@@ -1368,8 +1373,24 @@
         url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
           ? `https://moviesapi.to/tv/${id}-${s}-${e}`
           : `https://moviesapi.to/movie/${id}`) },
-      { id: 'streamflix.stream', label: 'StreamFlix',
-        url: (id, type, s, e) => `https://streamflix.stream/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` }
+
+      /* --- Nuevas, verificadas en vivo: reproductores con rueda de
+           configuración para cambiar idioma / pista de audio --- */
+      { id: 'vixsrc.to', label: 'VixSrc',
+        url: (id, type, s, e) => `https://vixsrc.to/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
+      { id: 'player.videasy.net', label: 'Videasy',
+        url: (id, type, s, e) => `https://player.videasy.net/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
+      { id: 'zxcstream.xyz', label: 'ZXCStream',
+        url: (id, type, s, e) => `https://zxcstream.xyz/embed/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
+      { id: 'onetouchtv.xyz', label: 'OneTouchTV',
+        url: (id, type, s, e) => `https://onetouchtv.xyz/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
+      { id: 'hdghartv.cc', label: 'HDGharTV',
+        url: (id, type, s, e) => `https://hdghartv.cc/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
+
+      /* --- Familia 2Embed (formato correcto /embed/{id}) — rueda con
+           pista de audio. Antes se usaba /embed/movie/{id} (mal). --- */
+      ...['www.2embed.skin', 'www.2embed.cc', 'embedsb.com']
+        .map(h => mkEmbed2(`https://${h}`))
     ];
 
     function currentSource() {
@@ -3954,7 +3975,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.7',
+      version: '2.7.8',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
