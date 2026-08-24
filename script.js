@@ -644,7 +644,9 @@
 
     const DEFAULT_SETTINGS = {
       subtitleLang: DETECTED_SUB_LANG,
-      audioLang: 'auto',   // auto | es | en | orig — idioma preferido del audio
+      /* Regiones hispanas: español por defecto en el audio. El usuario puede
+         cambiarlo (Auto vuelve a usar el idioma de subtítulos). */
+      audioLang: DETECTED_SUB_LANG === 'es' ? 'es' : 'auto',
       reduceMotion: false,
       showBanner: true,
       goldTheme: true,
@@ -3874,7 +3876,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.1',
+      version: '2.7.2',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
