@@ -928,9 +928,14 @@ html.tv-mode .movie-skeleton::after { animation: none; }
 .fullscreen-modal .player-wrapper {
   flex: 1 1 auto;
   aspect-ratio: 16 / 9;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  /* Un poco menos alto que antes (100vh): el video se centra en 16:9 y
+     las pantallas estrechas (móviles) siguen limitadas por el ancho. */
+  height: min(70vh, calc(100vw * 9 / 16));
   background: #000;
   min-height: 0;
+  margin: 0 auto;
 }
 
 /* Barra inferior compacta */
