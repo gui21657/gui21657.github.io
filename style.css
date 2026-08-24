@@ -996,6 +996,125 @@ html.tv-mode .movie-skeleton::after { animation: none; }
   background: #1e1e1e;
   color: #fff;
 }
+
+/* Dropdown personalizado tipo chip (temporada / episodio): el <select>
+   nativo queda oculto y este menú lo sustituye visualmente. */
+.chip-select {
+  position: relative;
+  display: inline-block;
+}
+.chip-select-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.chip-select-trigger {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 170px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 6px 12px 6px 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.chip-select-trigger:hover,
+.chip-select.is-open .chip-select-trigger {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+.chip-select-trigger:focus-visible {
+  outline: 2px solid var(--red, #e50914);
+  outline-offset: 1px;
+}
+.chip-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip-select-chevron {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #e8e8e8;
+  border-bottom: 2px solid #e8e8e8;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.2s;
+}
+.chip-select.is-open .chip-select-chevron {
+  transform: rotate(225deg) translateY(-1px);
+}
+.chip-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 220px;
+  max-width: min(320px, 78vw);
+  max-height: 42vh;
+  overflow-y: auto;
+  background: #171717;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  padding: 6px;
+  z-index: 60;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+.chip-select-menu[hidden] { display: none; }
+.chip-select-menu::-webkit-scrollbar { width: 8px; }
+.chip-select-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+.chip-select-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #ddd;
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chip-select-option:hover,
+.chip-select-option:focus-visible {
+  background: rgba(229, 9, 20, 0.18);
+  color: #fff;
+  outline: none;
+}
+.chip-select-option.is-selected {
+  background: rgba(229, 9, 20, 0.32);
+  color: #fff;
+  font-weight: 600;
+}
+.chip-select-option.is-selected::before {
+  content: '✓';
+  margin-right: 8px;
+  color: #fff;
+}
+@media (max-width: 480px) {
+  .chip-select-trigger { max-width: 130px; padding: 5px 10px 5px 12px; }
+  .chip-select-menu { min-width: 180px; max-width: 74vw; }
+}
 .season-episode-selector[hidden] {
   display: none !important;
 }
@@ -2173,6 +2292,9 @@ html.tv-mode .video-desc-chip { font-size: 15px; padding: 5px 14px; }
 html.tv-mode .video-episode-heading { font-size: 17px; }
 html.tv-mode .video-episode-overview { font-size: 16px; }
 html.tv-mode .fullscreen-modal .season-episode-selector select { font-size: 16px; padding: 8px 32px 8px 16px; min-width: 120px; }
+html.tv-mode .chip-select-trigger { font-size: 16px; padding: 8px 14px 8px 18px; }
+html.tv-mode .chip-select-menu { min-width: 300px; max-height: 50vh; }
+html.tv-mode .chip-select-option { font-size: 16px; padding: 12px 16px; }
 
 /* Fix select styling globally (ensures white text on dark bg) */
 select, select option {

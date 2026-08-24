@@ -1341,6 +1341,144 @@
       touchWatched(currentMediaId, 'tv', currentSeason, currentEpisode);
     });
 
+    /* ============================================================
+       CHIP SELECTS (temporada / episodio)
+       Reemplaza el desplegable nativo por un menú bonito que se abre
+       como píldora, igual que las etiquetas de la descripción. El
+       <select> nativo sigue siendo la fuente de verdad: se mantiene
+       oculto, el menú refleja sus opciones y valor, y al elegir se
+       dispara su evento change como antes.
+       ============================================================ */
+    function initChipSelect(select) {
+      if (!select || select.classList.contains('chip-select-native')) return;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'chip-select';
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'chip-select-trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+
+      const valueSpan = document.createElement('span');
+      valueSpan.className = 'chip-select-value';
+      trigger.appendChild(valueSpan);
+
+      const chevron = document.createElement('span');
+      chevron.className = 'chip-select-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      trigger.appendChild(chevron);
+
+      const menu = document.createElement('div');
+      menu.className = 'chip-select-menu';
+      menu.setAttribute('role', 'listbox');
+      menu.hidden = true;
+
+      select.classList.add('chip-select-native');
+      select.setAttribute('tabindex', '-1');
+      select.parentNode.insertBefore(wrap, select);
+      wrap.appendChild(select);
+      wrap.appendChild(trigger);
+      wrap.appendChild(menu);
+
+      const currentLabel = () => {
+        const opt = select.options[select.selectedIndex];
+        return opt ? opt.textContent : select.value || 'Select';
+      };
+
+      function renderOptions() {
+        menu.innerHTML = '';
+        [...select.options].forEach(opt => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'chip-select-option';
+          btn.setAttribute('role', 'option');
+          btn.textContent = opt.textContent;
+          btn.dataset.value = opt.value;
+          btn.addEventListener('click', () => {
+            select.value = opt.value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            closeMenu();
+          });
+          menu.appendChild(btn);
+        });
+      }
+
+      function syncValue() {
+        valueSpan.textContent = currentLabel();
+        [...menu.querySelectorAll('.chip-select-option')].forEach(b => {
+          const on = b.dataset.value === select.value;
+          b.classList.toggle('is-selected', on);
+          b.setAttribute('aria-selected', String(on));
+        });
+      }
+
+      function openMenu() {
+        renderOptions();
+        syncValue();
+        menu.hidden = false;
+        trigger.setAttribute('aria-expanded', 'true');
+        wrap.classList.add('is-open');
+        const sel = menu.querySelector('.chip-select-option.is-selected') || menu.querySelector('.chip-select-option');
+        if (sel) sel.focus();
+      }
+
+      function closeMenu() {
+        menu.hidden = true;
+        trigger.setAttribute('aria-expanded', 'false');
+        wrap.classList.remove('is-open');
+      }
+
+      trigger.addEventListener('click', () => {
+        if (menu.hidden) openMenu(); else closeMenu();
+      });
+
+      trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !menu.hidden) { closeMenu(); trigger.focus(); return; }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (menu.hidden) { openMenu(); return; }
+          const opts = [...menu.querySelectorAll('.chip-select-option')];
+          const i = opts.indexOf(document.activeElement);
+          const n = e.key === 'ArrowDown' ? (i + 1) % opts.length : (i - 1 + opts.length) % opts.length;
+          if (opts[n]) opts[n].focus();
+        }
+      });
+
+      menu.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); closeMenu(); trigger.focus(); return; }
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          const opts = [...menu.querySelectorAll('.chip-select-option')];
+          const i = opts.indexOf(document.activeElement);
+          const n = e.key === 'ArrowDown' ? (i + 1) % opts.length : (i - 1 + opts.length) % opts.length;
+          if (opts[n]) opts[n].focus();
+          return;
+        }
+        if (e.key === 'Enter' && document.activeElement && document.activeElement.classList.contains('chip-select-option')) {
+          e.preventDefault();
+          document.activeElement.click();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!menu.hidden && !wrap.contains(e.target)) closeMenu();
+      });
+
+      /* La app repuebla los <select> (temporadas/episodios) y cambia su
+         valor en cualquier momento: vigila y refleja esos cambios. */
+      new MutationObserver(() => { renderOptions(); syncValue(); })
+        .observe(select, { childList: true, attributes: true, attributeFilter: ['value'], subtree: true });
+      select.addEventListener('change', syncValue);
+
+      renderOptions();
+      syncValue();
+    }
+
+    initChipSelect(seasonSelect);
+    initChipSelect(episodeSelect);
+
     videoPlayer.addEventListener('load', () => {
       if (videoPlayer.src && playerSpin) playerSpin.classList.add('is-hidden');
       if (adBlocker && adBlocker.classList.contains('is-active')) {
