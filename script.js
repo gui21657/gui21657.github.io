@@ -1340,74 +1340,36 @@
     }
 
     const EMBED_SOURCES = [
-      /* --- Familia VidSrc (ds_lang) --- */
-      ...['vidsrc.pm', 'vidsrc.to', 'vidsrc.xyz', 'vidsrc.me', 'vidsrc.cc', 'vidsrc.net',
-          'vidsrc.dev', 'vidsrc.icu', 'vidsrc.site', 'vidsrc.stream', 'vidsrc.rip',
-          'vidsrc.nl', 'vidsrc.su', 'vidsrc.info', 'vidsrc.vip', 'vidsrc.biz',
-          'vidsrc.work', 'vidsrc.top', 'vidsrc.link', 'vidsrc.zone',
-          'vidsrc.us', 'vidsrc.io', 'vidsrc.in', 'vidsrc.ru', 'vidsrc.eu',
-          'vidsrc.co', 'vidsrc.org']
+      /* --- Familia VidSrc (ds_lang) — las que el usuario confirmó + vidsrc.bz --- */
+      ...['vidsrc.pm', 'vidsrc.to', 'vidsrc.me', 'vidsrc.link', 'vidsrc.io',
+          'vidsrc.in', 'vidsrc.bz']
         .map(h => mkEmbed(`https://${h}/embed`, 'ds_lang')),
 
-      /* --- Familia 2Embed (ds_lang) --- */
-      ...['2embed.skin', '2embed.cc', '2embed.to', '2embed.org', '2embed.uk',
-          '2embed.su', '2embed.wiki', '2embed.best', '2embed.pro', 'embedsb.com',
-          '2embed.me', '2embed.ru']
-        .map(h => mkEmbed(`https://${h}/embed`, 'ds_lang')),
-
-      /* --- Familia Embedder (/e/movie) --- */
-      ...['embedder.net', 'embedder.cc', 'embedder.pro', 'embedder.org']
-        .map(h => mkEmbed(`https://${h}/e`, 'ds_lang')),
-
-      /* --- Especiales por ID de TMDB --- */
+      /* --- Verificadas en vivo (película y serie, probadas ahora) --- */
       { id: 'multiembed.mov', label: 'MultiEmbed',
         url: (id, type, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
-      { id: 'superembed.stream', label: 'SuperEmbed',
-        url: (id, type, s, e) => `https://superembed.stream/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
-      { id: 'superembed.to', label: 'SuperEmbed.to',
-        url: (id, type, s, e) => `https://superembed.to/?video_id=${id}&tmdb=1${type === 'tv' && s !== undefined && e !== undefined ? `&s=${s}&e=${e}` : ''}` },
-      { id: 'embedstream.me', label: 'EmbedStream',
-        url: (id, type, s, e) => `https://embedstream.me/embed/play/${id}?type=${type === 'tv' ? 'tv' : 'movie'}${type === 'tv' && s !== undefined && e !== undefined ? `&season=${s}&episode=${e}` : ''}` },
-      { id: 'vidbinge.com', label: 'VidBinge',
-        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://vidbinge.com/api/tmdb/tv/${id}/${s}/${e}`
-          : `https://vidbinge.com/api/tmdb/movie/${id}`) },
-      { id: 'player.vixcloud.co', label: 'VixCloud',
-        url: (id, type, s, e) => `https://player.vixcloud.co/embed/play/${id}?type=${type === 'tv' ? 'tv' : 'movie'}${type === 'tv' && s !== undefined && e !== undefined ? `&season=${s}&episode=${e}` : ''}` },
-      { id: 'embed.warezcdn.link', label: 'WarezCDN',
-        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://embed.warezcdn.link/serie/${id}/${s}/${e}`
-          : `https://embed.warezcdn.link/film/${id}`) },
-      { id: '4stream.gg', label: '4Stream',
-        url: (id, type, s, e) => `https://4stream.gg/play/${type === 'tv' ? 'tv' : 'movie'}/${id}${tvPath(type, s, e)}` },
-      { id: 'moviesapi.club', label: 'MoviesAPI',
-        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://moviesapi.club/tv/${id}/${s}/${e}`
-          : `https://moviesapi.club/movie/${id}`) },
+      { id: 'vidfast.pro', label: 'VidFast',
+        url: (id, type, s, e) => `https://vidfast.pro/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}?autoPlay=true` },
       { id: 'vidlink.pro', label: 'VidLink',
         url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://vidlink.pro/api/tmdb/tv/${id}/${s}/${e}?subtitle=es`
-          : `https://vidlink.pro/api/tmdb/movie/${id}?subtitle=es`) },
-      { id: 'embed.nu', label: 'Embed.nu',
-        url: (id, type, s, e) => `https://embed.nu/${type === 'tv' ? 'tv' : 'movie'}/${id}${tvPath(type, s, e)}` },
-
-      /* --- Por ID de IMDb (se resuelve desde TMDB) --- */
-      { id: 'autoembed.cc', label: 'AutoEmbed', imdb: true,
-        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://autoembed.cc/tv/imdb/${imdb}/${s}/${e}`
-          : `https://autoembed.cc/movie/imdb/${imdb}`) },
-      { id: 'autoembed.pro', label: 'AutoEmbed.pro', imdb: true,
-        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://autoembed.pro/tv/imdb/${imdb}/${s}/${e}`
-          : `https://autoembed.pro/movie/imdb/${imdb}`) },
-      { id: 'vidembed.io', label: 'VidEmbed', imdb: true,
-        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://vidembed.io/tv/${imdb}/${s}/${e}`
-          : `https://vidembed.io/movie/${imdb}`) },
-      { id: 'gomoplayer.com', label: 'GomoPlayer', imdb: true,
-        url: (imdb, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
-          ? `https://gomoplayer.com/?id=${imdb}&type=tv&season=${s}&episode=${e}`
-          : `https://gomoplayer.com/?id=${imdb}&type=movie`) }
+          ? `https://vidlink.pro/tv/${id}/${s}/${e}`
+          : `https://vidlink.pro/movie/${id}`) },
+      { id: 'www.nontongo.win', label: 'Nontongo',
+        url: (id, type, s, e) => `https://www.nontongo.win/embed/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` },
+      { id: 'frembed.icu', label: 'FREmbed',
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://frembed.icu/api/serie.php?id=${id}&sa=${s}&epi=${e}`
+          : `https://frembed.icu/api/film.php?id=${id}`) },
+      { id: 'autoembed.co', label: 'AutoEmbed',
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://autoembed.co/tv/tmdb/${id}-${s}-${e}`
+          : `https://autoembed.co/movie/tmdb/${id}`) },
+      { id: 'moviesapi.to', label: 'MoviesAPI',
+        url: (id, type, s, e) => (type === 'tv' && s !== undefined && e !== undefined
+          ? `https://moviesapi.to/tv/${id}-${s}-${e}`
+          : `https://moviesapi.to/movie/${id}`) },
+      { id: 'streamflix.stream', label: 'StreamFlix',
+        url: (id, type, s, e) => `https://streamflix.stream/${type === 'tv' && s !== undefined && e !== undefined ? `tv/${id}/${s}/${e}` : `movie/${id}`}` }
     ];
 
     function currentSource() {
@@ -3992,7 +3954,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.6',
+      version: '2.7.7',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
