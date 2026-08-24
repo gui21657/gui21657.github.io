@@ -71,6 +71,9 @@
   const STREAM_KEY = CFG.STREAMING_AVAILABILITY_API_KEY || '';
   const STREAM_API = 'https://api.movieofthenight.com/v4';
   const STREAM_ENABLED = !!(STREAM_KEY && STREAM_KEY.indexOf('__') !== 0);
+  /* true cuando la API respondió datos del título (aunque no haya audio
+     en español): permite avisar honestamente "no hay doblaje". */
+  let spanishAudioChecked = false;
 
   /* Si el deploy no sustituyó los placeholders, el catálogo no carga.
      Mejor gritarlo que dejar la página en blanco sin explicación. */
@@ -168,6 +171,7 @@
       'audio.kindLatam': 'Latino',
       'audio.kindCast': 'Castilian',
       'audio.countryLabel': '({country})',
+      'audio.noneLegal': 'No Spanish audio for this title, according to legal platforms.',
       'audio.langAuto': 'Auto',
       'audio.langEs': 'Spanish',
       'audio.langEn': 'English',
@@ -298,6 +302,7 @@
       'audio.kindLatam': 'Latino',
       'audio.kindCast': 'Castellano',
       'audio.countryLabel': '({country})',
+      'audio.noneLegal': 'Seg\u00FAn las plataformas legales, este t\u00EDtulo no tiene audio en espa\u00F1ol.',
       'audio.langAuto': 'Auto',
       'audio.langEs': 'Espa\u00F1ol',
       'audio.langEn': 'Ingl\u00E9s',
@@ -1431,7 +1436,7 @@
       return tmdb(p).then(d => (d && d.imdb_id) || '').catch(() => '');
     }
 
-    /* Devuelve [{ country, service, kind }] con audio en español, o null. */
+    /* Devuelve [{ country, service, kind, link }] con audio en español, o null. */
     function fetchSpanishAudio(id, type) {
       const key = type + '_' + id;
       const cached = audioCacheGet(key);
@@ -1443,6 +1448,7 @@
           headers: { 'X-API-Key': STREAM_KEY }
         }).then(res => (res.ok ? res.json() : null)).then(data => {
           if (!data || !data.streamingOptions) return null;
+          spanishAudioChecked = true;   // la API respondió para este título
           const seen = {};
           Object.keys(data.streamingOptions || {}).forEach(cc => {
             (data.streamingOptions[cc] || []).forEach(off => {
@@ -1450,7 +1456,7 @@
                 const kind = audioKind(a.region);
                 const name = (off.service && off.service.name) || '?';
                 const k = cc + '|' + name + '|' + kind;
-                if (!seen[k]) seen[k] = { country: cc, service: name, kind: kind };
+                if (!seen[k]) seen[k] = { country: cc, service: name, kind: kind, link: off.link || '' };
               });
             });
           });
@@ -1475,7 +1481,12 @@
       const chips = rows.map(r => {
         const label = (r.kind === 'cast' ? t('audio.kindCast') : t('audio.kindLatam'));
         const cc = t('audio.countryLabel', { country: r.country });
-        return `<span class="video-avail-chip">${escText(r.service)} ${escText(cc)} &middot; ${escText(label)}</span>`;
+        const text = `${escText(r.service)} ${escText(cc)} &middot; ${escText(label)}`;
+        /* Con enlace de la API: chip clicable que abre la plataforma
+           (Netflix/Prime/Disney+…) con el doblaje en español. */
+        return r.link
+          ? `<a class="video-avail-chip" href="${escText(r.link)}" target="_blank" rel="noopener noreferrer">${text} <span class="video-avail-ext" aria-hidden="true">&#8599;</span></a>`
+          : `<span class="video-avail-chip">${text}</span>`;
       }).join('');
       el.innerHTML = `<span class="video-avail-title">${escText(title)}</span> ${chips}`;
       el.hidden = false;
@@ -1535,8 +1546,19 @@
         videoAudioAvail.hidden = true;
         const country = (SPANISH_REGION && SPANISH_REGION.country) || '';
         fetchSpanishAudio(currentMediaId, currentMediaType).then(list => {
-          if (!list || !list.length) return;
-          renderAudioAvail(videoAudioAvail, list, country);
+          if (list && list.length) {
+            renderAudioAvail(videoAudioAvail, list, country);
+            return;
+          }
+          /* La API respondió pero no hay doblaje en español en ninguna
+             plataforma legal: aviso honesto para hispanohablantes. */
+          const isSpanish = siteLang === 'es' ||
+            getSettings().audioLang === 'es' ||
+            !!(SPANISH_REGION && SPANISH_REGION.country);
+          if (isSpanish && spanishAudioChecked) {
+            videoAudioAvail.innerHTML = `<span class="video-avail-none">${escText(t('audio.noneLegal'))}</span>`;
+            videoAudioAvail.hidden = false;
+          }
         });
       }
 
@@ -3876,7 +3898,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.3',
+      version: '2.7.4',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };

@@ -2594,4 +2594,27 @@ html.tv-too-old #tooOldMsg { display: flex; }
   background: rgba(255,255,255,0.06);
   color: var(--text-muted);
   white-space: nowrap;
+  text-decoration: none;
+}
+a.video-avail-chip {
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+a.video-avail-chip:hover,
+a.video-avail-chip:focus-visible {
+  background: rgba(255,255,255,0.16);
+  border-color: var(--red);
+  color: #fff;
+  outline: none;
+}
+.video-avail-ext {
+  font-size: 0.85em;
+  margin-left: 2px;
+  opacity: 0.8;
+}
+.video-avail-none {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.92em;
+  opacity: 0.85;
 }
