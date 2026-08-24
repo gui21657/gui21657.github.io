@@ -966,19 +966,31 @@ html.tv-mode .movie-skeleton::after { animation: none; }
   gap: 8px;
 }
 .season-episode-selector select {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid var(--border-med);
-  color: #fff;
-  padding: 4px 24px 4px 8px;
-  font-size: 13px;
-  border-radius: 4px;
   appearance: none;
   -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23b0b0b0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 6px 30px 6px 14px;
   cursor: pointer;
-  max-width: 120px;
+  max-width: 170px;
+  transition: background-color 0.2s, border-color 0.2s;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23e8e8e8' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+.season-episode-selector select:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+.season-episode-selector select:focus-visible {
+  outline: 2px solid var(--red, #e50914);
+  outline-offset: 1px;
 }
 .season-episode-selector select option {
   background: #1e1e1e;
@@ -1919,7 +1931,7 @@ body.reduce-motion *::after {
   .fullscreen-modal .video-info h2 { font-size: 20px; }
   .fullscreen-modal .video-info p { font-size: 13px; -webkit-line-clamp: 2; }
   .fullscreen-modal .season-episode-selector { flex-direction: row; flex-wrap: wrap; gap: 12px; }
-  .season-episode-selector .selector-group select { min-width: 80px; font-size: 13px; }
+  .fullscreen-modal .season-episode-selector select { min-width: 80px; font-size: 13px; }
   .search-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px 10px; }
   .search-results-area { padding-top: calc(var(--header-h) + 16px + var(--safe-top)); }
   #settingsModal { align-items: flex-end; }
@@ -1968,8 +1980,7 @@ body.reduce-motion *::after {
   .donate-title { font-size: 26px; }
   .fullscreen-modal .video-info h2 { font-size: 18px; }
   .fullscreen-modal .video-info p { font-size: 12px; }
-  .fullscreen-modal .season-episode-selector .selector-group label { font-size: 11px; }
-  .fullscreen-modal .season-episode-selector .selector-group select { font-size: 12px; padding: 4px 20px 4px 8px; min-width: 70px; }
+  .fullscreen-modal .season-episode-selector select { font-size: 12px; padding: 5px 26px 5px 12px; min-width: 70px; }
 }
 @media (max-width: 360px) {
   :root { --card-w: 100px; --card-h: 150px; }
@@ -2086,6 +2097,7 @@ html.tv-mode .btn:focus, html.tv-mode .btn:focus-visible,
 html.tv-mode .server-btn:focus, html.tv-mode .server-btn:focus-visible,
 html.tv-mode .close:focus, html.tv-mode .close:focus-visible,
 html.tv-mode .selector-group select:focus,
+html.tv-mode .season-episode-selector select:focus,
 html.tv-mode .menu a:focus, html.tv-mode .menu a:focus-visible,
 html.tv-mode .search-container input:focus,
 html.tv-mode #searchClear:focus, html.tv-mode #searchClear:focus-visible,
@@ -2160,7 +2172,7 @@ html.tv-mode .video-desc-summary { font-size: 20px; }
 html.tv-mode .video-desc-chip { font-size: 15px; padding: 5px 14px; }
 html.tv-mode .video-episode-heading { font-size: 17px; }
 html.tv-mode .video-episode-overview { font-size: 16px; }
-html.tv-mode .fullscreen-modal .selector-group select { font-size: 16px; padding: 8px 28px 8px 12px; min-width: 120px; }
+html.tv-mode .fullscreen-modal .season-episode-selector select { font-size: 16px; padding: 8px 32px 8px 16px; min-width: 120px; }
 
 /* Fix select styling globally (ensures white text on dark bg) */
 select, select option {
