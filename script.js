@@ -168,6 +168,12 @@
       'audio.kindLatam': 'Latino',
       'audio.kindCast': 'Castilian',
       'audio.countryLabel': '({country})',
+      'audio.langAuto': 'Auto',
+      'audio.langEs': 'Spanish',
+      'audio.langEn': 'English',
+      'audio.langOrig': 'Original',
+      'toast.audioUpdated': 'Audio language updated',
+      'player.selectAudio': 'Audio language',
       'info.play': 'Play', 'info.morelikethis': 'More Like This', 'info.close': 'Close info',
       'info.episodes': 'Episodes',
       'donate.title': 'Support POPOROPO',
@@ -292,6 +298,12 @@
       'audio.kindLatam': 'Latino',
       'audio.kindCast': 'Castellano',
       'audio.countryLabel': '({country})',
+      'audio.langAuto': 'Auto',
+      'audio.langEs': 'Espa\u00F1ol',
+      'audio.langEn': 'Ingl\u00E9s',
+      'audio.langOrig': 'Original',
+      'toast.audioUpdated': 'Idioma de audio actualizado',
+      'player.selectAudio': 'Idioma de audio',
       'info.play': 'Reproducir', 'info.morelikethis': 'M\u00E1s como esto', 'info.close': 'Cerrar informaci\u00F3n',
       'info.episodes': 'Episodios',
       'donate.title': 'Apoya a POPOROPO',
@@ -632,6 +644,7 @@
 
     const DEFAULT_SETTINGS = {
       subtitleLang: DETECTED_SUB_LANG,
+      audioLang: 'auto',   // auto | es | en | orig — idioma preferido del audio
       reduceMotion: false,
       showBanner: true,
       goldTheme: true,
@@ -1247,6 +1260,8 @@
     const seasonSelector  = $('#seasonEpisodeSelector');
     const seasonSelect    = $('#seasonSelect');
     const episodeSelect   = $('#episodeSelect');
+    const audioLangSelector = $('#audioLangSelector');
+    const audioLangSelect = $('#audioLangSelect');
     const videoTitleEl    = $('#videoTitle');
     const videoInfoBtn    = $('#videoInfoBtn');
 
@@ -1304,6 +1319,17 @@
       if (type === 'tv' && season !== undefined && episode !== undefined)
         return `https://vidsrc.pm/embed/tv/${id}/${season}/${episode}${sub}`;
       return `https://vidsrc.pm/embed/${type}/${id}${sub}`;
+    }
+
+    /* Idioma efectivo que se pasa al embed: si el usuario eligió audio
+       (Español/English/Original), ese manda; si no, el de los subtítulos.
+       Algunas fuentes usan ds_lang también para la pista de audio. */
+    function effectiveSubLang() {
+      const s = getSettings();
+      if (s.audioLang && s.audioLang !== 'auto') {
+        return s.audioLang === 'orig' ? '' : s.audioLang;
+      }
+      return s.subtitleLang || '';
     }
 
     /* Identificador de contenido para likes y comentarios.
@@ -1713,7 +1739,7 @@
         loadSeasonData(mediaId);
       } else {
         seasonSelector.hidden = true;
-        const subLang = getSettings().subtitleLang;
+        const subLang = effectiveSubLang();
         videoPlayer.src = getEmbedUrl(mediaId, 'movie', undefined, undefined, subLang);
         syncSocialContent();
       }
@@ -1805,7 +1831,7 @@
         currentEpisodeInfo = episodes.find(ep => ep.episode_number === currentEpisode) || null;
         updateVideoDescription();
         updateSEOTags();
-        const subLang = getSettings().subtitleLang;
+        const subLang = effectiveSubLang();
         videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
         syncSocialContent();
         touchWatched(seriesId, 'tv', currentSeason, currentEpisode);
@@ -1817,7 +1843,7 @@
         currentEpisodeInfo = null;
         updateVideoDescription();
         updateSEOTags();
-        const subLang = getSettings().subtitleLang;
+        const subLang = effectiveSubLang();
         videoPlayer.src = getEmbedUrl(seriesId, 'tv', currentSeason, currentEpisode, subLang);
         syncSocialContent();
         touchWatched(seriesId, 'tv', currentSeason, currentEpisode);
@@ -1833,7 +1859,7 @@
       currentEpisodeInfo = currentSeasonEpisodes.find(ep => ep.episode_number === currentEpisode) || null;
       updateVideoDescription();
       updateSEOTags();
-      const subLang = getSettings().subtitleLang;
+      const subLang = effectiveSubLang();
       videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
       syncSocialContent();
       touchWatched(currentMediaId, 'tv', currentSeason, currentEpisode);
@@ -1976,6 +2002,41 @@
 
     initChipSelect(seasonSelect);
     initChipSelect(episodeSelect);
+    initChipSelect(audioLangSelect);
+
+    /* Opciones del selector de audio (Auto / Español / English / Original). */
+    function populateAudioOptions() {
+      if (!audioLangSelect) return;
+      audioLangSelect.innerHTML = [
+        ['auto', t('audio.langAuto')],
+        ['es', t('audio.langEs')],
+        ['en', t('audio.langEn')],
+        ['orig', t('audio.langOrig')]
+      ].map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+      audioLangSelect.value = getSettings().audioLang || 'auto';
+    }
+    populateAudioOptions();
+
+    /* Cambiar el audio: guarda la preferencia y recarga el reproductor con
+       el idioma elegido (ds_lang: en fuentes que lo respetan, cambia la
+       pista de audio además de los subtítulos). */
+    if (audioLangSelect) {
+      audioLangSelect.addEventListener('change', () => {
+        const s = getSettings();
+        s.audioLang = audioLangSelect.value;
+        saveSettings(s);
+        if (currentMediaId && videoModal.classList.contains('active')) {
+          const subLang = effectiveSubLang();
+          if (currentMediaType === 'movie') {
+            videoPlayer.src = getEmbedUrl(currentMediaId, 'movie', undefined, undefined, subLang);
+          } else {
+            videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
+          }
+          if (playerSpin) playerSpin.classList.remove('is-hidden');
+          showToast(t('toast.audioUpdated'), 1600);
+        }
+      });
+    }
 
     videoPlayer.addEventListener('load', () => {
       if (videoPlayer.src && playerSpin) playerSpin.classList.add('is-hidden');
@@ -2193,7 +2254,7 @@
                 currentEpisode = e;
                 seasonSelect.value = s;
                 episodeSelect.value = e;
-                const subLang = getSettings().subtitleLang;
+                const subLang = effectiveSubLang();
                 videoPlayer.src = getEmbedUrl(seriesId, 'tv', s, e, subLang);
                 touchWatched(seriesId, 'tv', s, e);
               }, 200);
@@ -2543,7 +2604,7 @@
       s.subtitleLang = settingsSubLang.value;
       saveSettings(s);
       if (currentMediaId && videoModal.classList.contains('active')) {
-        const subLang = s.subtitleLang;
+        const subLang = effectiveSubLang();
         if (currentMediaType === 'movie') {
           videoPlayer.src = getEmbedUrl(currentMediaId, 'movie', undefined, undefined, subLang);
         } else {
@@ -2556,6 +2617,7 @@
     if (settingsSiteLang) {
       settingsSiteLang.addEventListener('change', () => {
         setSiteLang(settingsSiteLang.value);
+        if (typeof populateAudioOptions === 'function') populateAudioOptions();
         showToast(siteLang === 'es' ? 'Idioma cambiado a español' : 'Language changed to English', 1600);
       });
     }
@@ -3812,7 +3874,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.0',
+      version: '2.7.1',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
