@@ -177,7 +177,9 @@
       'audio.langEn': 'English',
       'audio.langOrig': 'Original',
       'toast.audioUpdated': 'Player language set to Spanish. If the audio is still in another language, open the \u2699\uFE0F menu inside the player and pick the audio track.',
+      'toast.sourceUpdated': 'Video source changed. If the audio is still not in Spanish, try another source or pick the track in the player\u2019s \u2699\uFE0F menu.',
       'player.selectAudio': 'Audio language',
+      'player.selectSource': 'Video source',
       'info.play': 'Play', 'info.morelikethis': 'More Like This', 'info.close': 'Close info',
       'info.episodes': 'Episodes',
       'donate.title': 'Support POPOROPO',
@@ -308,7 +310,9 @@
       'audio.langEn': 'Ingl\u00E9s',
       'audio.langOrig': 'Original',
       'toast.audioUpdated': 'Idioma del reproductor en espa\u00F1ol. Si el audio sigue en otro idioma, abre el men\u00FA \u2699\uFE0F del reproductor y elige la pista de audio.',
+      'toast.sourceUpdated': 'Fuente cambiada. Si el audio sigue sin estar en espa\u00F1ol, prueba otra fuente o elige la pista en el men\u00FA \u2699\uFE0F del reproductor.',
       'player.selectAudio': 'Idioma de audio',
+      'player.selectSource': 'Fuente del video',
       'info.play': 'Reproducir', 'info.morelikethis': 'M\u00E1s como esto', 'info.close': 'Cerrar informaci\u00F3n',
       'info.episodes': 'Episodios',
       'donate.title': 'Apoya a POPOROPO',
@@ -652,6 +656,7 @@
       /* Regiones hispanas: español por defecto en el audio. El usuario puede
          cambiarlo (Auto vuelve a usar el idioma de subtítulos). */
       audioLang: DETECTED_SUB_LANG === 'es' ? 'es' : 'auto',
+      sourceId: 'vidsrc',   // proveedor de embed activo (EMBED_SOURCES)
       reduceMotion: false,
       showBanner: true,
       goldTheme: true,
@@ -1269,6 +1274,8 @@
     const episodeSelect   = $('#episodeSelect');
     const audioLangSelector = $('#audioLangSelector');
     const audioLangSelect = $('#audioLangSelect');
+    const embedSourceSelector = $('#embedSourceSelector');
+    const embedSourceSelect = $('#embedSourceSelect');
     const videoTitleEl    = $('#videoTitle');
     const videoInfoBtn    = $('#videoInfoBtn');
 
@@ -1321,11 +1328,32 @@
     /* ============================================================
        VIDEO PLAYER (fullscreen) with compact bottom bar
        ============================================================ */
+    /* Proveedores de embed disponibles (todos no oficiales; vidsrc.pm es el
+       principal). Ninguno garantiza la pista de audio: ds_lang pone el idioma
+       por defecto (subtítulos y, según la fuente, audio). El menú interno del
+       reproductor sigue mandando en la pista exacta. */
+    const EMBED_SOURCES = [
+      { id: 'vidsrc', label: 'VidSrc',
+        movie: (id, sub) => `https://vidsrc.pm/embed/movie/${id}${sub ? '?ds_lang=' + sub : ''}`,
+        tv: (id, s, e, sub) => `https://vidsrc.pm/embed/tv/${id}/${s}/${e}${sub ? '?ds_lang=' + sub : ''}` },
+      { id: '2embed', label: '2Embed',
+        movie: (id, sub) => `https://2embed.skin/embed/movie/${id}${sub ? '?ds_lang=' + sub : ''}`,
+        tv: (id, s, e, sub) => `https://2embed.skin/embed/tv/${id}/${s}/${e}${sub ? '?ds_lang=' + sub : ''}` },
+      { id: 'embedder', label: 'Embedder',
+        movie: (id) => `https://embedder.net/e/movie/${id}`,
+        tv: (id, s, e) => `https://embedder.net/e/tv/${id}/${s}/${e}` }
+    ];
+
+    function currentSource() {
+      const id = getSettings().sourceId || EMBED_SOURCES[0].id;
+      return EMBED_SOURCES.find(s => s.id === id) || EMBED_SOURCES[0];
+    }
+
     function getEmbedUrl(id, type, season, episode, subLang) {
-      const sub = subLang ? `?ds_lang=${subLang}` : '';
+      const src = currentSource();
       if (type === 'tv' && season !== undefined && episode !== undefined)
-        return `https://vidsrc.pm/embed/tv/${id}/${season}/${episode}${sub}`;
-      return `https://vidsrc.pm/embed/${type}/${id}${sub}`;
+        return src.tv(id, season, episode, subLang);
+      return src.movie(id, subLang);
     }
 
     /* Idioma efectivo que se pasa al embed: si el usuario eligió audio
@@ -2027,6 +2055,7 @@
     initChipSelect(seasonSelect);
     initChipSelect(episodeSelect);
     initChipSelect(audioLangSelect);
+    initChipSelect(embedSourceSelect);
 
     /* Opciones del selector de audio (Auto / Español / English / Original). */
     function populateAudioOptions() {
@@ -2058,6 +2087,36 @@
           }
           if (playerSpin) playerSpin.classList.remove('is-hidden');
           showToast(t('toast.audioUpdated'), 1600);
+        }
+      });
+    }
+
+    /* Opciones del selector de fuente (VidSrc / 2Embed / Embedder). */
+    function populateSourceOptions() {
+      if (!embedSourceSelect) return;
+      embedSourceSelect.innerHTML = EMBED_SOURCES
+        .map(s => `<option value="${s.id}">${escText(s.label)}</option>`).join('');
+      embedSourceSelect.value = currentSource().id;
+    }
+    populateSourceOptions();
+
+    /* Cambiar la fuente: guarda la preferencia y recarga el reproductor con
+       el mismo título/episodio y el mismo idioma elegido. Si una fuente no
+       tiene el doblaje en español, probar otra suele encontrarlo. */
+    if (embedSourceSelect) {
+      embedSourceSelect.addEventListener('change', () => {
+        const s = getSettings();
+        s.sourceId = embedSourceSelect.value;
+        saveSettings(s);
+        if (currentMediaId && videoModal.classList.contains('active')) {
+          const subLang = effectiveSubLang();
+          if (currentMediaType === 'movie') {
+            videoPlayer.src = getEmbedUrl(currentMediaId, 'movie', undefined, undefined, subLang);
+          } else {
+            videoPlayer.src = getEmbedUrl(currentMediaId, 'tv', currentSeason, currentEpisode, subLang);
+          }
+          if (playerSpin) playerSpin.classList.remove('is-hidden');
+          showToast(t('toast.sourceUpdated'), 1600);
         }
       });
     }
@@ -3898,7 +3957,7 @@
     })();
 
     window.__POPOROPO__ = {
-      version: '2.7.4',
+      version: '2.7.5',
       isDonor, getCurrentUser, getSettings, getFavorites, getWatched,
       setSiteLang, getSiteLang: () => siteLang, t, detectSiteLang
     };
