@@ -1,2 +1,706 @@
-(function(){"use strict";var N=window.POPOROPO_CONFIG||{},I=N.FIREBASE_PROJECT_ID||"",b=N.FIREBASE_API_KEY||"",h=!!(I&&b&&I.indexOf("__")!==0&&b.indexOf("__")!==0),O="https://firestore.googleapis.com/v1/projects/"+I+"/databases/(default)/documents",V="https://identitytoolkit.googleapis.com/v1",j="https://securetoken.googleapis.com/v1/token?key="+b,S=1e3,B=50,w="poporopo_fb_session";function u(e,t){return(t||document).querySelector(e)}function f(e){return String(e==null?"":e).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function M(){for(var e="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",t="",n=0;n<20;n++)t+=e.charAt(Math.floor(Math.random()*e.length));return t}function G(e){if(!e)return"";var t=new Date(e).getTime();if(isNaN(t))return"";var n=Math.max(0,Math.floor((Date.now()-t)/1e3));if(n<60)return"just now";for(var o=[["year",31536e3],["month",2592e3],["week",604800],["day",86400],["hour",3600],["minute",60]],r=0;r<o.length;r++){var s=Math.floor(n/o[r][1]);if(s>=1)return s+" "+o[r][0]+(s>1?"s":"")+" ago"}return"just now"}function L(e){return e=Number(e)||0,e<1e3?String(e):e<1e6?(e/1e3).toFixed(e<1e4?1:0).replace(/\.0$/,"")+"K":(e/1e6).toFixed(1).replace(/\.0$/,"")+"M"}function R(e){var t={};for(var n in e)if(Object.prototype.hasOwnProperty.call(e,n)){var o=e[n];typeof o=="string"?t[n]={stringValue:o}:typeof o=="number"?t[n]={integerValue:String(o)}:typeof o=="boolean"?t[n]={booleanValue:o}:o===null&&(t[n]={nullValue:null})}return t}function q(e){var t={};if(!e)return t;for(var n in e)if(Object.prototype.hasOwnProperty.call(e,n)){var o=e[n];"stringValue"in o?t[n]=o.stringValue:"integerValue"in o?t[n]=Number(o.integerValue):"booleanValue"in o?t[n]=o.booleanValue:"timestampValue"in o?t[n]=o.timestampValue:"nullValue"in o&&(t[n]=null)}return t}var a=null,C=[];function H(){try{var e=localStorage.getItem(w);if(!e)return null;var t=JSON.parse(e);return t&&t.refreshToken?t:null}catch(n){return null}}function E(e){a=e;try{e?localStorage.setItem(w,JSON.stringify(e)):localStorage.removeItem(w)}catch(n){}for(var t=0;t<C.length;t++)try{C[t](e)}catch(n){}}function K(e){return!h||!e?Promise.resolve(null):fetch(V+"/accounts:signInWithIdp?key="+b,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({postBody:"id_token="+encodeURIComponent(e)+"&providerId=google.com",requestUri:window.location.origin,returnSecureToken:!0,returnIdpCredential:!0})}).then(function(t){return t.ok?t.json():t.json().catch(function(){return null}).then(function(n){var o=n&&n.error&&n.error.message||"HTTP "+t.status,r=new Error(o);throw r.code=o,r})}).then(function(t){return E({uid:t.localId,idToken:t.idToken,refreshToken:t.refreshToken,expiresAt:Date.now()+(Number(t.expiresIn||3600)-60)*1e3,name:t.displayName||t.fullName||"",picture:t.photoUrl||""}),a}).catch(function(t){var n=t&&t.code?t.code:String(t&&t.message||t);if(window.console){console.error("[social] Firebase rechazó el login:",n);var o=J[n];o&&console.error("[social] "+o)}return window.PoporopoToast&&window.PoporopoToast(z[n]||"Couldn't enable comments"),null})}var J={OPERATION_NOT_ALLOWED:"Firebase Console → Authentication → Sign-in method → habilita Google.",INVALID_IDP_RESPONSE:"El client ID de Google no está autorizado en Firebase. Console → Authentication → Sign-in method → Google → Web SDK configuration → agrega el client ID que usa el sitio.",INVALID_REQUEST_URI:"Firebase Console → Authentication → Settings → Authorized domains → agrega "+window.location.hostname+".",MISSING_OR_INVALID_NONCE:"El token de Google trae un nonce que no se está reenviando a Firebase.",INVALID_CUSTOM_TOKEN:"La FIREBASE_API_KEY no corresponde al FIREBASE_PROJECT_ID configurado."},z={OPERATION_NOT_ALLOWED:"Comments are not enabled yet",INVALID_IDP_RESPONSE:"Sign-in is not configured for this site yet",INVALID_REQUEST_URI:"This domain is not authorized for sign-in"};function x(){return!a||!a.refreshToken?Promise.resolve(null):fetch(j,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(a.refreshToken)}).then(function(e){if(!e.ok)throw new Error("refresh "+e.status);return e.json()}).then(function(e){return E({uid:e.user_id||a.uid,idToken:e.id_token,refreshToken:e.refresh_token,expiresAt:Date.now()+(Number(e.expires_in||3600)-60)*1e3,name:a.name,picture:a.picture}),a}).catch(function(){return E(null),null})}function Q(){return a?Date.now()<a.expiresAt?Promise.resolve(a.idToken):x().then(function(e){return e?e.idToken:null}):Promise.resolve(null)}function W(){E(null)}function y(){return!!a}function p(e,t,n){t=t||{};var o=n?Q():Promise.resolve(null);return o.then(function(r){var s={"Content-Type":"application/json"};return r&&(s.Authorization="Bearer "+r),fetch(O+e,{method:t.method||"GET",headers:s,body:t.body?JSON.stringify(t.body):void 0})})}function D(e){return fetch(O+"/likes/"+encodeURIComponent(e)+":runAggregationQuery",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({structuredAggregationQuery:{structuredQuery:{from:[{collectionId:"users"}]},aggregations:[{alias:"total",count:{}}]}})}).then(function(t){return t.ok?t.json():0}).then(function(t){if(!t||!t.length)return 0;for(var n=0;n<t.length;n++){var o=t[n]&&t[n].result;if(o&&o.aggregateFields&&o.aggregateFields.total)return Number(o.aggregateFields.total.integerValue||0)}return 0}).catch(function(){return 0})}function Y(e){return a?p("/likes/"+encodeURIComponent(e)+"/users/"+encodeURIComponent(a.uid),{},!0).then(function(t){return t.ok}).catch(function(){return!1}):Promise.resolve(!1)}function Z(e,t){if(!a)return Promise.reject(new Error("auth required"));var n="/likes/"+encodeURIComponent(e)+"/users/"+encodeURIComponent(a.uid);return t?p(n,{method:"PATCH",body:{fields:R({uid:a.uid})}},!0):p(n,{method:"DELETE"},!0)}function A(e){var t="/comments/"+encodeURIComponent(e)+"/items?pageSize="+B+"&orderBy="+encodeURIComponent("createdAt desc");return p(t,{},!1).then(function(n){return n.ok?n.json():{documents:[]}}).then(function(n){var o=n&&n.documents||[];return o.map(function(r){var s=q(r.fields);return s.id=r.name.split("/").pop(),s})}).catch(function(){return[]})}function $(e,t){if(!a)return Promise.reject(new Error("auth required"));if(t=String(t||"").trim().slice(0,S),!t)return Promise.reject(new Error("empty"));var n="projects/"+I+"/databases/(default)/documents/comments/"+e+"/items/"+M();return p(":commit",{method:"POST",body:{writes:[{update:{name:n,fields:R({uid:a.uid,name:a.name||"Anonymous",picture:a.picture||"",text:t})},currentDocument:{exists:!1},updateTransforms:[{fieldPath:"createdAt",setToServerValue:"REQUEST_TIME"}]}]}},!0).then(function(o){return o.ok?!0:o.text().then(function(r){throw new Error("addComment "+o.status+" "+r)})})}function X(e,t){return a?p("/comments/"+encodeURIComponent(e)+"/items/"+encodeURIComponent(t),{method:"DELETE"},!0):Promise.reject(new Error("auth required"))}var i=null,c=null,g="",l=!1,m=!1;function ee(e,t){if(t)return'<img class="cmt-avatar" src="'+f(t)+'" alt="" loading="lazy" referrerpolicy="no-referrer">';var n=String(e||"?").trim().split(/\s+/).slice(0,2).map(function(o){return o.charAt(0)}).join("").toUpperCase()||"?";return'<span class="cmt-avatar cmt-avatar-fallback" aria-hidden="true">'+f(n)+"</span>"}function te(){var e=document.createElement("section");return e.className="social-panel",e.id="socialPanel",e.setAttribute("aria-label","Likes and comments"),e.innerHTML=['<div class="social-actions">','  <button type="button" class="like-btn" id="likeBtn" aria-pressed="false">','    <svg class="like-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"','         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">','      <path d="M7 10v12"/>','      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>',"    </svg>",'    <span class="like-count" id="likeCount">0</span>',"  </button>",'  <p class="social-hint" id="socialHint" hidden>Sign in to like and comment</p>','  <div class="social-signin" id="socialSignIn" hidden></div>',"</div>",'<div class="comments-block">','  <h3 class="comments-heading">','    <span id="commentsCount">0</span> Comments','    <span class="comments-context" id="commentsContext"></span>',"  </h3>",'  <form class="comment-form" id="commentForm">','    <textarea id="commentInput" class="comment-input" rows="1" maxlength="'+S+'"','              placeholder="Add a comment…" aria-label="Add a comment"></textarea>','    <div class="comment-form-actions">','      <span class="comment-counter" id="commentCounter"></span>','      <button type="button" class="btn-ghost" id="commentCancel">Cancel</button>','      <button type="submit" class="btn-comment" id="commentSubmit" disabled>Comment</button>',"    </div>","  </form>",'  <p class="comments-empty" id="commentsEmpty" hidden>No comments yet. Be the first.</p>','  <div class="comments-list" id="commentsList"></div>',"</div>"].join(`
-`),e}function v(e){var t=u("#commentsList",i),n=u("#commentsEmpty",i),o=u("#commentsCount",i);t&&(o&&(o.textContent=L(e.length)),n&&(n.hidden=e.length>0),t.innerHTML=e.map(function(r){var s=a&&r.uid===a.uid;return'<article class="comment" data-id="'+f(r.id)+'">'+ee(r.name,r.picture)+'<div class="comment-body"><p class="comment-head"><span class="comment-author">'+f(r.name||"Anonymous")+'</span><time class="comment-time">'+f(G(r.createdAt))+'</time></p><p class="comment-text">'+f(r.text)+"</p></div>"+(s?'<button type="button" class="comment-delete" data-id="'+f(r.id)+'" aria-label="Delete your comment">Delete</button>':"")+"</article>"}).join(""))}function U(){var e=u("#commentsContext",i);e&&(e.textContent=g?"on "+g:"")}function P(){if(i){var e=y(),t=u("#commentForm",i),n=u("#commentInput",i),o=u("#socialHint",i),r=u("#likeBtn",i),s=u("#socialSignIn",i);o&&(o.hidden=e,o.textContent=!e&&window.PoporopoAppUser&&window.PoporopoAppUser()?"Confirm your Google account to like and comment":"Sign in to like and comment"),s&&(s.hidden=e,!e&&window.PoporopoRenderSignInButton&&window.PoporopoRenderSignInButton(s)),t&&t.classList.toggle("is-locked",!e),n&&(n.disabled=!e,n.placeholder=e?"Add a comment…":"Sign in to comment"),r&&r.classList.toggle("is-locked",!e)}}function d(e){var t=u("#likeBtn",i),n=u("#likeCount",i);n&&typeof e=="number"&&(n.textContent=L(e)),t&&(t.classList.toggle("is-liked",l),t.setAttribute("aria-pressed",l?"true":"false"),t.setAttribute("aria-label",(l?"Unlike ":"Like ")+(g||"this")))}function _(){if(!(!i||!c)){var e=c;D(e).then(function(t){e===c&&d(t)}),Y(e).then(function(t){e===c&&(l=t,d())}),A(e).then(function(t){e===c&&v(t)})}}function ne(){if(!m){if(!y()){window.PoporopoRequestSignIn&&window.PoporopoRequestSignIn();return}m=!0;var e=c,t=!l;l=t;var n=u("#likeCount",i),o=n&&parseInt(n.textContent.replace(/[^\d]/g,""),10)||0;d(Math.max(0,o+(t?1:-1))),Z(e,t).then(function(){return D(e)}).then(function(r){e===c&&d(r)}).catch(function(){e===c&&(l=!t,d(o))}).then(function(){m=!1})}}function F(e){if(e&&e.preventDefault(),!(m||!y())){var t=u("#commentInput",i),n=t?t.value.trim():"";if(n){m=!0;var o=u("#commentSubmit",i);o&&(o.disabled=!0);var r=c;$(r,n).then(function(){return t&&(t.value="",k(t)),T(),A(r)}).then(function(s){r===c&&v(s)}).catch(function(){window.PoporopoToast&&window.PoporopoToast("Couldn't post your comment")}).then(function(){m=!1,o&&(o.disabled=!(t&&t.value.trim()))})}}}function oe(e){var t=e.target.closest&&e.target.closest(".comment-delete");if(t){var n=t.getAttribute("data-id");if(!(!n||m)){m=!0;var o=c;X(o,n).then(function(){return A(o)}).then(function(r){o===c&&v(r)}).catch(function(){}).then(function(){m=!1})}}}function k(e){e&&(e.style.height="auto",e.style.height=Math.min(e.scrollHeight,200)+"px")}function T(){var e=u("#commentInput",i),t=u("#commentCounter",i),n=u("#commentSubmit",i),o=e?e.value.trim().length:0;if(n&&(n.disabled=!o),t){var r=e?e.value.length:0;t.textContent=r>S-100?r+"/"+S:""}}function re(){var e=u("#likeBtn",i),t=u("#commentForm",i),n=u("#commentInput",i),o=u("#commentCancel",i),r=u("#commentsList",i);e&&e.addEventListener("click",ne),t&&t.addEventListener("submit",F),r&&r.addEventListener("click",oe),o&&o.addEventListener("click",function(){n&&(n.value="",k(n),T(),n.blur())}),n&&(n.addEventListener("input",function(){k(n),T()}),n.addEventListener("keydown",function(s){s.key==="Enter"&&(s.ctrlKey||s.metaKey)&&(s.preventDefault(),F()),s.stopPropagation()}))}var ie={enabled:h,mount:function(e){!h||!e||i||(i=te(),e.appendChild(i),re(),P())},setContent:function(e,t){if(!(!h||!i)&&(g=t||"",U(),e!==c)){c=e,l=!1,d(0),v([]);var n=u("#commentInput",i);n&&(n.value="",k(n)),T(),_()}},clear:function(){c=null,g="",l=!1,i&&(d(0),v([]),U())},signIn:K,signOut:W,onAuthChange:function(e){typeof e=="function"&&C.push(e)},isSignedIn:y};h&&(a=H(),a&&x().then(function(){P(),c&&_()}),C.push(function(){P(),c&&_()})),window.PoporopoSocial=ie})();
+/* ============================================================
+   POPOROPO — SOCIAL.JS
+   Likes (solo like, sin dislike) y comentarios por título/episodio.
+
+   Sin SDK de Firebase: habla directo con las APIs REST de
+   Identity Toolkit y Cloud Firestore usando fetch. Esto mantiene el
+   peso bajo y funciona en navegadores viejos de Smart TV
+   (WebOS / Tizen) que no soportan módulos ES.
+
+   Solo usuarios con sesión iniciada pueden comentar o dar like.
+   Cualquiera puede leer. Eso se garantiza en firestore.rules,
+   no aquí — el cliente nunca es la frontera de seguridad.
+   ============================================================ */
+
+(function () {
+  'use strict';
+
+  var CFG        = window.POPOROPO_CONFIG || {};
+  var PROJECT_ID = CFG.FIREBASE_PROJECT_ID || '';
+  var FB_KEY     = CFG.FIREBASE_API_KEY || '';
+
+  /* Si el deploy no inyectó la config, el módulo se apaga solo y el
+     sitio sigue funcionando igual que antes. */
+  var ENABLED = !!(PROJECT_ID && FB_KEY &&
+                   PROJECT_ID.indexOf('__') !== 0 && FB_KEY.indexOf('__') !== 0);
+
+  var FS   = 'https://firestore.googleapis.com/v1/projects/' + PROJECT_ID +
+             '/databases/(default)/documents';
+  var IDP  = 'https://identitytoolkit.googleapis.com/v1';
+  var TOKEN_URL = 'https://securetoken.googleapis.com/v1/token?key=' + FB_KEY;
+
+  var MAX_COMMENT_LEN = 1000;
+  var PAGE_SIZE       = 50;
+  var SESSION_KEY     = 'poporopo_fb_session';
+
+  /* ============================================================
+     UTILIDADES
+     ============================================================ */
+  function $(sel, root) { return (root || document).querySelector(sel); }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function docId() {
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var out = '';
+    for (var i = 0; i < 20; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
+    return out;
+  }
+
+  function relTime(iso) {
+    if (!iso) return '';
+    var then = new Date(iso).getTime();
+    if (isNaN(then)) return '';
+    var s = Math.max(0, Math.floor((Date.now() - then) / 1000));
+    if (s < 60)     return 'just now';
+    var units = [['year', 31536000], ['month', 2592000], ['week', 604800],
+                 ['day', 86400], ['hour', 3600], ['minute', 60]];
+    for (var i = 0; i < units.length; i++) {
+      var n = Math.floor(s / units[i][1]);
+      if (n >= 1) return n + ' ' + units[i][0] + (n > 1 ? 's' : '') + ' ago';
+    }
+    return 'just now';
+  }
+
+  function compactNum(n) {
+    n = Number(n) || 0;
+    if (n < 1000) return String(n);
+    if (n < 1000000) return (n / 1000).toFixed(n < 10000 ? 1 : 0).replace(/\.0$/, '') + 'K';
+    return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+
+  /* --- Conversión de/hacia el formato de valores de Firestore --- */
+  function toFields(obj) {
+    var fields = {};
+    for (var k in obj) {
+      if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+      var v = obj[k];
+      if (typeof v === 'string')       fields[k] = { stringValue: v };
+      else if (typeof v === 'number')  fields[k] = { integerValue: String(v) };
+      else if (typeof v === 'boolean') fields[k] = { booleanValue: v };
+      else if (v === null)             fields[k] = { nullValue: null };
+    }
+    return fields;
+  }
+
+  function fromFields(fields) {
+    var out = {};
+    if (!fields) return out;
+    for (var k in fields) {
+      if (!Object.prototype.hasOwnProperty.call(fields, k)) continue;
+      var v = fields[k];
+      if ('stringValue' in v)         out[k] = v.stringValue;
+      else if ('integerValue' in v)   out[k] = Number(v.integerValue);
+      else if ('booleanValue' in v)   out[k] = v.booleanValue;
+      else if ('timestampValue' in v) out[k] = v.timestampValue;
+      else if ('nullValue' in v)      out[k] = null;
+    }
+    return out;
+  }
+
+  /* ============================================================
+     AUTENTICACIÓN (Identity Toolkit REST)
+     ============================================================ */
+  var session = null;   // { uid, idToken, refreshToken, expiresAt, name, picture }
+  var authListeners = [];
+
+  function loadSession() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      return (s && s.refreshToken) ? s : null;
+    } catch (e) { return null; }
+  }
+
+  function saveSession(s) {
+    session = s;
+    try {
+      if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+      else   localStorage.removeItem(SESSION_KEY);
+    } catch (e) {}
+    for (var i = 0; i < authListeners.length; i++) {
+      try { authListeners[i](s); } catch (e) {}
+    }
+  }
+
+  /* Canjea el ID token de Google Identity Services por una sesión de
+     Firebase. Así reutilizamos el login que el sitio ya tiene. */
+  function signInWithGoogleIdToken(googleIdToken) {
+    if (!ENABLED || !googleIdToken) return Promise.resolve(null);
+    return fetch(IDP + '/accounts:signInWithIdp?key=' + FB_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        postBody: 'id_token=' + encodeURIComponent(googleIdToken) +
+                  '&providerId=google.com',
+        requestUri: window.location.origin,
+        returnSecureToken: true,
+        returnIdpCredential: true
+      })
+    }).then(function (r) {
+      if (!r.ok) {
+        /* Identity Toolkit manda el motivo real en el cuerpo. Sin leerlo,
+           todos los fallos de configuración se ven como un "400" mudo. */
+        return r.json().catch(function () { return null; }).then(function (body) {
+          var code = (body && body.error && body.error.message) || ('HTTP ' + r.status);
+          var err = new Error(code);
+          err.code = code;
+          throw err;
+        });
+      }
+      return r.json();
+    }).then(function (d) {
+      saveSession({
+        uid:          d.localId,
+        idToken:      d.idToken,
+        refreshToken: d.refreshToken,
+        expiresAt:    Date.now() + (Number(d.expiresIn || 3600) - 60) * 1000,
+        name:         d.displayName || d.fullName || '',
+        picture:      d.photoUrl || ''
+      });
+      return session;
+    }).catch(function (e) {
+      var code = e && e.code ? e.code : String(e && e.message || e);
+      if (window.console) {
+        console.error('[social] Firebase rechazó el login:', code);
+        var hint = SIGNIN_HINTS[code];
+        if (hint) console.error('[social] ' + hint);
+      }
+      if (window.PoporopoToast) {
+        window.PoporopoToast(SIGNIN_TOASTS[code] || "Couldn't enable comments");
+      }
+      return null;
+    });
+  }
+
+  /* Traducción de los errores de Identity Toolkit a la acción concreta que
+     hay que hacer en la consola de Firebase. Son todos de configuración:
+     el código del cliente está bien, falta autorizar algo. */
+  var SIGNIN_HINTS = {
+    OPERATION_NOT_ALLOWED:
+      'Firebase Console → Authentication → Sign-in method → habilita Google.',
+    INVALID_IDP_RESPONSE:
+      'El client ID de Google no está autorizado en Firebase. Console → ' +
+      'Authentication → Sign-in method → Google → Web SDK configuration → ' +
+      'agrega el client ID que usa el sitio.',
+    INVALID_REQUEST_URI:
+      'Firebase Console → Authentication → Settings → Authorized domains → ' +
+      'agrega ' + window.location.hostname + '.',
+    MISSING_OR_INVALID_NONCE:
+      'El token de Google trae un nonce que no se está reenviando a Firebase.',
+    INVALID_CUSTOM_TOKEN:
+      'La FIREBASE_API_KEY no corresponde al FIREBASE_PROJECT_ID configurado.'
+  };
+
+  var SIGNIN_TOASTS = {
+    OPERATION_NOT_ALLOWED: 'Comments are not enabled yet',
+    INVALID_IDP_RESPONSE:  'Sign-in is not configured for this site yet',
+    INVALID_REQUEST_URI:   'This domain is not authorized for sign-in'
+  };
+
+  function refreshToken() {
+    if (!session || !session.refreshToken) return Promise.resolve(null);
+    return fetch(TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'grant_type=refresh_token&refresh_token=' +
+            encodeURIComponent(session.refreshToken)
+    }).then(function (r) {
+      if (!r.ok) throw new Error('refresh ' + r.status);
+      return r.json();
+    }).then(function (d) {
+      saveSession({
+        uid:          d.user_id || session.uid,
+        idToken:      d.id_token,
+        refreshToken: d.refresh_token,
+        expiresAt:    Date.now() + (Number(d.expires_in || 3600) - 60) * 1000,
+        name:         session.name,
+        picture:      session.picture
+      });
+      return session;
+    }).catch(function () { saveSession(null); return null; });
+  }
+
+  /* Devuelve un idToken vigente, renovándolo si está por vencer. */
+  function freshToken() {
+    if (!session) return Promise.resolve(null);
+    if (Date.now() < session.expiresAt) return Promise.resolve(session.idToken);
+    return refreshToken().then(function (s) { return s ? s.idToken : null; });
+  }
+
+  function signOut() { saveSession(null); }
+
+  function isSignedIn() { return !!session; }
+
+  /* ============================================================
+     CLIENTE FIRESTORE (REST)
+     ============================================================ */
+  function fsFetch(path, opts, needsAuth) {
+    opts = opts || {};
+    var run = needsAuth ? freshToken() : Promise.resolve(null);
+    return run.then(function (token) {
+      var headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = 'Bearer ' + token;
+      return fetch(FS + path, {
+        method:  opts.method || 'GET',
+        headers: headers,
+        body:    opts.body ? JSON.stringify(opts.body) : undefined
+      });
+    });
+  }
+
+  /* --- LIKES --------------------------------------------------
+     Un documento por usuario en /likes/{contentId}/users/{uid}.
+     El conteo sale de una aggregation query, así que no hay
+     contador que se pueda manipular desde el cliente.           */
+
+  function likeCount(contentId) {
+    return fetch(FS + '/likes/' + encodeURIComponent(contentId) +
+                 ':runAggregationQuery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        structuredAggregationQuery: {
+          structuredQuery: { from: [{ collectionId: 'users' }] },
+          aggregations: [{ alias: 'total', count: {} }]
+        }
+      })
+    }).then(function (r) {
+      if (!r.ok) return 0;
+      return r.json();
+    }).then(function (rows) {
+      if (!rows || !rows.length) return 0;
+      for (var i = 0; i < rows.length; i++) {
+        var res = rows[i] && rows[i].result;
+        if (res && res.aggregateFields && res.aggregateFields.total) {
+          return Number(res.aggregateFields.total.integerValue || 0);
+        }
+      }
+      return 0;
+    }).catch(function () { return 0; });
+  }
+
+  function hasLiked(contentId) {
+    if (!session) return Promise.resolve(false);
+    return fsFetch('/likes/' + encodeURIComponent(contentId) +
+                   '/users/' + encodeURIComponent(session.uid), {}, true)
+      .then(function (r) { return r.ok; })
+      .catch(function () { return false; });
+  }
+
+  function setLike(contentId, liked) {
+    if (!session) return Promise.reject(new Error('auth required'));
+    var path = '/likes/' + encodeURIComponent(contentId) +
+               '/users/' + encodeURIComponent(session.uid);
+    if (!liked) return fsFetch(path, { method: 'DELETE' }, true);
+    return fsFetch(path, {
+      method: 'PATCH',
+      body: { fields: toFields({ uid: session.uid }) }
+    }, true);
+  }
+
+  /* --- COMENTARIOS -------------------------------------------- */
+
+  function listComments(contentId) {
+    var path = '/comments/' + encodeURIComponent(contentId) + '/items' +
+               '?pageSize=' + PAGE_SIZE + '&orderBy=' +
+               encodeURIComponent('createdAt desc');
+    return fsFetch(path, {}, false)
+      .then(function (r) { return r.ok ? r.json() : { documents: [] }; })
+      .then(function (d) {
+        var docs = (d && d.documents) || [];
+        return docs.map(function (doc) {
+          var data = fromFields(doc.fields);
+          data.id = doc.name.split('/').pop();
+          return data;
+        });
+      })
+      .catch(function () { return []; });
+  }
+
+  function addComment(contentId, text) {
+    if (!session) return Promise.reject(new Error('auth required'));
+    text = String(text || '').trim().slice(0, MAX_COMMENT_LEN);
+    if (!text) return Promise.reject(new Error('empty'));
+
+    var name = 'projects/' + PROJECT_ID + '/databases/(default)/documents' +
+               '/comments/' + contentId + '/items/' + docId();
+
+    /* :commit con transform deja que el servidor ponga createdAt, así
+       nadie puede falsear la fecha para quedar arriba en la lista. */
+    return fsFetch(':commit', {
+      method: 'POST',
+      body: {
+        writes: [{
+          update: {
+            name: name,
+            fields: toFields({
+              uid:     session.uid,
+              name:    session.name || 'Anonymous',
+              picture: session.picture || '',
+              text:    text
+            })
+          },
+          currentDocument: { exists: false },
+          updateTransforms: [{
+            fieldPath: 'createdAt', setToServerValue: 'REQUEST_TIME'
+          }]
+        }]
+      }
+    }, true).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) {
+        throw new Error('addComment ' + r.status + ' ' + t);
+      });
+      return true;
+    });
+  }
+
+  function deleteComment(contentId, commentId) {
+    if (!session) return Promise.reject(new Error('auth required'));
+    return fsFetch('/comments/' + encodeURIComponent(contentId) +
+                   '/items/' + encodeURIComponent(commentId),
+                   { method: 'DELETE' }, true);
+  }
+
+  /* ============================================================
+     INTERFAZ
+     ============================================================ */
+  var root = null;          // contenedor .social-panel
+  var currentContent = null;
+  var currentLabel   = '';
+  var liked = false;
+  var busy  = false;
+
+  function avatarFor(name, url) {
+    if (url) return '<img class="cmt-avatar" src="' + escapeHtml(url) +
+                    '" alt="" loading="lazy" referrerpolicy="no-referrer">';
+    var initials = String(name || '?').trim().split(/\s+/).slice(0, 2)
+      .map(function (w) { return w.charAt(0); }).join('').toUpperCase() || '?';
+    return '<span class="cmt-avatar cmt-avatar-fallback" aria-hidden="true">' +
+           escapeHtml(initials) + '</span>';
+  }
+
+  function buildPanel() {
+    var el = document.createElement('section');
+    el.className = 'social-panel';
+    el.id = 'socialPanel';
+    el.setAttribute('aria-label', 'Likes and comments');
+    el.innerHTML = [
+      '<div class="social-actions">',
+      '  <button type="button" class="like-btn" id="likeBtn" aria-pressed="false">',
+      '    <svg class="like-icon" width="22" height="22" viewBox="0 0 24 24" fill="none"',
+      '         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+      '      <path d="M7 10v12"/>',
+      '      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>',
+      '    </svg>',
+      '    <span class="like-count" id="likeCount">0</span>',
+      '  </button>',
+      '  <p class="social-hint" id="socialHint" hidden>Sign in to like and comment</p>',
+      '  <div class="social-signin" id="socialSignIn" hidden></div>',
+      '</div>',
+      '<div class="comments-block">',
+      '  <h3 class="comments-heading">',
+      '    <span id="commentsCount">0</span> Comments',
+      '    <span class="comments-context" id="commentsContext"></span>',
+      '  </h3>',
+      '  <form class="comment-form" id="commentForm">',
+      '    <textarea id="commentInput" class="comment-input" rows="1" maxlength="' + MAX_COMMENT_LEN + '"',
+      '              placeholder="Add a comment…" aria-label="Add a comment"></textarea>',
+      '    <div class="comment-form-actions">',
+      '      <span class="comment-counter" id="commentCounter"></span>',
+      '      <button type="button" class="btn-ghost" id="commentCancel">Cancel</button>',
+      '      <button type="submit" class="btn-comment" id="commentSubmit" disabled>Comment</button>',
+      '    </div>',
+      '  </form>',
+      '  <p class="comments-empty" id="commentsEmpty" hidden>No comments yet. Be the first.</p>',
+      '  <div class="comments-list" id="commentsList"></div>',
+      '</div>'
+    ].join('\n');
+    return el;
+  }
+
+  function renderComments(items) {
+    var list  = $('#commentsList', root);
+    var empty = $('#commentsEmpty', root);
+    var count = $('#commentsCount', root);
+    if (!list) return;
+
+    if (count) count.textContent = compactNum(items.length);
+    if (empty) empty.hidden = items.length > 0;
+
+    list.innerHTML = items.map(function (c) {
+      var mine = session && c.uid === session.uid;
+      return '' +
+        '<article class="comment" data-id="' + escapeHtml(c.id) + '">' +
+          avatarFor(c.name, c.picture) +
+          '<div class="comment-body">' +
+            '<p class="comment-head">' +
+              '<span class="comment-author">' + escapeHtml(c.name || 'Anonymous') + '</span>' +
+              '<time class="comment-time">' + escapeHtml(relTime(c.createdAt)) + '</time>' +
+            '</p>' +
+            '<p class="comment-text">' + escapeHtml(c.text) + '</p>' +
+          '</div>' +
+          (mine ? '<button type="button" class="comment-delete" data-id="' +
+                  escapeHtml(c.id) + '" aria-label="Delete your comment">Delete</button>' : '') +
+        '</article>';
+    }).join('');
+  }
+
+  /* Deja claro que los comentarios son de ESTE episodio, no de la serie. */
+  function updateContextLabel() {
+    var el = $('#commentsContext', root);
+    if (el) el.textContent = currentLabel ? 'on ' + currentLabel : '';
+  }
+
+  function refreshAuthUI() {
+    if (!root) return;
+    var signedIn = isSignedIn();
+    var form   = $('#commentForm', root);
+    var input  = $('#commentInput', root);
+    var hint   = $('#socialHint', root);
+    var like   = $('#likeBtn', root);
+    var signin = $('#socialSignIn', root);
+
+    if (hint) {
+      hint.hidden = signedIn;
+      /* Si ya entró a la app pero no a Firestore, decirle "inicia sesión"
+         es desconcertante: para él ya la inició. */
+      hint.textContent = (!signedIn && window.PoporopoAppUser && window.PoporopoAppUser())
+        ? 'Confirm your Google account to like and comment'
+        : 'Sign in to like and comment';
+    }
+
+    if (signin) {
+      signin.hidden = signedIn;
+      if (!signedIn && window.PoporopoRenderSignInButton) {
+        window.PoporopoRenderSignInButton(signin);
+      }
+    }
+    if (form)  form.classList.toggle('is-locked', !signedIn);
+    if (input) {
+      input.disabled = !signedIn;
+      input.placeholder = signedIn ? 'Add a comment…' : 'Sign in to comment';
+    }
+    if (like) like.classList.toggle('is-locked', !signedIn);
+  }
+
+  function refreshLikeUI(count) {
+    var btn = $('#likeBtn', root);
+    var cnt = $('#likeCount', root);
+    if (cnt && typeof count === 'number') cnt.textContent = compactNum(count);
+    if (btn) {
+      btn.classList.toggle('is-liked', liked);
+      btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+      btn.setAttribute('aria-label', (liked ? 'Unlike ' : 'Like ') + (currentLabel || 'this'));
+    }
+  }
+
+  /* Carga likes + comentarios del contenido activo. */
+  function load() {
+    if (!root || !currentContent) return;
+    var target = currentContent;
+
+    likeCount(target).then(function (n) {
+      if (target !== currentContent) return;   // el usuario ya cambió de episodio
+      refreshLikeUI(n);
+    });
+
+    hasLiked(target).then(function (v) {
+      if (target !== currentContent) return;
+      liked = v;
+      refreshLikeUI();
+    });
+
+    listComments(target).then(function (items) {
+      if (target !== currentContent) return;
+      renderComments(items);
+    });
+  }
+
+  function onLikeClick() {
+    if (busy) return;
+    if (!isSignedIn()) {
+      if (window.PoporopoRequestSignIn) window.PoporopoRequestSignIn();
+      return;
+    }
+    busy = true;
+    var target = currentContent;
+    var next   = !liked;
+
+    /* Optimista: pinta el cambio ya y lo corrige si el servidor falla. */
+    liked = next;
+    var cnt = $('#likeCount', root);
+    var shown = cnt ? (parseInt(cnt.textContent.replace(/[^\d]/g, ''), 10) || 0) : 0;
+    refreshLikeUI(Math.max(0, shown + (next ? 1 : -1)));
+
+    setLike(target, next)
+      .then(function () { return likeCount(target); })
+      .then(function (n) { if (target === currentContent) refreshLikeUI(n); })
+      .catch(function () {
+        if (target !== currentContent) return;
+        liked = !next;
+        refreshLikeUI(shown);
+      })
+      .then(function () { busy = false; });
+  }
+
+  function onSubmit(e) {
+    if (e) e.preventDefault();
+    if (busy || !isSignedIn()) return;
+    var input = $('#commentInput', root);
+    var text  = input ? input.value.trim() : '';
+    if (!text) return;
+
+    busy = true;
+    var btn = $('#commentSubmit', root);
+    if (btn) btn.disabled = true;
+    var target = currentContent;
+
+    addComment(target, text).then(function () {
+      if (input) { input.value = ''; autoGrow(input); }
+      updateCounter();
+      return listComments(target);
+    }).then(function (items) {
+      if (target === currentContent) renderComments(items);
+    }).catch(function () {
+      if (window.PoporopoToast) window.PoporopoToast("Couldn't post your comment");
+    }).then(function () {
+      busy = false;
+      if (btn) btn.disabled = !(input && input.value.trim());
+    });
+  }
+
+  function onListClick(e) {
+    var del = e.target.closest && e.target.closest('.comment-delete');
+    if (!del) return;
+    var id = del.getAttribute('data-id');
+    if (!id || busy) return;
+    busy = true;
+    var target = currentContent;
+    deleteComment(target, id)
+      .then(function () { return listComments(target); })
+      .then(function (items) { if (target === currentContent) renderComments(items); })
+      .catch(function () {})
+      .then(function () { busy = false; });
+  }
+
+  function autoGrow(el) {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+  }
+
+  function updateCounter() {
+    var input = $('#commentInput', root);
+    var cEl   = $('#commentCounter', root);
+    var btn   = $('#commentSubmit', root);
+    var len   = input ? input.value.trim().length : 0;
+    if (btn) btn.disabled = !len;
+    if (cEl) {
+      var raw = input ? input.value.length : 0;
+      cEl.textContent = raw > MAX_COMMENT_LEN - 100
+        ? raw + '/' + MAX_COMMENT_LEN : '';
+    }
+  }
+
+  function wire() {
+    var likeBtn = $('#likeBtn', root);
+    var form    = $('#commentForm', root);
+    var input   = $('#commentInput', root);
+    var cancel  = $('#commentCancel', root);
+    var list    = $('#commentsList', root);
+
+    if (likeBtn) likeBtn.addEventListener('click', onLikeClick);
+    if (form)    form.addEventListener('submit', onSubmit);
+    if (list)    list.addEventListener('click', onListClick);
+    if (cancel)  cancel.addEventListener('click', function () {
+      if (input) { input.value = ''; autoGrow(input); updateCounter(); input.blur(); }
+    });
+    if (input) {
+      input.addEventListener('input', function () { autoGrow(input); updateCounter(); });
+      /* Ctrl/Cmd+Enter envía; Enter solo salta línea. */
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); onSubmit(); }
+        e.stopPropagation();   // que las flechas no muevan el foco del modo TV
+      });
+    }
+  }
+
+  /* ============================================================
+     API PÚBLICA (la consume script.js)
+     ============================================================ */
+  var api = {
+    enabled: ENABLED,
+
+    /* Monta el panel dentro de un contenedor del DOM. */
+    mount: function (container) {
+      if (!ENABLED || !container || root) return;
+      root = buildPanel();
+      container.appendChild(root);
+      wire();
+      refreshAuthUI();
+    },
+
+    /* Cambia el contenido activo. contentId debe ser único por
+       película o por episodio:
+         movie_550
+         tv_1399_s1_e1                                        */
+    setContent: function (contentId, label) {
+      if (!ENABLED || !root) return;
+
+      /* El título de TMDB llega después de abrir el reproductor, así que
+         la etiqueta se refresca siempre, aunque el contenido no cambie. */
+      currentLabel = label || '';
+      updateContextLabel();
+
+      if (contentId === currentContent) return;
+      currentContent = contentId;
+      liked = false;
+      refreshLikeUI(0);
+      renderComments([]);
+      var input = $('#commentInput', root);
+      if (input) { input.value = ''; autoGrow(input); }
+      updateCounter();
+      load();
+    },
+
+    clear: function () {
+      currentContent = null;
+      currentLabel = '';
+      liked = false;
+      if (root) { refreshLikeUI(0); renderComments([]); updateContextLabel(); }
+    },
+
+    /* Puentes con el login de Google que ya existe en script.js */
+    signIn:  signInWithGoogleIdToken,
+    signOut: signOut,
+
+    onAuthChange: function (fn) {
+      if (typeof fn === 'function') authListeners.push(fn);
+    },
+
+    isSignedIn: isSignedIn
+  };
+
+  /* Restaura la sesión guardada y refresca el token al arrancar. */
+  if (ENABLED) {
+    session = loadSession();
+    if (session) {
+      refreshToken().then(function () {
+        refreshAuthUI();
+        if (currentContent) load();
+      });
+    }
+    authListeners.push(function () {
+      refreshAuthUI();
+      if (currentContent) load();
+    });
+  }
+
+  window.PoporopoSocial = api;
+})();
